@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RootACE — AI Competitive Edge for Your Brand</title>
+  <meta name="description" content="Find out if AI recommends your brand to buyers — or your competitors. RootACE runs synthetic buyer simulations across 7 platforms and delivers your AI Visibility Score, competitive analysis, and 90-day action plan." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #FFFFFF;
+      --bg-2:     #F8F9FB;
+      --ink:      #0A0F1E;
+      --ink-2:    #1E293B;
+      --mid:      #64748B;
+      --quiet:    #94A3B8;
+      --border:   rgba(10,15,30,0.09);
+      --navy:     #0A0F1E;
+      --blue:     #2563EB;
+      --blue-d:   #1D4ED8;
+      --blue-bg:  rgba(37,99,235,0.07);
+      --green:    #059669;
+      --serif:    'DM Serif Display', Georgia, serif;
+      --sans:     'Inter', system-ui, sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .nav-logo-text { font-family: var(--serif); font-size: 22px; color: var(--ink); letter-spacing: -0.01em; }
+    .nav-logo-text span { color: var(--blue); }
+    .nav-right { display: flex; align-items: center; gap: 24px; }
+    .nav-signin { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; }
+    .nav-signin:hover { color: var(--ink); }
+    .nav-cta { background: var(--blue); color: white; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; }
+    .nav-cta:hover { background: var(--blue-d); }
+
+    /* WRAP */
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 48px; }
+
+    /* HERO */
+    .hero {
+      padding: 100px 48px 80px;
+      max-width: 1080px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .hero-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); margin-bottom: 20px; }
+    .hero-title { font-family: var(--serif); font-size: 52px; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 24px; color: var(--navy); }
+    .hero-title em { font-style: italic; color: var(--blue); }
+    .hero-sub { font-size: 18px; color: var(--mid); line-height: 1.7; margin-bottom: 40px; }
+    .hero-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .btn-primary { background: var(--blue); color: white; padding: 14px 28px; border-radius: 10px; font-size: 16px; font-weight: 600; text-decoration: none; transition: background 0.15s; display: inline-block; }
+    .btn-primary:hover { background: var(--blue-d); }
+    .btn-ghost { color: var(--mid); font-size: 15px; text-decoration: none; font-weight: 500; }
+    .btn-ghost:hover { color: var(--ink); }
+    .hero-note { font-size: 13px; color: var(--quiet); margin-top: 16px; }
+
+    /* HERO VISUAL */
+    .hero-visual { background: var(--navy); border-radius: 20px; padding: 32px; color: white; }
+    .hv-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 20px; }
+    .hv-score { font-family: var(--serif); font-size: 72px; line-height: 1; margin-bottom: 4px; }
+    .hv-score-label { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+    .hv-bar-track { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 28px; }
+    .hv-bar-fill { height: 6px; border-radius: 3px; background: var(--blue); width: 18%; }
+    .hv-platforms { display: flex; flex-direction: column; gap: 10px; }
+    .hv-platform { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.05); border-radius: 8px; }
+    .hv-platform-name { font-size: 13px; color: rgba(255,255,255,0.7); }
+    .hv-badge { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 500; }
+    .hv-badge.none { background: rgba(239,68,68,0.2); color: #FCA5A5; }
+    .hv-badge.low { background: rgba(245,158,11,0.2); color: #FCD34D; }
+    .hv-badge.medium { background: rgba(59,130,246,0.2); color: #93C5FD; }
+
+    /* TRUST BAR */
+    .trust-bar { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 48px; }
+    .trust-bar-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+    .trust-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mid); font-weight: 500; }
+    .trust-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+
+    /* SECTION */
+    .section { padding: 96px 48px; max-width: 1080px; margin: 0 auto; }
+    .section-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); margin-bottom: 16px; }
+    .section-title { font-family: var(--serif); font-size: 42px; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 20px; color: var(--navy); }
+    .section-sub { font-size: 18px; color: var(--mid); line-height: 1.7; max-width: 580px; }
+
+    /* HOW IT WORKS */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 56px; }
+    .step { padding: 32px; background: var(--bg-2); border-radius: 16px; border: 1px solid var(--border); }
+    .step-num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 16px; }
+    .step-title { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: var(--ink); }
+    .step-desc { font-size: 14px; color: var(--mid); line-height: 1.6; }
+
+    /* WHAT YOU GET */
+    .deliverables { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 56px; }
+    .deliverable { padding: 32px; border: 1px solid var(--border); border-radius: 16px; transition: border-color 0.15s; }
+    .deliverable:hover { border-color: var(--blue); }
+    .del-icon { font-size: 28px; margin-bottom: 16px; }
+    .del-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: var(--ink); }
+    .del-desc { font-size: 14px; color: var(--mid); line-height: 1.6; }
+
+    /* PRICING */
+    .pricing-section { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 96px 48px; }
+    .pricing-inner { max-width: 1080px; margin: 0 auto; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+    .pricing-card { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 36px; position: relative; }
+    .pricing-card.featured { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+    .pricing-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--blue); color: white; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
+    .pricing-plan { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); margin-bottom: 16px; }
+    .pricing-price { font-family: var(--serif); font-size: 48px; line-height: 1; color: var(--navy); margin-bottom: 4px; }
+    .pricing-price span { font-family: var(--sans); font-size: 16px; color: var(--mid); font-weight: 400; }
+    .pricing-desc { font-size: 14px; color: var(--mid); line-height: 1.6; margin: 16px 0 28px; }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+    .pricing-features li { font-size: 14px; color: var(--ink-2); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+    .pricing-features li::before { content: '✓'; color: var(--blue); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+    .pricing-cta { display: block; text-align: center; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+    .pricing-cta.primary { background: var(--blue); color: white; }
+    .pricing-cta.primary:hover { background: var(--blue-d); }
+    .pricing-cta.outline { border: 1px solid var(--border); color: var(--ink); background: var(--bg-2); }
+    .pricing-cta.outline:hover { border-color: var(--ink); background: var(--bg); }
+    .pricing-note { font-size: 13px; color: var(--quiet); text-align: center; margin-top: 24px; }
+
+    /* ROOTPARTNERS SECTION */
+    .rp-section { background: var(--navy); padding: 96px 48px; }
+    .rp-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .rp-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 16px; }
+    .rp-title { font-family: var(--serif); font-size: 38px; line-height: 1.15; color: white; margin-bottom: 20px; }
+    .rp-body { font-size: 16px; color: rgba(255,255,255,0.65); line-height: 1.8; margin-bottom: 32px; }
+    .rp-cta { display: inline-block; border: 1px solid rgba(255,255,255,0.2); color: white; padding: 13px 28px; border-radius: 10px; font-size: 15px; font-weight: 500; text-decoration: none; transition: all 0.15s; }
+    .rp-cta:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
+    .rp-features { display: flex; flex-direction: column; gap: 20px; }
+    .rp-feature { padding: 24px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+    .rp-feature-title { font-size: 15px; font-weight: 600; color: white; margin-bottom: 6px; }
+    .rp-feature-desc { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 40px 48px; }
+    .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .footer-logo { font-family: var(--serif); font-size: 18px; color: var(--ink); }
+    .footer-logo span { color: var(--blue); }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 13px; color: var(--mid); text-decoration: none; }
+    .footer-links a:hover { color: var(--ink); }
+    .footer-copy { font-size: 13px; color: var(--quiet); }
+
+    /* RESPONSIVE */
+    @media (max-width: 860px) {
+      nav { padding: 0 24px; }
+      .hero { grid-template-columns: 1fr; padding: 64px 24px 48px; gap: 48px; }
+      .hero-title { font-size: 38px; }
+      .trust-bar { padding: 20px 24px; }
+      .trust-bar-inner { gap: 20px; }
+      .section { padding: 64px 24px; }
+      .steps { grid-template-columns: 1fr; }
+      .deliverables { grid-template-columns: 1fr; }
+      .pricing-section { padding: 64px 24px; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .rp-section { padding: 64px 24px; }
+      .rp-inner { grid-template-columns: 1fr; gap: 48px; }
+      footer { padding: 32px 24px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-text">Root<span>ACE</span></div>
+  </a>
+  <div class="nav-right">
+    <a href="/login-customer.html" class="nav-signin">Sign in</a>
+    <a href="/order.html" class="nav-cta">Get your audit</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">AI Competitive Edge</div>
+    <h1 class="hero-title">Your buyers are asking AI.<br><em>Is your brand the answer?</em></h1>
+    <p class="hero-sub">RootACE simulates how real buyers discover your category across ChatGPT, Perplexity, Gemini, and four more platforms — then scores your visibility, maps the competitive landscape, and tells you exactly what to fix.</p>
+    <div class="hero-actions">
+      <a href="/order.html" class="btn-primary">Run your audit — $299</a>
+      <a href="#how-it-works" class="btn-ghost">See how it works ↓</a>
+    </div>
+    <div class="hero-note">Results delivered in your browser in under 15 minutes. No calls, no waiting.</div>
+  </div>
+  <div class="hero-visual">
+    <div class="hv-label">AI Visibility Score</div>
+    <div class="hv-score">18<span style="font-size:36px;opacity:0.4">%</span></div>
+    <div class="hv-score-label">Weighted visibility across 7 platforms</div>
+    <div class="hv-bar-track"><div class="hv-bar-fill"></div></div>
+    <div class="hv-platforms">
+      <div class="hv-platform"><span class="hv-platform-name">ChatGPT</span><span class="hv-badge none">Not mentioned</span></div>
+      <div class="hv-platform"><span class="hv-platform-name">Perplexity</span><span class="hv-badge low">Low visibility</span></div>
+      <div class="hv-platform"><span class="hv-platform-name">Google Gemini</span><span class="hv-badge none">Not mentioned</span></div>
+      <div class="hv-platform"><span class="hv-platform-name">Microsoft Copilot</span><span class="hv-badge medium">Medium visibility</span></div>
+      <div class="hv-platform"><span class="hv-platform-name">Claude</span><span class="hv-badge none">Not mentioned</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item"><div class="trust-dot"></div>7 AI platforms tested</div>
+    <div class="trust-item"><div class="trust-dot"></div>Synthetic buyer simulations</div>
+    <div class="trust-item"><div class="trust-dot"></div>Results in under 15 minutes</div>
+    <div class="trust-item"><div class="trust-dot"></div>Powered by RootPartners</div>
+    <div class="trust-item"><div class="trust-dot"></div>No subscription required</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" id="how-it-works">
+  <div class="section-eyebrow">How it works</div>
+  <div class="section-title">From checkout to clarity in three steps.</div>
+  <div class="section-sub">No setup. No integrations. Just your company details and a payment — we handle the rest.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">Step 01</div>
+      <div class="step-title">Tell us about your company</div>
+      <div class="step-desc">Enter your company name, website, industry, target buyer, and key competitors. Our AI pre-fills most of it for you based on your URL — takes about two minutes.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 02</div>
+      <div class="step-title">We simulate your buyers</div>
+      <div class="step-desc">RootACE generates synthetic buyer personas and runs 8 real-world search queries across ChatGPT, Perplexity, Google Gemini, Claude, Microsoft Copilot, Meta AI, and Grok.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 03</div>
+      <div class="step-title">Get your report</div>
+      <div class="step-desc">Your AI Visibility Score, full competitive matrix, platform-by-platform breakdown, prioritized recommendations, and a 90-day action roadmap — all in one report.</div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT YOU GET -->
+<div style="background:var(--bg-2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:96px 48px;">
+  <div style="max-width:1080px;margin:0 auto;">
+    <div class="section-eyebrow">What's included</div>
+    <div class="section-title">Everything you need to compete in AI search.</div>
+    <div class="deliverables">
+      <div class="deliverable">
+        <div class="del-icon">📊</div>
+        <div class="del-title">AI Visibility Score</div>
+        <div class="del-desc">A single weighted score (0-100%) measuring how prominently your brand appears across all platforms and query types. Benchmarked against your competitors.</div>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">🎯</div>
+        <div class="del-title">Synthetic Buyer Simulations</div>
+        <div class="del-desc">Three realistic buyer personas, each running queries they'd actually type into AI tools. Blind simulations — no brand bias in the model's responses.</div>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">🏆</div>
+        <div class="del-title">Competitive Intelligence</div>
+        <div class="del-desc">See exactly which competitors AI recommends instead of you, how often, and why. Includes structural analysis of why they win in AI results.</div>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">🗺️</div>
+        <div class="del-title">90-Day Action Roadmap</div>
+        <div class="del-desc">Prioritized recommendations across technical, content, and distribution — with effort and impact ratings. A concrete plan to improve your score.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="section-eyebrow">Pricing</div>
+    <div class="section-title">Start with a snapshot. Stay ahead with active monitoring.</div>
+    <div class="pricing-grid">
+
+      <div class="pricing-card">
+        <div class="pricing-plan">Snapshot</div>
+        <div class="pricing-price">$299 <span>one-time</span></div>
+        <div class="pricing-desc">A complete AI visibility audit for your brand — run once, results yours to keep.</div>
+        <ul class="pricing-features">
+          <li>AI Visibility Score across 7 platforms</li>
+          <li>3 synthetic buyer personas</li>
+          <li>8 simulated search queries</li>
+          <li>Competitive intelligence matrix</li>
+          <li>Prioritized recommendations</li>
+          <li>90-day action roadmap</li>
+          <li>Shareable results link</li>
+        </ul>
+        <a href="/order.html?plan=snapshot" class="pricing-cta outline">Get your audit</a>
+      </div>
+
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Most popular</div>
+        <div class="pricing-plan">Active Optimization</div>
+        <div class="pricing-price">$199 <span>/month</span></div>
+        <div class="pricing-desc">Monthly re-runs so you can track progress, catch regressions, and see what's working.</div>
+        <ul class="pricing-features">
+          <li>Everything in Snapshot</li>
+          <li>Fresh audit every 30 days</li>
+          <li>Score trend tracking</li>
+          <li>Competitive shift alerts</li>
+          <li>Dashboard with full history</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="/order.html?plan=active" class="pricing-cta primary">Start optimizing</a>
+      </div>
+
+      <div class="pricing-card">
+        <div class="pricing-plan">Managed by RootPartners</div>
+        <div class="pricing-price" style="font-size:32px;">Custom</div>
+        <div class="pricing-desc">Full-service AI visibility management — strategy, implementation, and ongoing optimization handled by our team.</div>
+        <ul class="pricing-features">
+          <li>Everything in Active</li>
+          <li>Dedicated RootPartners strategist</li>
+          <li>Implementation support</li>
+          <li>Monthly strategy sessions</li>
+          <li>Custom reporting</li>
+          <li>Priority access to new features</li>
+        </ul>
+        <a href="https://rootpartners.co" target="_blank" class="pricing-cta outline">Talk to us →</a>
+      </div>
+
+    </div>
+    <div class="pricing-note">All plans include a secure customer dashboard. Stripe handles payment — no card data touches our servers.</div>
+  </div>
+</div>
+
+<!-- ROOTPARTNERS -->
+<div class="rp-section">
+  <div class="rp-inner">
+    <div>
+      <div class="rp-eyebrow">Powered by RootPartners</div>
+      <div class="rp-title">Built by the firm that wrote the playbook on AI-native GTM.</div>
+      <div class="rp-body">RootACE is the proprietary audit platform behind RootPartners' AI visibility practice. The methodology, simulation framework, and scoring model are the same ones our consultants use with clients — now available as a self-serve tool.</div>
+      <a href="https://rootpartners.co" target="_blank" class="rp-cta">Learn about RootPartners →</a>
+    </div>
+    <div class="rp-features">
+      <div class="rp-feature">
+        <div class="rp-feature-title">Proprietary simulation methodology</div>
+        <div class="rp-feature-desc">Blind buyer simulations prevent brand bias in AI responses — the same technique RootPartners uses in client engagements.</div>
+      </div>
+      <div class="rp-feature">
+        <div class="rp-feature-title">GTM-first recommendations</div>
+        <div class="rp-feature-desc">Recommendations are written for revenue leaders, not developers. Every action ties to a buyer journey outcome.</div>
+      </div>
+      <div class="rp-feature">
+        <div class="rp-feature-title">Need more than a report?</div>
+        <div class="rp-feature-desc">RootPartners offers full-service AI visibility management — strategy, implementation, and ongoing optimization. <a href="https://rootpartners.co" target="_blank" style="color:rgba(255,255,255,0.7);text-decoration:underline">Talk to the team.</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Root<span>ACE</span></div>
+    <div class="footer-links">
+      <a href="/order.html">Get started</a>
+      <a href="/login-customer.html">Sign in</a>
+      <a href="https://rootpartners.co" target="_blank">RootPartners</a>
+    </div>
+    <div class="footer-copy">© 2026 RootACE. Powered by RootPartners.</div>
+  </div>
+</footer>
+
+</body>
+</html>
