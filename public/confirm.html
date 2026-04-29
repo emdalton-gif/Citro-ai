@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audit Confirmed | Root</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #FAFAF7;
+      --surface:  #FFFFFF;
+      --ink:      #1A1A18;
+      --ink-2:    #3D3D3B;
+      --mid:      #6B6B67;
+      --quiet:    #9E9E9A;
+      --faint:    rgba(26,26,24,0.05);
+      --border:   rgba(26,26,24,0.1);
+      --green:    #2563EB;
+      --green-dim:#1D4ED8;
+      --green-bg: rgba(37,99,235,0.07);
+      --green-ring: rgba(29,158,117,0.2);
+      --serif:    'DM Serif Display', Georgia, serif;
+      --sans:     'Inter', system-ui, sans-serif;
+      --mono:     'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    .confirm-nav {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+    }
+    .confirm-nav .logo {
+      font-family: var(--serif);
+      font-size: 20px;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    /* HERO CONFIRMATION */
+    .confirm-hero {
+      max-width: 640px;
+      margin: 64px auto 0;
+      padding: 0 40px;
+      text-align: center;
+    }
+
+    .check-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--green-bg);
+      border: 2px solid rgba(29,158,117,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .check-ring svg { color: var(--green); }
+
+    .confirm-title {
+      font-family: var(--serif);
+      font-size: 36px;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      animation: fadeUp 0.4s 0.1s ease both;
+    }
+    .confirm-sub {
+      font-size: 16px;
+      color: var(--mid);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      animation: fadeUp 0.4s 0.2s ease both;
+    }
+    .confirm-sub strong { color: var(--ink-2); font-weight: 500; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* TIMELINE */
+    .timeline {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 40px;
+      animation: fadeUp 0.4s 0.3s ease both;
+    }
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+    }
+    .timeline-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+      margin-bottom: 20px;
+    }
+    .tl-item {
+      display: flex;
+      gap: 16px;
+      position: relative;
+      padding-bottom: 20px;
+    }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-item:last-child .tl-line { display: none; }
+    .tl-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .tl-dot {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--green-bg);
+      border: 1.5px solid rgba(29,158,117,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .tl-dot svg { color: var(--green); }
+    .tl-dot.completed {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .tl-dot.completed svg { color: #fff; }
+    .tl-line {
+      flex: 1;
+      width: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+    .tl-content { padding-top: 4px; }
+    .tl-label {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+    .tl-desc {
+      font-size: 13px;
+      color: var(--mid);
+      line-height: 1.5;
+    }
+    .tl-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-top: 4px;
+    }
+    .tl-tag.done { background: var(--green-bg); color: var(--green); }
+    .tl-tag.in-progress { background: rgba(255,165,0,0.1); color: #C07000; }
+    .tl-tag.upcoming { background: var(--faint); color: var(--quiet); }
+
+    /* UPSELL */
+    .upsell-section {
+      max-width: 640px;
+      margin: 0 auto 64px;
+      padding: 0 40px;
+      animation: fadeUp 0.4s 0.4s ease both;
+    }
+    .upsell-card {
+      background: var(--surface);
+      border: 1.5px solid var(--green);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .upsell-header {
+      background: var(--green-bg);
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(29,158,117,0.15);
+    }
+    .upsell-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+    .upsell-price-tag {
+      font-family: var(--serif);
+      font-size: 18px;
+      color: var(--ink);
+    }
+    .upsell-price-tag span {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--mid);
+    }
+    .upsell-body { padding: 24px 28px; }
+    .upsell-title {
+      font-family: var(--serif);
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .upsell-copy {
+      font-size: 14px;
+      color: var(--mid);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .upsell-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .uf-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.4;
+    }
+    .uf-item svg { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+    .upsell-cta {
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .upsell-cta:hover { background: var(--green-dim); }
+    .upsell-dismiss {
+      text-align: center;
+      padding-top: 12px;
+      font-size: 12px;
+      color: var(--quiet);
+    }
+    .upsell-dismiss a {
+      color: var(--quiet);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    /* WHAT'S NEXT */
+    .whats-next {
+      max-width: 640px;
+      margin: 0 auto 80px;
+      padding: 0 40px;
+    }
+    .next-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+      margin-bottom: 16px;
+    }
+    .next-items {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .next-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      text-decoration: none;
+      color: var(--ink);
+      transition: border-color 0.15s;
+    }
+    .next-item:hover { border-color: var(--green); }
+    .next-item svg { color: var(--mid); margin-bottom: 10px; display: block; }
+    .next-item strong { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .next-item span { font-size: 12px; color: var(--mid); line-height: 1.4; }
+
+    /* MOBILE */
+    @media (max-width: 600px) {
+      .confirm-nav { padding: 0 20px; }
+      .confirm-hero, .timeline, .upsell-section, .whats-next {
+        padding: 0 20px;
+      }
+      .confirm-hero { margin-top: 40px; }
+      .confirm-title { font-size: 28px; }
+      .upsell-features { grid-template-columns: 1fr; }
+      .next-items { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="confirm-nav">
+    <a href="/" class="logo">Root</a>
+  </nav>
+
+  <!-- CONFIRMATION HERO -->
+  <div class="confirm-hero">
+    <div class="check-ring">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h1 class="confirm-title">Your report is on its way.</h1>
+    <p class="confirm-sub">
+      Payment confirmed. We've started building your buyer personas and generating your query set.<br>
+      Your Competitive AI Audit will arrive at <strong id="confirm-email">your inbox</strong> within 5–7 business days.
+    </p>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <div class="timeline-card">
+      <div class="timeline-title">What happens next</div>
+
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-dot completed">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-label">Order received</div>
+          <div class="tl-desc">Your business details are confirmed and your report is queued.</div>
+          <span class="tl-tag done">Complete</span>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-dot">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+            </svg>
+          </div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-label">Buyer personas constructed</div>
+          <div class="tl-desc">We build 3–4 realistic buyer personas for your industry, each with distinct search intent and query language.</div>
+          <span class="tl-tag in-progress">In progress</span>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-dot">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-label">Blind simulations run</div>
+          <div class="tl-desc">Your buyer queries run across ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok, with no prior knowledge of the results.</div>
+          <span class="tl-tag upcoming">Upcoming</span>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-dot">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-label">Report generated</div>
+          <div class="tl-desc">Your visibility score, competitive matrix, and priority recommendations are compiled into your report PDF.</div>
+          <span class="tl-tag upcoming">Upcoming</span>
+        </div>
+      </div>
+
+      <div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-dot">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+        </div>
+        <div class="tl-content">
+          <div class="tl-label">Delivered to your inbox</div>
+          <div class="tl-desc">Your report arrives as a PDF within 5–7 business days, with a brief summary of the most important findings.</div>
+          <span class="tl-tag upcoming">5–7 business days</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- UPSELL: ACTIVE OPTIMIZATION (shown only for snapshot buyers) -->
+  <div class="upsell-section" id="upsell-block">
+    <div class="upsell-card">
+      <div class="upsell-header">
+        <div class="upsell-label">Upgrade available</div>
+        <div class="upsell-price-tag">$199 <span>/ month</span></div>
+      </div>
+      <div class="upsell-body">
+        <h2 class="upsell-title">Know if it's working. Every month.</h2>
+        <p class="upsell-copy">
+          Your Snapshot Audit shows where you stand today. Active Optimization runs your simulation monthly, automatically flags what changed, and generates new recommendations based on your score movement. So you know whether your improvements are actually working.
+        </p>
+        <div class="upsell-features">
+          <div class="uf-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Monthly re-simulation across all 7 platforms
+          </div>
+          <div class="uf-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Automated improvement suggestions
+          </div>
+          <div class="uf-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Updated competitive matrix each cycle
+          </div>
+          <div class="uf-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Score trend tracking over time
+          </div>
+          <div class="uf-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Cancel anytime, no lock-in
+          </div>
+          <div class="uf-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            First month credit for Snapshot buyers
+          </div>
+        </div>
+        <button class="upsell-cta" onclick="upgradeToActive()">
+          Add Active Optimization ($199/month)
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div class="upsell-dismiss">
+          <a onclick="dismissUpsell()">No thanks, I'll wait for my Snapshot first</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT'S NEXT RESOURCES -->
+  <div class="whats-next" id="whats-next">
+    <div class="next-title">In the meantime</div>
+    <div class="next-items">
+      <a href="/report.html" class="next-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <strong>Share this with your team</strong>
+        <span>Send the report page to colleagues or your marketing agency.</span>
+      </a>
+      <a href="https://rootpartners.co" class="next-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+        </svg>
+        <strong>Learn about Active Optimization</strong>
+        <span>Understand how the monthly monitoring tier works once your score is in.</span>
+      </a>
+      <a href="mailto:eric@rootpartners.co" class="next-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+        </svg>
+        <strong>Questions?</strong>
+        <span>Email eric@rootpartners.co and we'll reply within one business day.</span>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Pull order data from session storage
+    (function() {
+      try {
+        const data = JSON.parse(sessionStorage.getItem('root_order') || '{}');
+        if (data.email) {
+          document.getElementById('confirm-email').textContent = data.email;
+        }
+        // Hide upsell if they already bought Active Optimization
+        if (data.plan === 'active') {
+          const block = document.getElementById('upsell-block');
+          if (block) block.style.display = 'none';
+        }
+      } catch(e) {}
+    })();
+
+    function upgradeToActive() {
+      // In production: redirect to Stripe subscription checkout
+      // window.location.href = 'https://buy.stripe.com/YOUR_ACTIVE_LINK';
+      alert('Active Optimization upgrade: wire to Stripe subscription checkout URL.');
+    }
+
+    function dismissUpsell() {
+      const block = document.getElementById('upsell-block');
+      if (block) {
+        block.style.opacity = '0';
+        block.style.transition = 'opacity 0.2s';
+        setTimeout(() => block.style.display = 'none', 200);
+      }
+    }
+  </script>
+
+</body>
+</html>
