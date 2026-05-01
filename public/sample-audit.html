@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sample Audit Report | RootACE</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,400;1,600&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F5F0E8; --surface: #FAF7F2; --surface-2: #EDE8DE;
+      --ink: #2C2318; --ink-2: #3D3228; --mid: #6B5D4F; --quiet: #9E8E7E;
+      --border: rgba(44,35,24,0.12);
+      --terra: #8B4A2A; --terra-bg: rgba(139,74,42,0.08);
+      --gold: #C4A882; --gold-deep: #A88960;
+      --sage: #6B7F5E; --sage-bg: rgba(107,127,94,0.1);
+      --red: #B94040; --red-bg: rgba(185,64,64,0.08);
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'Inter', system-ui, sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    /* NAV */
+    nav { background: rgba(245,240,232,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { text-decoration: none; display: flex; align-items: baseline; }
+    .nav-logo-root { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); }
+    .nav-logo-ace  { font-family: var(--serif); font-size: 22px; font-weight: 400; font-style: italic; color: var(--terra); }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-cta { background: var(--terra); color: #FAF7F2; padding: 9px 20px; border-radius: 100px; font-size: 13px; font-weight: 500; text-decoration: none; }
+    .nav-cta:hover { background: #723D22; }
+
+    /* SAMPLE BANNER */
+    .sample-banner { background: var(--ink); color: rgba(245,240,232,0.85); text-align: center; padding: 11px 24px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .sample-banner strong { color: var(--gold); }
+
+    /* REPORT HEADER */
+    .report-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 52px 48px 44px; }
+    .report-header-inner { max-width: 960px; margin: 0 auto; }
+    .report-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terra); margin-bottom: 12px; }
+    .report-company { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .report-meta { font-size: 14px; color: var(--mid); margin-bottom: 36px; }
+    .report-meta span { margin-right: 24px; }
+
+    /* SCORE STRIP */
+    .score-strip { display: grid; grid-template-columns: auto 1fr auto; gap: 40px; align-items: center; background: var(--ink); border-radius: 20px; padding: 32px 36px; position: relative; overflow: hidden; }
+    .score-strip::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top right, rgba(139,74,42,0.25) 0%, transparent 60%); pointer-events: none; }
+    .score-num-wrap { text-align: center; }
+    .score-num { font-family: var(--serif); font-size: 72px; font-weight: 700; line-height: 1; color: var(--terra); }
+    .score-pct { font-family: var(--serif); font-size: 32px; color: rgba(245,240,232,0.4); }
+    .score-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-top: 6px; }
+    .score-gauge { position: relative; }
+    .gauge-track { height: 6px; background: rgba(245,240,232,0.08); border-radius: 3px; margin-bottom: 12px; }
+    .gauge-fill { height: 6px; border-radius: 3px; background: var(--terra); width: 23%; }
+    .gauge-markers { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: rgba(245,240,232,0.25); }
+    .score-verdict { text-align: right; }
+    .verdict-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 8px; }
+    .verdict-text { font-family: var(--serif); font-size: 20px; font-style: italic; color: #E8A07A; line-height: 1.3; }
+
+    /* SECTION WRAPPER */
+    .section-wrap { max-width: 960px; margin: 0 auto; padding: 0 48px; }
+    .section-block { padding: 56px 0; border-bottom: 1px solid var(--border); }
+    .section-block:last-child { border-bottom: none; }
+    .section-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terra); margin-bottom: 14px; }
+    .section-title { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    .section-sub { font-size: 15px; color: var(--mid); line-height: 1.7; max-width: 600px; }
+
+    /* PERSONA CARDS */
+    .persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+    .persona-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; }
+    .persona-initials { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--mid); margin-bottom: 16px; }
+    .persona-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+    .persona-role { font-size: 12px; color: var(--mid); margin-bottom: 16px; line-height: 1.5; }
+    .persona-queries { border-top: 1px solid var(--border); padding-top: 16px; }
+    .persona-query-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--quiet); margin-bottom: 10px; }
+    .persona-query { font-size: 12px; color: var(--mid); line-height: 1.6; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .persona-query:last-child { border-bottom: none; padding-bottom: 0; }
+    .persona-query em { font-style: italic; color: var(--ink-2); }
+    .persona-result { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .persona-result-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--quiet); }
+    .persona-badge { font-family: var(--mono); font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+    .badge-none { background: var(--red-bg); color: var(--red); }
+    .badge-low  { background: var(--terra-bg); color: var(--terra); }
+    .badge-med  { background: rgba(196,168,130,0.15); color: var(--gold-deep); }
+    .badge-high { background: var(--sage-bg); color: var(--sage); }
+
+    /* PLATFORM TABLE */
+    .platform-table { width: 100%; border-collapse: collapse; margin-top: 32px; }
+    .platform-table th { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--quiet); padding: 0 16px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    .platform-table th:not(:first-child) { text-align: center; }
+    .platform-table td { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+    .platform-table tr:last-child td { border-bottom: none; }
+    .platform-table td:not(:first-child) { text-align: center; }
+    .platform-name { font-weight: 500; color: var(--ink); }
+    .platform-queries { font-size: 12px; color: var(--quiet); }
+    .pill { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .pill-none { background: var(--red-bg); color: var(--red); }
+    .pill-low  { background: var(--terra-bg); color: var(--terra); }
+    .pill-med  { background: rgba(196,168,130,0.15); color: var(--gold-deep); }
+    .pill-high { background: var(--sage-bg); color: var(--sage); }
+    .comp-mentions { font-size: 12px; color: var(--mid); }
+    .comp-top { font-weight: 500; color: var(--ink-2); }
+
+    /* COMPETITIVE MATRIX */
+    .comp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 32px; }
+    .comp-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 20px; }
+    .comp-card.client { border-color: var(--terra); background: var(--terra-bg); }
+    .comp-rank { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--quiet); margin-bottom: 10px; }
+    .comp-card.client .comp-rank { color: var(--terra); }
+    .comp-name { font-weight: 600; font-size: 15px; margin-bottom: 12px; }
+    .comp-score-num { font-family: var(--serif); font-size: 36px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .comp-score-num.low { color: var(--red); }
+    .comp-score-num.mid { color: var(--gold-deep); }
+    .comp-score-num.high { color: var(--sage); }
+    .comp-score-label { font-size: 11px; color: var(--quiet); }
+    .comp-bar-track { height: 3px; background: var(--border); border-radius: 2px; margin-top: 14px; }
+    .comp-bar-fill { height: 3px; border-radius: 2px; }
+    .fill-low { background: var(--red); }
+    .fill-mid { background: var(--gold-deep); }
+    .fill-high { background: var(--sage); }
+
+    /* FINDINGS */
+    .findings-list { display: flex; flex-direction: column; gap: 16px; margin-top: 32px; }
+    .finding-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; display: grid; grid-template-columns: 40px 1fr; gap: 20px; align-items: start; }
+    .finding-num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; color: var(--terra); padding-top: 2px; }
+    .finding-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+    .finding-desc { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+    /* ROADMAP */
+    .roadmap-phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 32px; }
+    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; }
+    .phase-period { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-deep); margin-bottom: 14px; }
+    .phase-title { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 20px; }
+    .phase-items { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .phase-items li { font-size: 13px; color: var(--mid); line-height: 1.6; display: flex; gap: 10px; }
+    .phase-items li::before { content: '→'; color: var(--terra); flex-shrink: 0; font-size: 12px; margin-top: 2px; }
+    .phase-impact { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--quiet); }
+    .phase-impact strong { color: var(--sage); }
+
+    /* CTA SECTION */
+    .cta-section { background: var(--ink); padding: 80px 48px; text-align: center; position: relative; overflow: hidden; }
+    .cta-section::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(139,74,42,0.2) 0%, transparent 65%); pointer-events: none; }
+    .cta-inner { max-width: 600px; margin: 0 auto; position: relative; z-index: 1; }
+    .cta-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 20px; }
+    .cta-title { font-family: var(--serif); font-size: 40px; font-weight: 700; color: #FAF7F2; line-height: 1.15; margin-bottom: 18px; }
+    .cta-title em { font-style: italic; color: #E8A07A; }
+    .cta-sub { font-size: 16px; color: rgba(245,240,232,0.55); line-height: 1.75; margin-bottom: 40px; }
+    .cta-btn { display: inline-block; background: var(--terra); color: #FAF7F2; padding: 16px 36px; border-radius: 100px; font-size: 16px; font-weight: 500; text-decoration: none; transition: background 0.2s; letter-spacing: 0.01em; }
+    .cta-btn:hover { background: #723D22; }
+    .cta-note { font-size: 13px; color: rgba(245,240,232,0.3); margin-top: 18px; letter-spacing: 0.01em; }
+
+    @media (max-width: 860px) {
+      nav { padding: 0 20px; }
+      .report-header { padding: 36px 20px 32px; }
+      .section-wrap { padding: 0 20px; }
+      .score-strip { grid-template-columns: 1fr; gap: 24px; }
+      .score-verdict { text-align: left; }
+      .persona-grid { grid-template-columns: 1fr; }
+      .comp-grid { grid-template-columns: repeat(2, 1fr); }
+      .roadmap-phases { grid-template-columns: 1fr; }
+      .cta-section { padding: 56px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="/"><span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span></a>
+  <div class="nav-right">
+    <a href="/order.html" class="nav-cta">Run your audit — $299</a>
+  </div>
+</nav>
+
+<!-- SAMPLE BANNER -->
+<div class="sample-banner">
+  <strong>Sample Report</strong> &nbsp;·&nbsp; This is an illustrative example of a RootACE Competitive AI Audit. Company details are fictional.
+</div>
+
+<!-- REPORT HEADER -->
+<div class="report-header">
+  <div class="report-header-inner">
+    <div class="report-eyebrow">Competitive AI Audit</div>
+    <div class="report-company">Clearpath Software</div>
+    <div class="report-meta">
+      <span>B2B Project Management</span>
+      <span>Audited May 2026</span>
+      <span>7 platforms · 3 buyer personas · 24 queries</span>
+    </div>
+    <div class="score-strip">
+      <div class="score-num-wrap">
+        <div><span class="score-num">23</span><span class="score-pct">%</span></div>
+        <div class="score-label">AI Visibility Score</div>
+      </div>
+      <div class="score-gauge">
+        <div class="gauge-track"><div class="gauge-fill"></div></div>
+        <div class="gauge-markers"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+      </div>
+      <div class="score-verdict">
+        <div class="verdict-label">Diagnosis</div>
+        <div class="verdict-text">Largely invisible<br>to AI buyers</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT BODY -->
+<div style="background:var(--bg);padding-bottom:0;">
+<div class="section-wrap">
+
+  <!-- SYNTHETIC PERSONAS -->
+  <div class="section-block">
+    <div class="section-eyebrow">Synthetic Buyer Personas</div>
+    <div class="section-title">Who we simulated — and what they found</div>
+    <div class="section-sub">Three distinct buyer personas were constructed to reflect Clearpath's real target market. Each ran 8 queries across all platforms without any brand signaling — simulating independent buyer research.</div>
+    <div class="persona-grid">
+
+      <div class="persona-card">
+        <div class="persona-initials">SC</div>
+        <div class="persona-name">Sarah Chen</div>
+        <div class="persona-role">VP Operations · 600-person manufacturing company · Evaluating PM tools to replace spreadsheets</div>
+        <div class="persona-queries">
+          <div class="persona-query-label">Sample queries run</div>
+          <div class="persona-query"><em>"Best project management software for operations teams in manufacturing"</em></div>
+          <div class="persona-query"><em>"How do Asana and Monday.com compare for cross-functional teams?"</em></div>
+          <div class="persona-query"><em>"What do operations leaders use to manage projects across departments?"</em></div>
+        </div>
+        <div class="persona-result">
+          <div class="persona-result-label">Clearpath mentioned</div>
+          <span class="persona-badge badge-none">0 of 8 queries</span>
+        </div>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-initials">MW</div>
+        <div class="persona-name">Marcus Webb</div>
+        <div class="persona-role">Digital Transformation Lead · Professional services firm · Standardizing project delivery methodology</div>
+        <div class="persona-queries">
+          <div class="persona-query-label">Sample queries run</div>
+          <div class="persona-query"><em>"Project management tools with strong reporting for client delivery teams"</em></div>
+          <div class="persona-query"><em>"Which PM platforms integrate with Salesforce and Slack?"</em></div>
+          <div class="persona-query"><em>"What's the best alternative to ClickUp for professional services?"</em></div>
+        </div>
+        <div class="persona-result">
+          <div class="persona-result-label">Clearpath mentioned</div>
+          <span class="persona-badge badge-none">0 of 8 queries</span>
+        </div>
+      </div>
+
+      <div class="persona-card">
+        <div class="persona-initials">JP</div>
+        <div class="persona-name">Jennifer Park</div>
+        <div class="persona-role">IT Director · Mid-size healthcare company · Needs compliance-aware project tracking</div>
+        <div class="persona-queries">
+          <div class="persona-query-label">Sample queries run</div>
+          <div class="persona-query"><em>"HIPAA-compliant project management software for healthcare IT"</em></div>
+          <div class="persona-query"><em>"Project management tools with audit trails and role-based access"</em></div>
+          <div class="persona-query"><em>"Best PM software for regulated industries"</em></div>
+        </div>
+        <div class="persona-result">
+          <div class="persona-result-label">Clearpath mentioned</div>
+          <span class="persona-badge badge-low">1 of 8 queries</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PLATFORM BREAKDOWN -->
+  <div class="section-block">
+    <div class="section-eyebrow">Platform Breakdown</div>
+    <div class="section-title">How each AI platform sees you</div>
+    <div class="section-sub">Clearpath's visibility varied significantly by platform — but the pattern was consistent: competitors dominated, and Clearpath was largely absent from unprompted recommendations.</div>
+    <table class="platform-table">
+      <thead>
+        <tr>
+          <th>Platform</th>
+          <th>Clearpath visibility</th>
+          <th>Top competitor cited</th>
+          <th>Competitor mentions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="platform-name">ChatGPT</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-none">Not mentioned</span></td>
+          <td class="comp-top">Asana</td>
+          <td class="comp-mentions">6 of 8 queries</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="platform-name">Perplexity AI</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-none">Not mentioned</span></td>
+          <td class="comp-top">Monday.com</td>
+          <td class="comp-mentions">7 of 8 queries</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="platform-name">Google Gemini</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-low">Low — 1 mention</span></td>
+          <td class="comp-top">Asana</td>
+          <td class="comp-mentions">5 of 8 queries</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="platform-name">Microsoft Copilot</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-none">Not mentioned</span></td>
+          <td class="comp-top">ClickUp</td>
+          <td class="comp-mentions">5 of 8 queries</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="platform-name">Claude (Anthropic)</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-low">Low — 2 mentions</span></td>
+          <td class="comp-top">Asana</td>
+          <td class="comp-mentions">6 of 8 queries</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="platform-name">Meta AI</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-none">Not mentioned</span></td>
+          <td class="comp-top">Monday.com</td>
+          <td class="comp-mentions">4 of 8 queries</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="platform-name">Grok (xAI)</div>
+            <div class="platform-queries">8 queries run</div>
+          </td>
+          <td><span class="pill pill-none">Not mentioned</span></td>
+          <td class="comp-top">ClickUp</td>
+          <td class="comp-mentions">5 of 8 queries</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMPETITIVE MATRIX -->
+  <div class="section-block">
+    <div class="section-eyebrow">Competitive Matrix</div>
+    <div class="section-title">Where you stand against the field</div>
+    <div class="section-sub">AI Visibility Score across all platforms and personas, weighted by query intent and platform reach.</div>
+    <div class="comp-grid">
+      <div class="comp-card client">
+        <div class="comp-rank">Your company</div>
+        <div class="comp-name">Clearpath Software</div>
+        <div class="comp-score-num low">23%</div>
+        <div class="comp-score-label">AI Visibility Score</div>
+        <div class="comp-bar-track"><div class="comp-bar-fill fill-low" style="width:23%"></div></div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-rank">Competitor #1</div>
+        <div class="comp-name">Asana</div>
+        <div class="comp-score-num high">81%</div>
+        <div class="comp-score-label">AI Visibility Score</div>
+        <div class="comp-bar-track"><div class="comp-bar-fill fill-high" style="width:81%"></div></div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-rank">Competitor #2</div>
+        <div class="comp-name">Monday.com</div>
+        <div class="comp-score-num high">76%</div>
+        <div class="comp-score-label">AI Visibility Score</div>
+        <div class="comp-bar-track"><div class="comp-bar-fill fill-high" style="width:76%"></div></div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-rank">Competitor #3</div>
+        <div class="comp-name">ClickUp</div>
+        <div class="comp-score-num mid">61%</div>
+        <div class="comp-score-label">AI Visibility Score</div>
+        <div class="comp-bar-track"><div class="comp-bar-fill fill-mid" style="width:61%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOT CAUSE FINDINGS -->
+  <div class="section-block">
+    <div class="section-eyebrow">Root Cause Analysis</div>
+    <div class="section-title">Why AI isn't recommending you</div>
+    <div class="section-sub">AI models don't rank websites — they synthesize responses from what they know. These are the structural reasons Clearpath is absent from that synthesis.</div>
+    <div class="findings-list">
+      <div class="finding-item">
+        <div class="finding-num">01</div>
+        <div>
+          <div class="finding-title">No AI-retrievable comparison content exists</div>
+          <div class="finding-desc">Asana and Monday.com both publish extensive "Asana vs." and "Monday.com vs." comparison pages optimized for the exact queries buyers ask AI. Clearpath has no equivalent content. When AI models look for comparison data to synthesize recommendations, Clearpath simply isn't in their knowledge base for competitive queries.</div>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-num">02</div>
+        <div>
+          <div class="finding-title">Category-defining language belongs to competitors</div>
+          <div class="finding-desc">AI models associate "work management platform," "team collaboration," and "project tracking" with Asana and Monday.com — not because they are objectively better, but because those companies have systematically claimed those phrases across their content, third-party reviews, and publisher coverage. Clearpath's content uses product-centric language that AI models don't surface in category-level queries.</div>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-num">03</div>
+        <div>
+          <div class="finding-title">Thin third-party citation footprint</div>
+          <div class="finding-desc">AI platforms with real-time web access (Perplexity, Gemini) rely heavily on third-party review sites, analyst mentions, and publisher citations as trust signals. Clearpath has limited coverage on G2, Capterra, and relevant industry publications compared to competitors. This absence directly suppresses unprompted recommendations across retrieval-augmented platforms.</div>
+        </div>
+      </div>
+      <div class="finding-item">
+        <div class="finding-num">04</div>
+        <div>
+          <div class="finding-title">Use-case specificity gap in compliance and regulated industries</div>
+          <div class="finding-desc">The one query set where Clearpath appeared (healthcare IT compliance) had almost no competitor response — suggesting an underserved niche where Clearpath could build dominant AI visibility quickly. However, the company's current content does not systematically address this use case, so the opportunity is not being captured at scale.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 90-DAY ROADMAP -->
+  <div class="section-block">
+    <div class="section-eyebrow">90-Day Action Roadmap</div>
+    <div class="section-title">Your path to AI visibility</div>
+    <div class="section-sub">Prioritized by estimated impact and effort. Quick wins are achievable without engineering resources. Structural improvements require content and SEO investment but produce compounding returns.</div>
+    <div class="roadmap-phases">
+      <div class="roadmap-phase">
+        <div class="phase-period">Days 1–30</div>
+        <div class="phase-title">Quick wins</div>
+        <ul class="phase-items">
+          <li>Publish 4 "Clearpath vs. [Competitor]" comparison pages targeting the exact query structures our personas used</li>
+          <li>Add structured FAQ schema to product pages answering the top 8 buyer questions identified in this audit</li>
+          <li>Claim and fully populate Clearpath's G2 and Capterra profiles — they are the first stop for AI retrieval on recommendation queries</li>
+          <li>Publish a healthcare/compliance use-case page to capture the underserved niche identified in Finding #4</li>
+        </ul>
+        <div class="phase-impact">Estimated impact: <strong>+12–18 visibility points</strong></div>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-period">Days 31–60</div>
+        <div class="phase-title">Structural improvements</div>
+        <ul class="phase-items">
+          <li>Rewrite the homepage and product pages to claim category-defining language AI associates with this space ("work management," "cross-functional project tracking")</li>
+          <li>Build a content cluster of 6–8 articles targeting the consideration-stage query patterns from each buyer persona</li>
+          <li>Pitch 3 relevant industry publications for coverage and product reviews — citations are the fastest way to appear in retrieval-augmented platforms</li>
+          <li>Implement JSON-LD structured data across all product and comparison pages</li>
+        </ul>
+        <div class="phase-impact">Estimated impact: <strong>+15–22 additional points</strong></div>
+      </div>
+      <div class="roadmap-phase">
+        <div class="phase-period">Days 61–90</div>
+        <div class="phase-title">Authority building</div>
+        <ul class="phase-items">
+          <li>Launch a benchmark report or dataset in the project management space — original research is the highest-leverage citation asset for AI retrieval</li>
+          <li>Develop co-marketing content with 2–3 integration partners (Salesforce, Slack, Zapier) to appear in integration-focused buyer queries</li>
+          <li>Re-run the RootACE audit to measure score movement and recalibrate roadmap priorities based on what shifted</li>
+        </ul>
+        <div class="phase-impact">Estimated impact: <strong>+10–15 additional points</strong></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end section-wrap -->
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-eyebrow">Get your audit</div>
+    <div class="cta-title">See what AI is saying<br>about <em>your</em> brand.</div>
+    <div class="cta-sub">Your buyers are already asking AI for recommendations. Find out exactly where you stand — and get a concrete plan to improve it.</div>
+    <a href="/order.html" class="cta-btn">Run your audit — $299</a>
+    <div class="cta-note">Results in under 15 minutes. No calls, no waiting.</div>
+  </div>
+</div>
+
+</body>
+</html>
