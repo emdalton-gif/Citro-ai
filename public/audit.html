@@ -6,13 +6,13 @@
   <title>Your Competitive AI Audit | RootACE</title>
   <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #FAFAF7;
-      --surface: #FFFFFF;
+      --bg:      #F5F0E8;
+      --surface: #FAF7F2;
       --ink:     #1A1A18;
       --ink-2:   #3D3D3B;
       --mid:     #6B6B67;
@@ -24,7 +24,7 @@
       --green-bg:rgba(29,158,117,0.08);
       --warn:    #854F0B;
       --warn-bg: #FAEEDA;
-      --serif:   'DM Serif Display', Georgia, serif;
+      --serif:   'Playfair Display', Georgia, serif;
       --sans:    'Inter', system-ui, sans-serif;
       --mono:    'DM Mono', monospace;
     }
@@ -35,7 +35,7 @@
     /* NAV */
     nav { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; }
     .nav-logo { font-family: var(--serif); font-size: 22px; font-style: italic; text-decoration: none; color: var(--ink); }
-    .nav-logo em { font-style: normal; color: var(--green); }
+    .nav-logo em { font-style: normal; color: #8B4A2A; }
 
     /* LAYOUT */
     .wrap { max-width: 860px; margin: 0 auto; padding: 0 32px; }
@@ -252,7 +252,7 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-logo"><em>Root</em> Partners</a>
+  <a href="/" class="nav-logo" style="display:flex;align-items:baseline;text-decoration:none;"><span style="font-family:var(--serif);font-weight:700;font-style:normal;color:var(--ink)">Root</span><span style="font-family:var(--serif);font-weight:400;font-style:italic;color:#8B4A2A">ACE</span></a>
 </nav>
 
 <!-- LOADING -->
@@ -266,7 +266,11 @@
 <div id="screen-error">
   <div class="error-icon">⚠️</div>
   <div class="error-title">Something went wrong</div>
-  <div class="error-msg" id="error-msg">We couldn't verify your purchase. Please contact us at hello@rootace.ai and we'll get you sorted.</div>
+  <div class="error-msg" id="error-msg">We couldn't verify your purchase. Please contact us and we'll get you sorted.</div>
+  <div style="margin-top:28px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap;">
+    <a href="/order.html" style="display:inline-block;background:var(--ink);color:var(--bg);padding:12px 24px;border-radius:100px;font-size:14px;font-weight:500;text-decoration:none;">Start a new audit</a>
+    <a href="mailto:support@rootpartners.co" style="font-size:14px;color:var(--mid);text-decoration:underline;text-underline-offset:3px;">Contact support →</a>
+  </div>
 </div>
 
 <!-- RUN -->
@@ -588,7 +592,7 @@
     const gapCtx = gapQueries.length ? gapQueries.map(x => `[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
 
     const raw = await callClaude([{ role: 'user', content: `Write a professional AI visibility audit report for ${c.company_name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Target buyers: ${buyerCtx}\n- Competitors: ${c.competitors||'not specified'}\n- ${visCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- Query results:\n${queries}\n- Gaps (no or low visibility):\n${gapCtx}\n\nReturn ONLY raw JSON (no markdown, no code fences):\n{\n  "executive_summary": "3-4 sentences summarizing the overall finding and business implication",\n  "key_finding": "Single most important finding in one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1-2 sentences naming specific gaps to close and the projected improvement"},\n  "technical_recommendations": "2-3 sentences covering structured data, schema types, llms.txt, knowledge graph, review platform gaps",\n  "content_gaps": "2-3 sentences identifying specific content types and topics missing",\n  "competitive_analysis": "2-3 sentences summarizing the competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "2-3 sentences explaining exactly why this competitor wins in AI results — be specific about structural advantages"}],\n  "recommendations": [{"action": "specific action","impact": "high","effort": "low","category": "technical"},{"action": "specific action","impact": "high","effort": "medium","category": "content"},{"action": "specific action","impact": "high","effort": "medium","category": "distribution"},{"action": "specific action","impact": "medium","effort": "low","category": "technical"},{"action": "specific action","impact": "medium","effort": "medium","category": "content"}],\n  "roadmap_phases": [{"days": "Days 1-30", "theme": "Technical Foundation", "actions": ["3-5 specific actions"]},{"days": "Days 31-60", "theme": "Content and Visibility", "actions": ["3-5 specific actions"]},{"days": "Days 61-90", "theme": "Distribution and Measurement", "actions": ["3-5 specific actions"]}]\n}` }],
-      'You are a senior GTM strategist at Root, specializing in AI-native go-to-market systems. Write in a confident, senior consultant tone. Be specific and data-driven. Technical recommendations should reference real implementation details (schema types, file names, platform names).',
+      'You are a senior GTM strategist at RootACE, specializing in AI-native go-to-market systems. Write in a confident, senior consultant tone. Be specific and data-driven. Technical recommendations should reference real implementation details (schema types, file names, platform names).',
       4000
     );
 
@@ -737,7 +741,7 @@
     }
 
     if (!sessionId) {
-      document.getElementById('error-msg').textContent = 'No purchase session found. Please complete your order at rootpartners.co/order.html.';
+      document.getElementById('error-msg').textContent = 'No purchase session found. Please complete your order at rootace.ai/order.html.';
       hide('screen-loading');
       flex('screen-error');
       return;
@@ -755,7 +759,7 @@
       AUTH_TOKEN = vData.token;
       ORDER_DATA = vData.orderData;
     } catch(e) {
-      document.getElementById('error-msg').textContent = `Could not verify your purchase: ${e.message}. Please contact hello@rootace.ai.`;
+      document.getElementById('error-msg').textContent = `Could not verify your purchase: ${e.message}. Please contact support@rootpartners.co.`;
       hide('screen-loading');
       flex('screen-error');
       return;
@@ -830,7 +834,7 @@
       }
 
     } catch(e) {
-      document.getElementById('error-msg').textContent = `An error occurred while running your audit: ${e.message}. Please contact hello@rootace.ai.`;
+      document.getElementById('error-msg').textContent = `An error occurred while running your audit: ${e.message}. Please contact support@rootpartners.co.`;
       hide('screen-run');
       flex('screen-error');
     }
