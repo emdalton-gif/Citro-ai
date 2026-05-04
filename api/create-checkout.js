@@ -78,7 +78,9 @@ module.exports = async function handler(req, res) {
       mode: isSubscription ? 'subscription' : 'payment',
       customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${origin}/audit.html?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: isSubscription
+        ? `${origin}/sub-confirm.html?session_id={CHECKOUT_SESSION_ID}`
+        : `${origin}/audit.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/order.html`,
       metadata: {
         plan: plan || 'snapshot',
