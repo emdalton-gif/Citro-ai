@@ -43,6 +43,23 @@ function verifyPurchaseToken(token) {
   }
 }
 
+// Verifies a subscriber session token (subscriber:email:exp)
+function verifySubscriberToken(token) {
+  if (!token) return null;
+  try {
+    const { p: payload, s: sig } = JSON.parse(Buffer.from(token, 'base64url').toString());
+    const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
+    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    if (!crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return null;
+    const parts = payload.split(':');
+    if (parts[0] !== 'subscriber') return null;
+    if (Date.now() > parseInt(parts[parts.length - 1], 10)) return null;
+    return parts.slice(1, -1).join(':'); // email
+  } catch {
+    return null;
+  }
+}
+
 // ── Handler ──────────────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
@@ -59,13 +76,14 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  // ── Auth gate — accepts portal login tokens OR self-serve purchase tokens ──
+  // ── Auth gate — accepts portal, purchase, OR subscriber tokens ──
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   const username = verifyToken(token);
   const purchaseSessionId = username ? null : verifyPurchaseToken(token);
+  const subscriberEmail = (username || purchaseSessionId) ? null : verifySubscriberToken(token);
 
-  if (!username && !purchaseSessionId) {
+  if (!username && !purchaseSessionId && !subscriberEmail) {
     res.status(401).json({ error: 'Unauthorized. Please log in or complete your purchase.' });
     return;
   }
