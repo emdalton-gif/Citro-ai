@@ -199,6 +199,16 @@
         <div class="mini-spinner"></div>
         <span>Researching your company…</span>
       </div>
+      <div id="companySummary" style="display:none; margin-bottom:24px;">
+        <div style="display:flex; align-items:flex-start; gap:12px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:16px;">
+          <div style="width:32px;height:32px;background:#059669;border-radius:50%;display:flex;align-items:center;justify-content:flex-start;flex-shrink:0;font-size:14px;color:#fff;align-items:center;justify-content:center;">✓</div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Company identified</div>
+            <div id="companySummaryText" style="font-size:14px;color:#0B0F1A;line-height:1.65;"></div>
+            <div style="font-size:12px;color:#64748B;margin-top:6px;">Not right? Edit the company name or website above and the profile will update.</div>
+          </div>
+        </div>
+      </div>
       <div class="error-msg" id="profileError"></div>
       <form id="profileForm">
         <div class="form-row">
@@ -404,7 +414,7 @@
           system: 'You are a B2B market researcher. Return ONLY a valid JSON object, no explanation or markdown.',
           messages: [{
             role: 'user',
-            content: `Research this company and return a JSON object with these exact keys:\n- "industry": one of: "SaaS / Software", "Professional Services", "Financial Services", "Healthcare / Life Sciences", "Manufacturing / Industrial", "E-commerce / Retail", "Marketing / Advertising", "Real Estate", "Legal", "Education", "Other"\n- "offer": 2-3 sentence description of their core value proposition\n- "geo": their primary market geography (e.g. "United States", "North America", "Global")\n- "competitors": comma-separated list of 3-5 likely direct competitors\n\nCompany name: "${companyName}"\nWebsite: "${website}"\n\nReturn only the JSON object.`
+            content: `Research this company thoroughly and return a JSON object. Be specific about their actual niche — not just the broad industry. Every field must have a non-empty value.\n\nRequired keys:\n- "industry": one of: "SaaS / Software", "Professional Services", "Financial Services", "Healthcare / Life Sciences", "Manufacturing / Industrial", "E-commerce / Retail", "Marketing / Advertising", "Real Estate", "Legal", "Education", "Other"\n- "summary": 2-3 sentences describing exactly what this company does, their specific focus area, and who their target clients are. Be specific — not generic. If they are a consulting firm, say what KIND of consulting. If they are a software company, say what the software does.\n- "geo": primary market geography. If unclear, use "United States".\n- "competitors": comma-separated list of 4-6 real, named competitors in their specific niche. Think about who a buyer would compare them against. Do not use generic placeholders.\n\nCompany name: "${companyName}"\nWebsite: "${website}"\n\nReturn only the JSON object.`
           }]
         })
       });
@@ -419,9 +429,12 @@
             if (sel.options[i].text === r.industry) { sel.selectedIndex = i; break; }
           }
         }
-        if (r.offer) document.getElementById('p-offer').value = r.offer;
         if (r.geo) document.getElementById('p-geo').value = r.geo;
         if (r.competitors) document.getElementById('p-competitors').value = r.competitors;
+        if (r.summary) {
+          document.getElementById('companySummaryText').textContent = r.summary;
+          document.getElementById('companySummary').style.display = 'block';
+        }
       }
     } catch (err) { /* non-critical — user can fill manually */ }
 
