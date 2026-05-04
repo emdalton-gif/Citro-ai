@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Set Up Your Account — RootACE</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8FAFC; --dark: #0B0F1A; --accent: #2563EB; --accent-light: #3B82F6;
+      --green: #059669; --muted: #64748B; --border: #CBD5E1;
+      --sans: 'Inter', system-ui, sans-serif; --mono: 'DM Mono', monospace;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+
+    nav {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 48px; height: 60px; background: var(--dark);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 700; color: #fff; }
+    .nav-logo-ace { font-size: 18px; font-weight: 800; color: #2563EB; }
+
+    .page-center {
+      flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px;
+    }
+    .card {
+      background: #fff; border: 1px solid #E2E8F0; border-radius: 14px;
+      padding: 48px 40px; max-width: 440px; width: 100%;
+    }
+
+    .success-icon {
+      width: 52px; height: 52px; background: #D1FAE5; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 24px;
+    }
+    .card h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
+    .card .sub { font-size: 15px; color: var(--muted); line-height: 1.65; margin-bottom: 32px; }
+
+    .email-display {
+      background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;
+      padding: 12px 16px; font-size: 14px; color: var(--dark);
+      font-weight: 600; margin-bottom: 24px;
+    }
+    .email-label { font-size: 11px; font-family: var(--mono); letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+    .form-group input {
+      width: 100%; font-family: var(--sans); font-size: 14px; color: var(--dark);
+      border: 1px solid var(--border); border-radius: 6px; padding: 11px 14px;
+      outline: none; transition: border-color 0.2s; background: var(--bg);
+    }
+    .form-group input:focus { border-color: var(--accent); background: #fff; }
+    .pw-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .pw-strength { height: 3px; background: #E2E8F0; border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .pw-strength-bar { height: 100%; width: 0; border-radius: 2px; transition: width 0.2s, background 0.2s; }
+
+    .submit-btn {
+      width: 100%; background: var(--accent); color: #fff; font-family: var(--sans);
+      font-size: 15px; font-weight: 600; padding: 13px; border-radius: 8px; border: none;
+      cursor: pointer; transition: background 0.2s; margin-top: 8px;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--accent-light); }
+    .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .error-msg {
+      background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 6px;
+      padding: 12px; font-size: 13px; color: #DC2626; margin-bottom: 16px; display: none;
+    }
+
+    /* Loading state */
+    .loading-state { text-align: center; padding: 20px 0; display: none; }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid #E2E8F0;
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span>
+  </a>
+</nav>
+
+<div class="page-center">
+  <div class="card">
+    <!-- Loading state while we verify the session -->
+    <div class="loading-state" id="loadingState" style="display:block;">
+      <div class="spinner"></div>
+      <p style="font-size:15px;color:var(--muted);">Confirming your subscription…</p>
+    </div>
+
+    <!-- Account creation form -->
+    <div id="formState" style="display:none;">
+      <div class="success-icon">✓</div>
+      <h1>Subscription confirmed.</h1>
+      <p class="sub">Your Active Optimization subscription is active. Create a password to access your dashboard and start running audits.</p>
+
+      <div class="email-label">Subscribed as</div>
+      <div class="email-display" id="emailDisplay">—</div>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <form id="accountForm">
+        <div class="form-group">
+          <label for="password">Choose a password</label>
+          <input type="password" id="password" name="password" placeholder="Minimum 8 characters" required minlength="8" />
+          <div class="pw-strength"><div class="pw-strength-bar" id="pwBar"></div></div>
+        </div>
+        <div class="form-group">
+          <label for="password2">Confirm password</label>
+          <input type="password" id="password2" name="password2" placeholder="Repeat your password" required />
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">Create account &amp; go to dashboard →</button>
+      </form>
+    </div>
+
+    <!-- Error state -->
+    <div id="errorState" style="display:none;">
+      <p style="font-size:18px;font-weight:700;margin-bottom:12px;">Something went wrong.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.65;" id="errorStateMsg">We couldn't confirm your subscription. Please contact support@rootpartners.co with your order details.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session_id');
+
+  let sessionData = null;
+
+  async function init() {
+    if (!sessionId) {
+      showError('No session ID found. Please contact support@rootpartners.co.');
+      return;
+    }
+
+    try {
+      const resp = await fetch('/api/sub-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        showError(data.error || 'Could not verify your subscription.');
+        return;
+      }
+
+      sessionData = data;
+      document.getElementById('emailDisplay').textContent = data.email;
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('formState').style.display = 'block';
+
+    } catch (err) {
+      showError('Network error. Please try refreshing the page.');
+    }
+  }
+
+  function showError(msg) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+    document.getElementById('errorStateMsg').textContent = msg;
+  }
+
+  // Password strength indicator
+  document.getElementById('password').addEventListener('input', function() {
+    const pw = this.value;
+    const bar = document.getElementById('pwBar');
+    let strength = 0;
+    if (pw.length >= 8) strength++;
+    if (pw.length >= 12) strength++;
+    if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) strength++;
+    const colors = ['#DC2626', '#D97706', '#059669'];
+    const widths = ['33%', '66%', '100%'];
+    bar.style.width = pw.length === 0 ? '0' : widths[Math.min(strength, 2)];
+    bar.style.background = colors[Math.min(strength, 2)];
+  });
+
+  document.getElementById('accountForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorMsg = document.getElementById('errorMsg');
+    const submitBtn = document.getElementById('submitBtn');
+    errorMsg.style.display = 'none';
+
+    const password = document.getElementById('password').value;
+    const password2 = document.getElementById('password2').value;
+
+    if (password !== password2) {
+      errorMsg.textContent = 'Passwords do not match.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if (password.length < 8) {
+      errorMsg.textContent = 'Password must be at least 8 characters.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating your account…';
+
+    try {
+      const resp = await fetch('/api/sub-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: sessionData.email,
+          password,
+          stripeCustomerId: sessionData.stripeCustomerId,
+          stripeSubscriptionId: sessionData.stripeSubscriptionId,
+          profile: sessionData.profile,
+        }),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        errorMsg.textContent = data.error || 'Could not create account. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create account & go to dashboard →';
+        return;
+      }
+
+      // Save token and redirect to dashboard
+      localStorage.setItem('sub_token', data.token);
+      localStorage.setItem('sub_email', data.email);
+      window.location.href = '/sub-dashboard.html';
+
+    } catch (err) {
+      errorMsg.textContent = 'Network error. Please try again.';
+      errorMsg.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create account & go to dashboard →';
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
