@@ -182,7 +182,7 @@
   <!-- RIGHT — form -->
   <div class="form-card">
     <h2>Get started in 30 seconds.</h2>
-    <p>Enter your details to go to checkout. You'll set a password and complete your company profile right after — it only takes a minute.</p>
+    <p>A few details and we get to work. We'll research your company and build your AI visibility baseline across ChatGPT, Perplexity, Claude, Gemini, and more.</p>
 
     <div class="error-msg" id="errorMsg"></div>
 
@@ -199,7 +199,7 @@
 
       <div class="form-group">
         <label for="website">Company website *</label>
-        <input type="url" id="website" name="website" placeholder="https://yourcompany.com" required />
+        <input type="text" id="website" name="website" placeholder="yourcompany.com" required />
       </div>
 
       <button type="submit" class="submit-btn" id="submitBtn">
@@ -238,11 +238,14 @@
     submitBtn.disabled = true;
     btnText.textContent = 'Redirecting to checkout…';
 
+    let website = document.getElementById('website').value.trim();
+    if (website && !/^https?:\/\//i.test(website)) website = 'https://' + website;
+
     const data = {
       plan: 'active',
       email: document.getElementById('email').value.trim(),
       name: document.getElementById('name').value.trim(),
-      website: document.getElementById('website').value.trim(),
+      website,
     };
 
     try {
