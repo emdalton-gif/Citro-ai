@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run Audit — RootACE Active Optimization</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8FAFC; --dark: #0B0F1A; --dark-2: #111827; --dark-3: #1E293B;
+      --accent: #2563EB; --accent-light: #3B82F6; --accent-dim: #93C5FD;
+      --green: #059669; --green-bg: #D1FAE5;
+      --amber: #D97706; --amber-bg: #FEF3C7;
+      --red: #DC2626; --red-bg: #FEF2F2;
+      --muted: #64748B; --border: #E2E8F0;
+      --sans: 'Inter', system-ui, sans-serif; --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px; background: var(--dark);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 700; color: #fff; }
+    .nav-logo-ace { font-size: 18px; font-weight: 800; color: #2563EB; }
+    .nav-tag { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.35); margin-left: 10px; }
+    .nav-back { font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: #fff; }
+
+    .wrap { max-width: 800px; margin: 0 auto; padding: 0 32px; }
+
+    /* ── SETUP SCREEN ── */
+    #screen-setup { padding: 48px 0; display: none; }
+    .setup-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    .setup-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
+    .setup-sub { font-size: 16px; color: var(--muted); line-height: 1.65; margin-bottom: 40px; }
+
+    .setup-form { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 36px; }
+    .setup-form h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { font-size: 12px; font-weight: 600; color: var(--dark); }
+    .form-group input, .form-group select, .form-group textarea {
+      font-family: var(--sans); font-size: 14px; color: var(--dark);
+      border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px;
+      background: var(--bg); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: #fff; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .run-btn {
+      margin-top: 24px; width: 100%; background: var(--accent); color: #fff;
+      font-family: var(--sans); font-size: 15px; font-weight: 600;
+      padding: 14px; border-radius: 8px; border: none; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .run-btn:hover:not(:disabled) { background: var(--accent-light); }
+    .run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── LOADING SCREEN ── */
+    #screen-loading {
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      min-height: calc(100vh - 60px); text-align: center; padding: 48px 32px;
+    }
+    .spinner { width: 48px; height: 48px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 24px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .loading-sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+
+    .phases { display: flex; flex-direction: column; gap: 12px; max-width: 480px; width: 100%; text-align: left; }
+    .phase { display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; transition: border-color 0.3s; }
+    .phase.active { border-color: var(--accent); }
+    .phase.done { border-color: var(--green-bg); background: #F0FDF4; }
+    .phase-icon { font-size: 20px; flex-shrink: 0; }
+    .phase-spin { width: 20px; height: 20px; border: 2px solid #E2E8F0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    .phase-body { flex: 1; }
+    .phase-name { font-size: 14px; font-weight: 600; }
+    .phase-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .phase.active .phase-desc { color: var(--accent); }
+    .phase-check { color: var(--green); font-weight: 700; font-size: 16px; margin-left: auto; }
+
+    .query-log { margin-top: 24px; max-width: 480px; width: 100%; display: none; }
+    .ql-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .ql-items { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .ql-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .ql-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .ql-dot.pending { background: #CBD5E1; }
+    .ql-dot.running { background: var(--accent); animation: pulse 1s infinite; }
+    .ql-dot.done { background: var(--green); }
+    .ql-dot.fail { background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .ql-platform { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 100px; flex-shrink: 0; }
+    .ql-text { color: var(--dark); }
+
+    /* ── RESULTS SCREEN ── */
+    #screen-results { display: none; padding: 48px 0; }
+
+    .results-header { margin-bottom: 40px; }
+    .results-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; }
+    .results-meta { font-size: 14px; color: var(--muted); }
+
+    .score-strip { background: var(--dark); border-radius: 12px; padding: 32px; margin-bottom: 32px; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
+    .score-block { display: flex; flex-direction: column; }
+    .score-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+    .score-num { font-size: 56px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+    .score-num.low { color: var(--red); } .score-num.mid { color: var(--amber); } .score-num.high-score { color: #34D399; }
+    .score-bar-wrap { flex: 1; min-width: 200px; }
+    .score-bar-track { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: 4px; width: 0; transition: width 1s ease; }
+    .score-bar-fill.low { background: var(--red); } .score-bar-fill.mid { background: var(--amber); } .score-bar-fill.high-score { background: #34D399; }
+
+    .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+    .metric-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .metric-val { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+    .metric-lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    .result-section { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; display: none; }
+    .rs-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .rs-title { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+    .rs-body { font-size: 15px; color: var(--muted); line-height: 1.75; }
+
+    .finding-card { background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; display: none; }
+    .finding-card p { font-size: 16px; font-weight: 600; color: var(--dark); line-height: 1.5; }
+
+    .projection-card { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 12px; }
+    .proj-score-val { font-size: 40px; font-weight: 800; color: var(--dark); }
+    .proj-score-val.projected { color: var(--green); }
+    .proj-score-lbl { font-size: 12px; color: var(--muted); }
+    .proj-arrow { font-size: 24px; color: #CBD5E1; }
+    .proj-narrative { font-size: 14px; color: var(--muted); line-height: 1.7; margin-top: 16px; }
+
+    .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    .comp-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .comp-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .comp-insight { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    .recs-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+    .rec-item { display: flex; align-items: flex-start; gap: 14px; }
+    .rec-num { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .rec-action { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .rec-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .rec-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #F1F5F9; color: var(--muted); }
+    .rec-tag.impact-high { background: #DCFCE7; color: #166534; }
+    .rec-tag.impact-medium { background: #FEF9C3; color: #854D0E; }
+
+    .roadmap-phases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+    .roadmap-phase { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 18px; }
+    .roadmap-days { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+    .roadmap-theme { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .roadmap-action { font-size: 13px; color: var(--muted); line-height: 1.5; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .roadmap-action:last-child { border-bottom: none; }
+
+    .query-breakdown { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+    .qb-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .qb-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .qb-platform { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .qb-query { font-size: 14px; font-weight: 600; flex: 1; }
+    .vis-pill { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 20px; }
+    .vis-pill.high { background: #DCFCE7; color: #166534; }
+    .vis-pill.medium { background: #FEF9C3; color: #854D0E; }
+    .vis-pill.low { background: #FEF2F2; color: #991B1B; }
+    .vis-pill.none { background: #F1F5F9; color: #64748B; }
+    .qb-insight { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--accent); text-decoration: none; font-size: 14px; font-weight: 600;
+      margin-bottom: 32px; padding: 10px 18px; border-radius: 8px;
+      border: 1px solid var(--border); background: #fff; transition: border-color 0.2s;
+    }
+    .back-btn:hover { border-color: var(--accent); }
+
+    /* ERROR */
+    #screen-error { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 60px); text-align: center; padding: 48px 32px; }
+    #screen-error h2 { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+    #screen-error p { font-size: 15px; color: var(--muted); max-width: 480px; line-height: 1.7; }
+
+    @media (max-width: 700px) {
+      nav { padding: 0 16px; }
+      .wrap { padding: 0 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .comp-grid { grid-template-columns: 1fr; }
+      .roadmap-phases { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span>
+    <span class="nav-tag">Active Optimization</span>
+  </a>
+  <a href="/sub-dashboard.html" class="nav-back">← Dashboard</a>
+</nav>
+
+<!-- SETUP SCREEN -->
+<div id="screen-setup">
+  <div class="wrap">
+    <div class="setup-label">New audit run</div>
+    <h1 class="setup-title">Confirm your company details.</h1>
+    <p class="setup-sub">Your last-used settings are pre-filled. Update anything that's changed, then run.</p>
+
+    <div class="setup-form">
+      <h3>Company profile</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Company name *</label>
+          <input type="text" id="f-name" placeholder="Acme Corp" required />
+        </div>
+        <div class="form-group">
+          <label>Website *</label>
+          <input type="url" id="f-website" placeholder="https://yourcompany.com" required />
+        </div>
+        <div class="form-group">
+          <label>Industry</label>
+          <select id="f-industry">
+            <option value="">Select...</option>
+            <option>SaaS / Software</option>
+            <option>Professional Services</option>
+            <option>Financial Services</option>
+            <option>Healthcare / Life Sciences</option>
+            <option>Manufacturing / Industrial</option>
+            <option>E-commerce / Retail</option>
+            <option>Marketing / Advertising</option>
+            <option>Real Estate</option>
+            <option>Legal</option>
+            <option>Education</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Primary geography</label>
+          <input type="text" id="f-geo" placeholder="e.g. US, North America" />
+        </div>
+        <div class="form-group full">
+          <label>What product or service should we audit?</label>
+          <input type="text" id="f-product" placeholder="e.g. our CRM platform, our HR consulting practice" />
+        </div>
+        <div class="form-group full">
+          <label>What problem do you solve for customers?</label>
+          <textarea id="f-offer" placeholder="Brief description of your core value proposition..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Who is your ideal buyer?</label>
+          <input type="text" id="f-buyer" placeholder="e.g. VP of Marketing at Series B SaaS companies" />
+        </div>
+        <div class="form-group full">
+          <label>Key competitors</label>
+          <input type="text" id="f-competitors" placeholder="Competitor A, Competitor B, Competitor C" />
+        </div>
+      </div>
+      <button class="run-btn" id="startRunBtn">Run audit →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING SCREEN -->
+<div id="screen-loading">
+  <div class="spinner"></div>
+  <div class="loading-title">Running your audit.</div>
+  <div class="loading-sub">This takes about 5–10 minutes. Keep this tab open.</div>
+  <div class="phases">
+    <div class="phase" id="phase-0">
+      <div class="phase-icon">👤</div>
+      <div class="phase-body">
+        <div class="phase-name">Building buyer personas</div>
+        <div class="phase-desc">Constructing your ideal buyers from your profile</div>
+      </div>
+    </div>
+    <div class="phase" id="phase-1">
+      <div class="phase-icon">🔍</div>
+      <div class="phase-body">
+        <div class="phase-name">Generating search queries</div>
+        <div class="phase-desc">Creating realistic AI search patterns for your buyers</div>
+      </div>
+    </div>
+    <div class="phase" id="phase-2">
+      <div class="phase-icon">🤖</div>
+      <div class="phase-body">
+        <div class="phase-name">Running AI simulations</div>
+        <div class="phase-desc">Blind evaluations across 7 platforms</div>
+      </div>
+    </div>
+    <div class="phase" id="phase-3">
+      <div class="phase-icon">📊</div>
+      <div class="phase-body">
+        <div class="phase-name">Generating your report</div>
+        <div class="phase-desc">Diagnosing gaps and building your 90-day plan</div>
+      </div>
+    </div>
+  </div>
+  <div class="query-log" id="query-log">
+    <div class="ql-label">Simulation progress</div>
+    <div class="ql-items" id="ql-items"></div>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="screen-results">
+  <div class="wrap">
+    <a href="/sub-dashboard.html" class="back-btn">← Back to dashboard</a>
+
+    <div class="results-header">
+      <div class="results-title" id="res-title"></div>
+      <div class="results-meta" id="res-meta"></div>
+    </div>
+
+    <div class="score-strip" id="score-strip">
+      <div class="score-block">
+        <div class="score-label">AI Visibility Score</div>
+        <div class="score-num" id="score-num">—</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;" id="score-context"></div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-track">
+          <div class="score-bar-fill" id="score-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics-grid" id="metrics-grid"></div>
+
+    <div class="finding-card" id="finding-card">
+      <div style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Key Finding</div>
+      <p id="finding-text"></p>
+    </div>
+
+    <div class="result-section" id="section-summary">
+      <div class="rs-label">Executive Summary</div>
+      <div class="rs-title">What this means for your business</div>
+      <div class="rs-body" id="summary-body"></div>
+    </div>
+
+    <div class="result-section" id="section-projection">
+      <div class="rs-label">Visibility Projection</div>
+      <div class="rs-title">Where you could be in 90 days</div>
+      <div class="projection-card" id="projection-card"></div>
+    </div>
+
+    <div class="result-section" id="section-competitive">
+      <div class="rs-label">Competitive Analysis</div>
+      <div class="rs-title">Who's winning in AI results — and why</div>
+      <div class="rs-body" id="competitive-body"></div>
+      <div class="comp-grid" id="comp-grid"></div>
+    </div>
+
+    <div class="result-section" id="section-recs">
+      <div class="rs-label">Recommendations</div>
+      <div class="rs-title">What to do about it</div>
+      <div class="recs-list" id="recs-list"></div>
+    </div>
+
+    <div class="result-section" id="section-roadmap">
+      <div class="rs-label">90-Day Roadmap</div>
+      <div class="rs-title">Your implementation plan</div>
+      <div class="rs-body" id="roadmap-body"></div>
+      <div class="roadmap-phases" id="roadmap-phases"></div>
+    </div>
+
+    <div class="result-section" id="section-queries">
+      <div class="rs-label">Query Breakdown</div>
+      <div class="rs-title">Every simulation, scored</div>
+      <div class="query-breakdown" id="query-breakdown"></div>
+    </div>
+
+    <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+      <a href="/sub-dashboard.html" class="back-btn">← Back to dashboard</a>
+      <button class="run-btn" onclick="window.location.href='/sub-audit.html'" style="width:auto;padding:12px 24px;">Run another audit →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR SCREEN -->
+<div id="screen-error">
+  <h2 id="error-title">Something went wrong.</h2>
+  <p id="error-body">We encountered an error running your audit. Please try again or contact support@rootpartners.co.</p>
+  <a href="/sub-dashboard.html" class="back-btn" style="margin-top:24px;">← Back to dashboard</a>
+</div>
+
+<script>
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  const SUB_TOKEN = localStorage.getItem('sub_token');
+  const SUB_EMAIL = localStorage.getItem('sub_email');
+  if (!SUB_TOKEN) window.location.href = '/sub-login.html';
+
+  const API = '/api/claude';
+  const SAVE_API = '/api/sub-save-run';
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function show(id) { const el = document.getElementById(id); if(el) el.style.display = ''; }
+  function hide(id) { const el = document.getElementById(id); if(el) el.style.display = 'none'; }
+  function block(id) { const el = document.getElementById(id); if(el) el.style.display = 'block'; }
+  function flex(id) { const el = document.getElementById(id); if(el) el.style.display = 'flex'; }
+
+  // ── Phase manager ─────────────────────────────────────────────────────────
+  function setPhase(n, state) {
+    const el = document.getElementById(`phase-${n}`);
+    if (!el) return;
+    const icons = ['👤','🔍','🤖','📊'];
+    const name = el.querySelector('.phase-name').textContent;
+    const desc = el.querySelector('.phase-desc').textContent;
+    el.className = `phase ${state}`;
+    if (state === 'active') {
+      el.innerHTML = `<div class="phase-spin"></div><div class="phase-body"><div class="phase-name">${name}</div><div class="phase-desc" style="color:var(--accent)">${desc}</div></div>`;
+    } else if (state === 'done') {
+      el.innerHTML = `<div class="phase-icon">${icons[n]}</div><div class="phase-body"><div class="phase-name">${name}</div><div class="phase-desc">${desc}</div></div><div class="phase-check">✓</div>`;
+    }
+  }
+
+  // ── Claude API ────────────────────────────────────────────────────────────
+  async function callClaude(messages, system, maxTokens = 1000) {
+    const body = { model: 'claude-sonnet-4-6', max_tokens: maxTokens, messages };
+    if (system) body.system = system;
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const data = await res.json();
+    return data.content?.[0]?.text || '';
+  }
+
+  // ── Pipeline (identical to audit.html) ───────────────────────────────────
+  async function genPersonas(c) {
+    const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    const raw = await callClaude([{ role:'user', content:`Generate 3 realistic and distinct buyer personas for ${c.company_name}, a ${c.industry||'company'} offering ${subjectCtx}. Ideal buyer: ${c.buyer||'not specified'}. Competitors: ${c.competitors||'other solutions in the space'}.\nReturn ONLY a JSON array of 3 objects with these exact keys:\n[{"name":"first and last name","title":"job title","company":"company type and size","goal":"primary professional goal in 1 sentence","pain":"2-3 comma-separated pain points","motivation":"key purchase motivation in 1 sentence","buyerType":"B2B or B2C","conversionGoal":"lead or call or ecommerce"}]` }], null, 1200);
+    return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  }
+
+  async function genQueries(c, personas) {
+    const ps = personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ');
+    const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    const currentYear = new Date().getFullYear();
+    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an AI visibility audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query.\n- Assign each query to a realistic platform (mix across ChatGPT, Perplexity, Google Gemini, Claude, Microsoft Copilot, Meta AI, Grok).\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot|Meta AI|Grok","brand_specific":true|false}` }]);
+    return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(q => ({...q, checked: true}));
+  }
+
+  async function runSimulations(c, personas, queries) {
+    const active = queries.filter(q => q.checked);
+    const aliasMap = {};
+    (c.competitors||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(entry => {
+      const m = entry.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      if (m) { aliasMap[m[2].trim().toLowerCase()] = m[1].trim(); aliasMap[entry.toLowerCase()] = m[1].trim(); }
+    });
+    function normalizeComp(name) { return aliasMap[name.toLowerCase()] || name; }
+    const aliasCtx = Object.keys(aliasMap).length ? `\nIMPORTANT: normalize competitor names: ${Object.entries(aliasMap).map(([k,v]) => `"${k}" -> "${v}"`).join(', ')}.` : '';
+
+    const qlItems = document.getElementById('ql-items');
+    qlItems.innerHTML = active.map((q, i) => `<div class="ql-item"><div class="ql-dot pending" id="qldot-${i}"></div><span class="ql-platform">${esc(q.platform)}</span><span class="ql-text">${esc(q.text)}</span></div>`).join('');
+    document.getElementById('query-log').style.display = 'block';
+
+    const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    const results = await Promise.all(active.map(async (q, i) => {
+      const dot = document.getElementById(`qldot-${i}`);
+      if (dot) dot.className = 'ql-dot running';
+      const persona = personas[i % Math.max(personas.length, 1)];
+      const convLabel = {'lead':'your goal is to find a vendor and submit a lead form','call':'your goal is to find the right vendor and call their sales team','ecommerce':'your goal is to find the right product and purchase it online'}[persona?.conversionGoal] || 'your goal is to find a solution';
+      const pCtx = persona ? `You are ${persona.name||'a buyer'}, ${persona.title||'decision maker'} at ${persona.company||'a company'} (${persona.buyerType||'B2C'} buyer). Goal: ${persona.goal}. Pain: ${persona.pain}.${persona.motivation?' Motivation: '+persona.motivation:''} When searching, ${convLabel}.` : 'You are a buyer looking for a solution.';
+      try {
+        const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
+        const simResponse = await callClaude([{ role:'user', content:`Query: "${q.text}"` }], simSys, 600);
+        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${simResponse}"\n\nEvaluate for the brand "${subjectCtx}". Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named in the response"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
+        const evalRaw = await callClaude([{ role:'user', content:evalPrompt }], null, 400);
+        const evaluated = JSON.parse(evalRaw.replace(/```json|```/g,'').trim());
+        if (evaluated.mention_rank != null) {
+          if (evaluated.mention_rank > 2 && evaluated.visibility === 'high') evaluated.visibility = 'medium';
+          if (evaluated.mention_rank > 4 && evaluated.visibility === 'medium') evaluated.visibility = 'low';
+        }
+        if (evaluated.competitors_mentioned) evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))];
+        if (dot) dot.className = 'ql-dot done';
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, ...evaluated };
+      } catch(e) {
+        if (dot) dot.className = 'ql-dot fail';
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, visibility: 'none', mentions_client: false, insight: 'Simulation error', response: '', competitors_mentioned: [] };
+      }
+    }));
+    return results;
+  }
+
+  async function genReport(c, personas, results) {
+    const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
+    const organic = results.filter(x => !x.brand_specific);
+    const score = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+    const allCompMentions = results.flatMap(x=>x.competitors_mentioned||[]);
+    const compFreq = {};
+    allCompMentions.forEach(n=>compFreq[n]=(compFreq[n]||0)+1);
+    const comps = [...new Set(allCompMentions)].sort((a,b)=>compFreq[b]-compFreq[a]);
+    const queries = results.map(x=>`[${x.platform}] "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`).join('\n');
+    const buyerCtx = personas.map(p=>`${p.name||'Buyer'} (${p.title||'decision maker'})`).join(', ');
+    const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    const visCtx = score===0 ? `The brand has 0% AI visibility — it did not appear in any advisory AI responses.` : `Weighted AI visibility score: ${score}% (High=100%, Medium=50%, Low=25%, None=0% across ${organic.length} advisory queries).`;
+    const gapQueries = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
+    const gapCtx = gapQueries.length ? gapQueries.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
+    const raw = await callClaude([{ role:'user', content:`Write a professional AI visibility audit report for ${c.company_name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Target buyers: ${buyerCtx}\n- Competitors: ${c.competitors||'not specified'}\n- ${visCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- Query results:\n${queries}\n- Gaps (no or low visibility):\n${gapCtx}\n\nReturn ONLY raw JSON (no markdown, no code fences):\n{\n  "executive_summary": "3-4 sentences summarizing the overall finding and business implication",\n  "key_finding": "Single most important finding in one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1-2 sentences naming specific gaps to close and the projected improvement"},\n  "technical_recommendations": "2-3 sentences covering structured data, schema types, llms.txt, knowledge graph, review platform gaps",\n  "content_gaps": "2-3 sentences identifying specific content types and topics missing",\n  "competitive_analysis": "2-3 sentences summarizing the competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "2-3 sentences explaining exactly why this competitor wins in AI results — be specific about structural advantages"}],\n  "recommendations": [{"action": "specific action","impact": "high","effort": "low","category": "technical"},{"action": "specific action","impact": "high","effort": "medium","category": "content"},{"action": "specific action","impact": "high","effort": "medium","category": "distribution"},{"action": "specific action","impact": "medium","effort": "low","category": "technical"},{"action": "specific action","impact": "medium","effort": "medium","category": "content"}],\n  "roadmap_phases": [{"days": "Days 1-30", "theme": "Technical Foundation", "actions": ["3-5 specific actions"]},{"days": "Days 31-60", "theme": "Content and Visibility", "actions": ["3-5 specific actions"]},{"days": "Days 61-90", "theme": "Distribution and Measurement", "actions": ["3-5 specific actions"]}]\n}` }],
+      'You are a senior GTM strategist at RootACE, specializing in AI-native go-to-market systems. Write in a confident, senior consultant tone. Be specific and data-driven. Technical recommendations should reference real implementation details (schema types, file names, platform names).', 4000);
+    const cleaned = raw.replace(/```json|```/g,'').trim();
+    return JSON.parse(cleaned.slice(cleaned.indexOf('{'), cleaned.lastIndexOf('}')+1));
+  }
+
+  // ── Render Results ────────────────────────────────────────────────────────
+  function scoreClass(s) { return s >= 65 ? 'high-score' : s >= 40 ? 'mid' : 'low'; }
+
+  function renderResults(simResults, report, profile) {
+    const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
+    const organic = simResults.filter(x=>!x.brand_specific);
+    const score = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+    const high = organic.filter(x=>x.visibility==='high').length;
+    const ranks = simResults.filter(x=>x.mention_rank).map(x=>x.mention_rank);
+    const avgRank = ranks.length ? (Math.round(ranks.reduce((a,b)=>a+b,0)/ranks.length*10)/10) : null;
+    const platforms = [...new Set(simResults.map(x=>x.platform))].length;
+    const sc = scoreClass(score);
+
+    document.getElementById('res-title').textContent = `AI Visibility Report — ${profile.company_name}`;
+    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${organic.length} advisory simulations · ${platforms} platforms`;
+
+    const scoreNum = document.getElementById('score-num');
+    scoreNum.textContent = score + '%';
+    scoreNum.className = `score-num ${sc}`;
+    const bar = document.getElementById('score-bar');
+    bar.className = `score-bar-fill ${sc}`;
+    setTimeout(() => { bar.style.width = score + '%'; }, 100);
+    document.getElementById('score-context').textContent = score < 40 ? 'Low visibility — below competitive threshold' : score < 65 ? 'Moderate — improvement opportunity' : 'Strong AI visibility';
+
+    document.getElementById('metrics-grid').innerHTML = `
+      <div class="metric-card"><div class="metric-val">${high}</div><div class="metric-lbl">High visibility queries<br><span style="font-size:12px;color:var(--muted);">of ${organic.length} organic</span></div></div>
+      <div class="metric-card"><div class="metric-val">${avgRank||'—'}</div><div class="metric-lbl">Avg. rank when mentioned<br><span style="font-size:12px;color:var(--muted);">${ranks.length} mentions total</span></div></div>
+      <div class="metric-card"><div class="metric-val">${platforms}</div><div class="metric-lbl">Platforms tested<br><span style="font-size:12px;color:var(--muted);">across 7 AI platforms</span></div></div>`;
+
+    if (report.key_finding) { document.getElementById('finding-text').textContent = report.key_finding; block('finding-card'); }
+    if (report.executive_summary) { document.getElementById('summary-body').textContent = report.executive_summary; block('section-summary'); }
+    if (report.visibility_projection) {
+      const vp = report.visibility_projection;
+      document.getElementById('projection-card').innerHTML = `<div><div class="proj-score-lbl">Today</div><div class="proj-score-val">${vp.current_score}%</div></div><div class="proj-arrow">→</div><div><div class="proj-score-lbl">After 90 days</div><div class="proj-score-val projected">${vp.projected_score}%</div></div><div class="proj-narrative" style="flex-basis:100%;margin-top:0;">${esc(vp.projection_narrative||'')}</div>`;
+      block('section-projection');
+    }
+    if (report.competitive_analysis) {
+      document.getElementById('competitive-body').textContent = report.competitive_analysis;
+      if (report.competitor_insights?.length) document.getElementById('comp-grid').innerHTML = report.competitor_insights.map(ci=>`<div class="comp-card"><div class="comp-name">${esc(ci.competitor)}</div><div class="comp-insight">${esc(ci.insight)}</div></div>`).join('');
+      block('section-competitive');
+    }
+    if (report.recommendations?.length) {
+      document.getElementById('recs-list').innerHTML = report.recommendations.map((r,i)=>`<div class="rec-item"><div class="rec-num">${i+1}</div><div><div class="rec-action">${esc(r.action)}</div><div class="rec-tags"><span class="rec-tag impact-${r.impact}">${r.impact} impact</span><span class="rec-tag">${r.effort} effort</span><span class="rec-tag">${r.category}</span></div></div></div>`).join('');
+      block('section-recs');
+    }
+    if (report.roadmap_phases?.length) {
+      document.getElementById('roadmap-phases').innerHTML = report.roadmap_phases.map(p=>`<div class="roadmap-phase"><div class="roadmap-days">${esc(p.days)}</div><div class="roadmap-theme">${esc(p.theme)}</div><div class="roadmap-actions">${(p.actions||[]).map(a=>`<div class="roadmap-action">${esc(a)}</div>`).join('')}</div></div>`).join('');
+      block('section-roadmap');
+    }
+    document.getElementById('query-breakdown').innerHTML = simResults.map(q=>`<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span><span class="vis-pill ${q.visibility}">${q.visibility}</span></div><div class="qb-insight">${esc(q.insight||'')}</div></div>`).join('');
+    block('section-queries');
+
+    hide('screen-loading');
+    block('screen-results');
+    window.scrollTo(0,0);
+  }
+
+  // ── Run audit ─────────────────────────────────────────────────────────────
+  async function runAudit(profile) {
+    hide('screen-setup');
+    flex('screen-loading');
+
+    let simResults, report;
+    try {
+      setPhase(0, 'active');
+      const personas = await genPersonas(profile);
+      setPhase(0, 'done'); setPhase(1, 'active');
+
+      const queries = await genQueries(profile, personas);
+      setPhase(1, 'done'); setPhase(2, 'active');
+
+      simResults = await runSimulations(profile, personas, queries);
+      setPhase(2, 'done'); setPhase(3, 'active');
+
+      report = await genReport(profile, personas, simResults);
+      setPhase(3, 'done');
+
+      // Compute score for saving
+      const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
+      const organic = simResults.filter(x=>!x.brand_specific);
+      const overallScore = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+
+      // Save to history (non-blocking)
+      fetch(SAVE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+        body: JSON.stringify({ results: { ...report, overallScore, simResults }, profile }),
+      }).catch(() => {});
+
+      renderResults(simResults, report, profile);
+
+    } catch (err) {
+      console.error('Audit error:', err);
+      hide('screen-loading');
+      document.getElementById('error-title').textContent = 'Audit failed.';
+      document.getElementById('error-body').textContent = `Error: ${err.message}. Please try again or contact support@rootpartners.co`;
+      flex('screen-error');
+    }
+  }
+
+  // ── Load saved run ────────────────────────────────────────────────────────
+  async function loadSavedRun(runId) {
+    try {
+      const resp = await fetch(`/api/sub-get-run?runId=${encodeURIComponent(runId)}`, {
+        headers: { 'Authorization': `Bearer ${SUB_TOKEN}` },
+      });
+      if (!resp.ok) throw new Error('Run not found');
+      const data = await resp.json();
+      if (data.results?.simResults) {
+        renderResults(data.results.simResults, data.results, data.profile || {});
+      } else {
+        throw new Error('Invalid run data');
+      }
+    } catch (err) {
+      document.getElementById('error-body').textContent = 'Could not load this audit run. It may have expired or been deleted.';
+      flex('screen-error');
+    }
+  }
+
+  // ── Start ─────────────────────────────────────────────────────────────────
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const runId = params.get('runId');
+
+    if (runId) {
+      // View mode: load existing run
+      flex('screen-loading');
+      await loadSavedRun(runId);
+      return;
+    }
+
+    // Run mode: load profile, show setup form
+    try {
+      const resp = await fetch('/api/sub-dashboard', {
+        headers: { 'Authorization': `Bearer ${SUB_TOKEN}` },
+      });
+      if (resp.status === 401) { localStorage.removeItem('sub_token'); window.location.href = '/sub-login.html'; return; }
+      const data = await resp.json();
+
+      if (data.subscriptionStatus === 'canceled') {
+        document.getElementById('error-title').textContent = 'Subscription required.';
+        document.getElementById('error-body').textContent = 'Your subscription has been canceled. Resubscribe to run audits.';
+        flex('screen-error'); return;
+      }
+
+      // Pre-fill form from saved profile
+      const p = data.profile || {};
+      if (p.company_name) document.getElementById('f-name').value = p.company_name;
+      if (p.website) document.getElementById('f-website').value = p.website;
+      if (p.industry) document.getElementById('f-industry').value = p.industry;
+      if (p.geo) document.getElementById('f-geo').value = p.geo;
+      if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
+      if (p.offer) document.getElementById('f-offer').value = p.offer;
+      if (p.buyer) document.getElementById('f-buyer').value = p.buyer;
+      if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
+
+    } catch(e) { /* show form anyway */ }
+
+    block('screen-setup');
+
+    document.getElementById('startRunBtn').addEventListener('click', () => {
+      const profile = {
+        company_name: document.getElementById('f-name').value.trim(),
+        website: document.getElementById('f-website').value.trim(),
+        industry: document.getElementById('f-industry').value,
+        geo: document.getElementById('f-geo').value.trim(),
+        specific_product: document.getElementById('f-product').value.trim(),
+        offer: document.getElementById('f-offer').value.trim(),
+        buyer: document.getElementById('f-buyer').value.trim(),
+        competitors: document.getElementById('f-competitors').value.trim(),
+      };
+      if (!profile.company_name || !profile.website) {
+        alert('Please enter your company name and website before running.');
+        return;
+      }
+      runAudit(profile);
+    });
+  }
+
+  init();
+</script>
+</body>
+</html>
