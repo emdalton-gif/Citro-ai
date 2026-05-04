@@ -76,6 +76,7 @@ module.exports = async function handler(req, res) {
   try {
     const session = await stripePost('/checkout/sessions', {
       mode: isSubscription ? 'subscription' : 'payment',
+      allow_promotion_codes: true,
       customer_email: email,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: isSubscription
