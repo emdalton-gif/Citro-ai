@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Active Optimization — RootACE</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8FAFC; --dark: #0B0F1A; --accent: #2563EB; --accent-light: #3B82F6;
+      --green: #059669; --muted: #64748B; --border: #CBD5E1;
+      --sans: 'Inter', system-ui, sans-serif; --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 60px; background: var(--dark);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 700; color: #fff; }
+    .nav-logo-ace { font-size: 18px; font-weight: 800; color: #2563EB; }
+    .nav-back { font-size: 13px; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: #fff; }
+
+    .page-wrap {
+      max-width: 1040px; margin: 0 auto; padding: 64px 32px;
+      display: grid; grid-template-columns: 1fr 440px; gap: 64px; align-items: start;
+    }
+
+    /* LEFT — plan details */
+    .plan-badge {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px; display: block;
+    }
+    .plan-title { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; line-height: 1.1; }
+    .plan-price { margin-bottom: 28px; }
+    .plan-price-num { font-size: 48px; font-weight: 800; letter-spacing: -0.04em; color: var(--dark); }
+    .plan-price-period { font-size: 16px; color: var(--muted); font-weight: 400; }
+    .plan-desc { font-size: 16px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; max-width: 480px; }
+
+    .included-label {
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 16px;
+    }
+    .included-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+    .included-list li {
+      display: flex; align-items: flex-start; gap: 12px;
+      font-size: 15px; color: var(--dark); line-height: 1.5;
+    }
+    .check {
+      width: 20px; height: 20px; background: #D1FAE5; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--green); flex-shrink: 0; margin-top: 1px;
+    }
+
+    .guarantee {
+      background: #fff; border: 1px solid #E2E8F0; border-radius: 10px; padding: 20px 24px;
+      font-size: 14px; color: var(--muted); line-height: 1.65;
+    }
+    .guarantee strong { color: var(--dark); }
+
+    /* RIGHT — form */
+    .form-card {
+      background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; padding: 36px;
+      position: sticky; top: 24px;
+    }
+    .form-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .form-card p { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--dark);
+      margin-bottom: 6px; letter-spacing: 0.02em;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; font-family: var(--sans); font-size: 14px; color: var(--dark);
+      border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px;
+      background: var(--bg); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--accent); background: #fff;
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .submit-btn {
+      width: 100%; background: var(--accent); color: #fff; font-family: var(--sans);
+      font-size: 15px; font-weight: 600; padding: 14px; border-radius: 8px; border: none;
+      cursor: pointer; transition: background 0.2s; margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--accent-light); }
+    .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .secure-note {
+      text-align: center; font-size: 12px; color: #94A3B8; margin-top: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    .error-msg {
+      background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 6px;
+      padding: 12px; font-size: 13px; color: #DC2626; margin-bottom: 16px; display: none;
+    }
+
+    footer {
+      text-align: center; padding: 32px; font-size: 12px; color: #94A3B8;
+      border-top: 1px solid #F1F5F9;
+    }
+    footer a { color: #94A3B8; text-decoration: none; }
+    footer a:hover { color: var(--muted); }
+
+    @media (max-width: 800px) {
+      .page-wrap { grid-template-columns: 1fr; gap: 40px; padding: 40px 20px; }
+      .form-card { position: static; }
+      nav { padding: 0 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span>
+  </a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+
+<div class="page-wrap">
+  <!-- LEFT -->
+  <div class="plan-info">
+    <span class="plan-badge">Active Optimization</span>
+    <h1 class="plan-title">Continuous AI visibility — as often as you need it.</h1>
+    <div class="plan-price">
+      <span class="plan-price-num">$199</span>
+      <span class="plan-price-period"> / month</span>
+    </div>
+    <p class="plan-desc">
+      Your AI visibility changes as competitors move, platforms update, and your own content evolves. Active Optimization gives you unlimited audit runs so you can track what's changing, validate fixes, and stay ahead — month after month.
+    </p>
+
+    <div class="included-label">What's included</div>
+    <ul class="included-list">
+      <li>
+        <span class="check">✓</span>
+        <span><strong>Unlimited audit runs</strong> — run as often as you want, whenever something changes</span>
+      </li>
+      <li>
+        <span class="check">✓</span>
+        <span><strong>7-platform analysis</strong> — ChatGPT, Perplexity, Claude, Gemini, and more every run</span>
+      </li>
+      <li>
+        <span class="check">✓</span>
+        <span><strong>Full run history</strong> — compare results over time to see what's working</span>
+      </li>
+      <li>
+        <span class="check">✓</span>
+        <span><strong>Email delivery</strong> — every report emailed to you automatically</span>
+      </li>
+      <li>
+        <span class="check">✓</span>
+        <span><strong>Priority support</strong> — direct access to the RootPartners team</span>
+      </li>
+      <li>
+        <span class="check">✓</span>
+        <span><strong>Saved company profile</strong> — your details are remembered, re-running takes seconds</span>
+      </li>
+    </ul>
+
+    <div class="guarantee">
+      <strong>Cancel anytime.</strong> No contracts, no commitments. If Active Optimization isn't delivering value, cancel from your billing portal with one click. We don't make it hard to leave.
+    </div>
+  </div>
+
+  <!-- RIGHT — form -->
+  <div class="form-card">
+    <h2>Set up your subscription</h2>
+    <p>Tell us about your company and we'll set up your account. You'll choose a password after checkout.</p>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="subscribeForm">
+      <div class="form-group">
+        <label for="email">Work email *</label>
+        <input type="email" id="email" name="email" placeholder="you@company.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="name">Company name *</label>
+        <input type="text" id="name" name="name" placeholder="Acme Corp" required />
+      </div>
+
+      <div class="form-group">
+        <label for="website">Company website *</label>
+        <input type="url" id="website" name="website" placeholder="https://yourcompany.com" required />
+      </div>
+
+      <div class="form-group">
+        <label for="industry">Industry</label>
+        <select id="industry" name="industry">
+          <option value="">Select industry...</option>
+          <option>SaaS / Software</option>
+          <option>Professional Services</option>
+          <option>Financial Services</option>
+          <option>Healthcare / Life Sciences</option>
+          <option>Manufacturing / Industrial</option>
+          <option>E-commerce / Retail</option>
+          <option>Marketing / Advertising</option>
+          <option>Real Estate</option>
+          <option>Legal</option>
+          <option>Education</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="specific_product">What product or service should we audit?</label>
+        <input type="text" id="specific_product" name="specific_product" placeholder="e.g. our CRM platform, our HR consulting practice" />
+        <span class="hint">Leave blank to audit your company overall</span>
+      </div>
+
+      <div class="form-group">
+        <label for="offer">What problem do you solve for customers?</label>
+        <textarea id="offer" name="offer" placeholder="Brief description of your core value proposition..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="buyer">Who is your ideal buyer?</label>
+        <input type="text" id="buyer" name="buyer" placeholder="e.g. VP of Marketing at Series B SaaS companies" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="geo">Primary geography</label>
+          <input type="text" id="geo" name="geo" placeholder="e.g. US, North America" />
+        </div>
+        <div class="form-group">
+          <label for="competitors">Key competitors</label>
+          <input type="text" id="competitors" name="competitors" placeholder="Competitor A, B, C" />
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span id="btnText">Continue to checkout →</span>
+      </button>
+    </form>
+
+    <p class="secure-note">🔒 Payments secured by Stripe · Cancel anytime</p>
+  </div>
+</div>
+
+<footer>
+  <p>
+    <a href="/privacy.html">Privacy</a> &nbsp;·&nbsp;
+    <a href="/terms.html">Terms</a> &nbsp;·&nbsp;
+    © 2026 RootPartners LLC
+  </p>
+</footer>
+
+<script>
+  const form = document.getElementById('subscribeForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const btnText = document.getElementById('btnText');
+  const errorMsg = document.getElementById('errorMsg');
+
+  function showError(msg) {
+    errorMsg.textContent = msg;
+    errorMsg.style.display = 'block';
+    submitBtn.disabled = false;
+    btnText.textContent = 'Continue to checkout →';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorMsg.style.display = 'none';
+    submitBtn.disabled = true;
+    btnText.textContent = 'Redirecting to checkout…';
+
+    const data = {
+      plan: 'active',
+      email: document.getElementById('email').value.trim(),
+      name: document.getElementById('name').value.trim(),
+      website: document.getElementById('website').value.trim(),
+      industry: document.getElementById('industry').value,
+      specific_product: document.getElementById('specific_product').value.trim(),
+      offer: document.getElementById('offer').value.trim(),
+      buyer: document.getElementById('buyer').value.trim(),
+      geo: document.getElementById('geo').value.trim(),
+      competitors: document.getElementById('competitors').value.trim(),
+    };
+
+    try {
+      const resp = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await resp.json();
+
+      if (!resp.ok || !json.url) {
+        showError(json.error || 'Could not start checkout. Please try again.');
+        return;
+      }
+
+      window.location.href = json.url;
+    } catch (err) {
+      showError('Network error. Please check your connection and try again.');
+    }
+  });
+</script>
+</body>
+</html>
