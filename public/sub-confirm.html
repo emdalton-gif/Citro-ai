@@ -19,47 +19,48 @@
     nav {
       display: flex; align-items: center; justify-content: center;
       padding: 0 48px; height: 60px; background: var(--dark);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     .nav-logo { text-decoration: none; display: flex; align-items: center; }
     .nav-logo-root { font-size: 18px; font-weight: 700; color: #fff; }
     .nav-logo-ace { font-size: 18px; font-weight: 800; color: #2563EB; }
 
-    .page-center {
-      flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px;
-    }
+    .page-center { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 48px 20px; }
     .card {
       background: #fff; border: 1px solid #E2E8F0; border-radius: 14px;
-      padding: 48px 40px; max-width: 440px; width: 100%;
+      padding: 44px 40px; max-width: 500px; width: 100%;
     }
 
-    .success-icon {
-      width: 52px; height: 52px; background: #D1FAE5; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; margin-bottom: 24px;
-    }
-    .card h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; }
-    .card .sub { font-size: 15px; color: var(--muted); line-height: 1.65; margin-bottom: 32px; }
+    /* Step indicator */
+    .steps { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; }
+    .step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+    .step-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .step.active .step-dot { background: var(--accent); color: #fff; }
+    .step.done .step-dot { background: var(--green); color: #fff; }
+    .step.inactive .step-dot { background: #F1F5F9; color: #94A3B8; }
+    .step.active span { color: var(--dark); }
+    .step.inactive span { color: #94A3B8; }
+    .step-divider { flex: 1; height: 1px; background: #E2E8F0; }
 
-    .email-display {
-      background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;
-      padding: 12px 16px; font-size: 14px; color: var(--dark);
-      font-weight: 600; margin-bottom: 24px;
-    }
-    .email-label { font-size: 11px; font-family: var(--mono); letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; }
+    .success-icon { width: 48px; height: 48px; background: #D1FAE5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; }
+    h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .sub { font-size: 15px; color: var(--muted); line-height: 1.65; margin-bottom: 28px; }
+
+    .email-chip { display: inline-flex; align-items: center; gap: 6px; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 8px 12px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
 
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
-    .form-group input {
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; color: var(--dark); }
+    .form-group input, .form-group select, .form-group textarea {
       width: 100%; font-family: var(--sans); font-size: 14px; color: var(--dark);
       border: 1px solid var(--border); border-radius: 6px; padding: 11px 14px;
       outline: none; transition: border-color 0.2s; background: var(--bg);
     }
-    .form-group input:focus { border-color: var(--accent); background: #fff; }
-    .pw-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: #fff; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-group .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
     .pw-strength { height: 3px; background: #E2E8F0; border-radius: 2px; margin-top: 8px; overflow: hidden; }
-    .pw-strength-bar { height: 100%; width: 0; border-radius: 2px; transition: width 0.2s, background 0.2s; }
+    .pw-bar { height: 100%; width: 0; border-radius: 2px; transition: width 0.2s, background 0.2s; }
 
     .submit-btn {
       width: 100%; background: var(--accent); color: #fff; font-family: var(--sans);
@@ -68,20 +69,21 @@
     }
     .submit-btn:hover:not(:disabled) { background: var(--accent-light); }
     .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+    .skip-link { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: var(--muted); cursor: pointer; }
+    .skip-link:hover { color: var(--dark); }
 
-    .error-msg {
-      background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 6px;
-      padding: 12px; font-size: 13px; color: #DC2626; margin-bottom: 16px; display: none;
-    }
+    .error-msg { background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 6px; padding: 12px; font-size: 13px; color: #DC2626; margin-bottom: 16px; display: none; }
 
-    /* Loading state */
-    .loading-state { text-align: center; padding: 20px 0; display: none; }
-    .spinner {
-      width: 36px; height: 36px; border: 3px solid #E2E8F0;
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin: 0 auto 16px;
-    }
+    .loading-state { text-align: center; padding: 20px 0; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #E2E8F0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .section-divider { border: none; border-top: 1px solid #F1F5F9; margin: 24px 0; }
+
+    @media (max-width: 560px) {
+      .card { padding: 32px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -94,57 +96,120 @@
 
 <div class="page-center">
   <div class="card">
-    <!-- Loading state while we verify the session -->
-    <div class="loading-state" id="loadingState" style="display:block;">
-      <div class="spinner"></div>
-      <p style="font-size:15px;color:var(--muted);">Confirming your subscription…</p>
+
+    <!-- Loading -->
+    <div id="stateLoading">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p style="font-size:15px;color:var(--muted);">Confirming your subscription…</p>
+      </div>
     </div>
 
-    <!-- Account creation form -->
-    <div id="formState" style="display:none;">
+    <!-- Step 1: Set password -->
+    <div id="statePassword" style="display:none;">
+      <div class="steps">
+        <div class="step active"><div class="step-dot">1</div><span>Create account</span></div>
+        <div class="step-divider"></div>
+        <div class="step inactive"><div class="step-dot">2</div><span>Company profile</span></div>
+      </div>
       <div class="success-icon">✓</div>
       <h1>Subscription confirmed.</h1>
-      <p class="sub">Your Active Optimization subscription is active. Create a password to access your dashboard and start running audits.</p>
-
-      <div class="email-label">Subscribed as</div>
-      <div class="email-display" id="emailDisplay">—</div>
-
-      <div class="error-msg" id="errorMsg"></div>
-
-      <form id="accountForm">
+      <p class="sub">Choose a password to secure your account. You'll use this to log in and run audits.</p>
+      <div class="email-chip">✉ <span id="emailDisplay">—</span></div>
+      <div class="error-msg" id="pwError"></div>
+      <form id="passwordForm">
         <div class="form-group">
-          <label for="password">Choose a password</label>
-          <input type="password" id="password" name="password" placeholder="Minimum 8 characters" required minlength="8" />
-          <div class="pw-strength"><div class="pw-strength-bar" id="pwBar"></div></div>
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Minimum 8 characters" required minlength="8" autocomplete="new-password" />
+          <div class="pw-strength"><div class="pw-bar" id="pwBar"></div></div>
         </div>
         <div class="form-group">
           <label for="password2">Confirm password</label>
-          <input type="password" id="password2" name="password2" placeholder="Repeat your password" required />
+          <input type="password" id="password2" placeholder="Repeat your password" required autocomplete="new-password" />
         </div>
-        <button type="submit" class="submit-btn" id="submitBtn">Create account &amp; go to dashboard →</button>
+        <button type="submit" class="submit-btn" id="pwBtn">Create account →</button>
       </form>
     </div>
 
+    <!-- Step 2: Company profile -->
+    <div id="stateProfile" style="display:none;">
+      <div class="steps">
+        <div class="step done"><div class="step-dot">✓</div><span>Account created</span></div>
+        <div class="step-divider"></div>
+        <div class="step active"><div class="step-dot">2</div><span>Company profile</span></div>
+      </div>
+      <h1>Set up your first audit.</h1>
+      <p class="sub">Tell us about your business so we can simulate how your buyers search for you across AI platforms. This takes about 2 minutes and is saved for every future run.</p>
+      <div class="error-msg" id="profileError"></div>
+      <form id="profileForm">
+        <div class="form-group">
+          <label>Industry</label>
+          <select id="p-industry">
+            <option value="">Select industry...</option>
+            <option>SaaS / Software</option>
+            <option>Professional Services</option>
+            <option>Financial Services</option>
+            <option>Healthcare / Life Sciences</option>
+            <option>Manufacturing / Industrial</option>
+            <option>E-commerce / Retail</option>
+            <option>Marketing / Advertising</option>
+            <option>Real Estate</option>
+            <option>Legal</option>
+            <option>Education</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>What product or service should we audit?</label>
+          <input type="text" id="p-product" placeholder="e.g. our CRM platform, our consulting practice" />
+          <span class="hint">Leave blank to audit your company overall</span>
+        </div>
+        <div class="form-group">
+          <label>What problem do you solve for customers?</label>
+          <textarea id="p-offer" placeholder="Brief description of your core value proposition..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Who is your ideal buyer?</label>
+          <input type="text" id="p-buyer" placeholder="e.g. VP of Marketing at Series B SaaS companies" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Primary geography</label>
+            <input type="text" id="p-geo" placeholder="e.g. US, North America" />
+          </div>
+          <div class="form-group">
+            <label>Key competitors</label>
+            <input type="text" id="p-competitors" placeholder="Competitor A, B, C" />
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" id="profileBtn">Save &amp; run my first audit →</button>
+      </form>
+      <span class="skip-link" id="skipProfile">Skip for now, go to dashboard →</span>
+    </div>
+
     <!-- Error state -->
-    <div id="errorState" style="display:none;">
+    <div id="stateError" style="display:none;">
       <p style="font-size:18px;font-weight:700;margin-bottom:12px;">Something went wrong.</p>
       <p style="font-size:14px;color:var(--muted);line-height:1.65;" id="errorStateMsg">We couldn't confirm your subscription. Please contact support@rootpartners.co with your order details.</p>
     </div>
+
   </div>
 </div>
 
 <script>
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get('session_id');
-
   let sessionData = null;
+  let subToken = null;
+
+  function showState(id) {
+    ['stateLoading','statePassword','stateProfile','stateError'].forEach(s => {
+      document.getElementById(s).style.display = s === id ? 'block' : 'none';
+    });
+  }
 
   async function init() {
-    if (!sessionId) {
-      showError('No session ID found. Please contact support@rootpartners.co.');
-      return;
-    }
-
+    if (!sessionId) { showFatalError('No session ID found. Please contact support@rootpartners.co.'); return; }
     try {
       const resp = await fetch('/api/sub-verify', {
         method: 'POST',
@@ -152,64 +217,45 @@
         body: JSON.stringify({ sessionId }),
       });
       const data = await resp.json();
-
-      if (!resp.ok) {
-        showError(data.error || 'Could not verify your subscription.');
-        return;
-      }
-
+      if (!resp.ok) { showFatalError(data.error || 'Could not verify your subscription.'); return; }
       sessionData = data;
       document.getElementById('emailDisplay').textContent = data.email;
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('formState').style.display = 'block';
-
+      showState('statePassword');
     } catch (err) {
-      showError('Network error. Please try refreshing the page.');
+      showFatalError('Network error. Please refresh the page.');
     }
   }
 
-  function showError(msg) {
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('errorState').style.display = 'block';
+  function showFatalError(msg) {
     document.getElementById('errorStateMsg').textContent = msg;
+    showState('stateError');
   }
 
-  // Password strength indicator
+  // Password strength
   document.getElementById('password').addEventListener('input', function() {
     const pw = this.value;
     const bar = document.getElementById('pwBar');
-    let strength = 0;
-    if (pw.length >= 8) strength++;
-    if (pw.length >= 12) strength++;
-    if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) strength++;
-    const colors = ['#DC2626', '#D97706', '#059669'];
-    const widths = ['33%', '66%', '100%'];
-    bar.style.width = pw.length === 0 ? '0' : widths[Math.min(strength, 2)];
-    bar.style.background = colors[Math.min(strength, 2)];
+    let s = 0;
+    if (pw.length >= 8) s++;
+    if (pw.length >= 12) s++;
+    if (/[A-Z]/.test(pw) && /[0-9]/.test(pw)) s++;
+    bar.style.width = pw.length === 0 ? '0' : ['33%','66%','100%'][Math.min(s,2)];
+    bar.style.background = ['#DC2626','#D97706','#059669'][Math.min(s,2)];
   });
 
-  document.getElementById('accountForm').addEventListener('submit', async (e) => {
+  // Step 1: create account
+  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const errorMsg = document.getElementById('errorMsg');
-    const submitBtn = document.getElementById('submitBtn');
-    errorMsg.style.display = 'none';
+    const errEl = document.getElementById('pwError');
+    const btn = document.getElementById('pwBtn');
+    errEl.style.display = 'none';
 
-    const password = document.getElementById('password').value;
-    const password2 = document.getElementById('password2').value;
+    const pw = document.getElementById('password').value;
+    const pw2 = document.getElementById('password2').value;
+    if (pw !== pw2) { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+    if (pw.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
 
-    if (password !== password2) {
-      errorMsg.textContent = 'Passwords do not match.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-    if (password.length < 8) {
-      errorMsg.textContent = 'Password must be at least 8 characters.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Creating your account…';
+    btn.disabled = true; btn.textContent = 'Creating your account…';
 
     try {
       const resp = await fetch('/api/sub-register', {
@@ -217,33 +263,61 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: sessionData.email,
-          password,
+          password: pw,
           stripeCustomerId: sessionData.stripeCustomerId,
           stripeSubscriptionId: sessionData.stripeSubscriptionId,
-          profile: sessionData.profile,
+          profile: { company_name: sessionData.profile?.company_name || '', website: sessionData.profile?.website || '' },
         }),
       });
       const data = await resp.json();
-
       if (!resp.ok) {
-        errorMsg.textContent = data.error || 'Could not create account. Please try again.';
-        errorMsg.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Create account & go to dashboard →';
+        errEl.textContent = data.error || 'Could not create account. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Create account →';
         return;
       }
-
-      // Save token and redirect to dashboard
+      subToken = data.token;
       localStorage.setItem('sub_token', data.token);
       localStorage.setItem('sub_email', data.email);
-      window.location.href = '/sub-dashboard.html';
-
+      showState('stateProfile');
     } catch (err) {
-      errorMsg.textContent = 'Network error. Please try again.';
-      errorMsg.style.display = 'block';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Create account & go to dashboard →';
+      errEl.textContent = 'Network error. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Create account →';
     }
+  });
+
+  // Step 2: save profile
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('profileBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const profile = {
+      company_name: sessionData.profile?.company_name || '',
+      website: sessionData.profile?.website || '',
+      industry: document.getElementById('p-industry').value,
+      specific_product: document.getElementById('p-product').value.trim(),
+      offer: document.getElementById('p-offer').value.trim(),
+      buyer: document.getElementById('p-buyer').value.trim(),
+      geo: document.getElementById('p-geo').value.trim(),
+      competitors: document.getElementById('p-competitors').value.trim(),
+    };
+
+    try {
+      await fetch('/api/sub-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
+        body: JSON.stringify({ email: sessionData.email, password: '_noop_update_', profile }),
+      });
+    } catch (e) { /* non-critical, profile can be set on first run */ }
+
+    window.location.href = '/sub-audit.html';
+  });
+
+  // Skip profile
+  document.getElementById('skipProfile').addEventListener('click', () => {
+    window.location.href = '/sub-dashboard.html';
   });
 
   init();
