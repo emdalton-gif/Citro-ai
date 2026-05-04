@@ -169,27 +169,33 @@
     .section-title { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); line-height: 1.1; margin-bottom: 16px; }
     .section-sub { font-size: 17px; color: var(--mid); line-height: 1.75; max-width: 540px; }
 
+    /* ── BRAND NAME ── */
+    .brand-ace { font-weight: 800; color: var(--accent); }
+    .diff-section .brand-ace, .rp-section .brand-ace { color: #93C5FD; }
+
+    /* ── HERO BULLETS ── */
+    .hero-bullets { list-style: none; margin-bottom: 40px; display: flex; flex-direction: column; gap: 10px; }
+    .hero-bullets li { font-size: 17px; color: rgba(248,250,252,0.55); line-height: 1.6; display: flex; align-items: flex-start; gap: 12px; font-weight: 400; }
+    .hero-bullets li::before { content: '→'; color: #60A5FA; flex-shrink: 0; font-size: 14px; margin-top: 4px; }
+
     /* ── DIFFERENCE SECTION ── */
     .diff-section { background: var(--dark); padding: 96px 56px; }
-    .diff-inner { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .diff-hd { max-width: 680px; margin: 0 auto 64px; text-align: center; }
     .diff-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #60A5FA; margin-bottom: 16px; font-weight: 500; }
     .diff-title { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: #F8FAFC; line-height: 1.1; margin-bottom: 20px; }
-    .diff-body { font-size: 16px; color: rgba(248,250,252,0.5); line-height: 1.8; margin-bottom: 16px; }
-    .diff-body strong { color: rgba(248,250,252,0.85); font-weight: 600; }
-    .diff-attr { font-size: 13px; color: rgba(248,250,252,0.28); font-style: italic; margin-top: 8px; }
-    .diff-cards { display: flex; flex-direction: column; gap: 12px; }
-    .diff-card { border-radius: 12px; padding: 22px 24px; border: 1px solid var(--border-dark); }
-    .diff-card-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; font-weight: 500; }
-    .diff-card-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-    .diff-card-desc { font-size: 13px; line-height: 1.65; }
-    .diff-card.them { background: rgba(255,255,255,0.03); }
-    .diff-card.them .diff-card-label { color: rgba(248,250,252,0.25); }
-    .diff-card.them .diff-card-title { color: rgba(248,250,252,0.5); }
-    .diff-card.them .diff-card-desc { color: rgba(248,250,252,0.3); }
-    .diff-card.us { background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.25); }
-    .diff-card.us .diff-card-label { color: #60A5FA; }
-    .diff-card.us .diff-card-title { color: #F8FAFC; }
-    .diff-card.us .diff-card-desc { color: rgba(248,250,252,0.6); }
+    .diff-intro { font-size: 17px; color: rgba(248,250,252,0.5); line-height: 1.8; }
+    .diff-intro strong { color: rgba(248,250,252,0.85); font-weight: 600; }
+    .diff-table { max-width: 1120px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; }
+    .dt-header { display: grid; grid-template-columns: 200px 1fr 1fr; padding: 16px 24px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .dt-header-them { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(248,250,252,0.25); text-align: center; font-weight: 500; }
+    .dt-header-us { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #60A5FA; text-align: center; font-weight: 500; }
+    .dt-row { display: grid; grid-template-columns: 200px 1fr 1fr; border-top: 1px solid rgba(255,255,255,0.05); }
+    .dt-crit { padding: 20px 24px; font-size: 11px; font-family: var(--mono); color: rgba(248,250,252,0.3); display: flex; align-items: center; text-transform: uppercase; letter-spacing: 0.06em; }
+    .dt-them { padding: 20px 24px; font-size: 14px; color: rgba(248,250,252,0.3); display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.5; }
+    .dt-us { padding: 20px 24px; font-size: 14px; color: rgba(248,250,252,0.75); display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.5; font-weight: 500; background: rgba(37,99,235,0.06); border-left: 1px solid rgba(37,99,235,0.15); }
+    .dt-no { color: rgba(248,250,252,0.15); font-size: 20px; }
+    .dt-yes { color: #4ADE80; font-weight: 600; }
+    .diff-attr { max-width: 1120px; margin: 24px auto 0; font-size: 13px; color: rgba(248,250,252,0.2); font-style: italic; text-align: right; }
 
     /* ── STEPS ── */
     .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
@@ -273,8 +279,12 @@
       .section-title { font-size: 32px; }
       .steps { grid-template-columns: 1fr; gap: 14px; }
       .diff-section { padding: 64px 24px; }
-      .diff-inner { grid-template-columns: 1fr; gap: 48px; }
+      .diff-hd { margin-bottom: 40px; }
       .diff-title { font-size: 30px; }
+      .dt-header { grid-template-columns: 100px 1fr 1fr; padding: 12px 16px; }
+      .dt-row { grid-template-columns: 100px 1fr 1fr; }
+      .dt-crit { padding: 14px 12px; font-size: 9px; }
+      .dt-them, .dt-us { padding: 14px 12px; font-size: 13px; }
       .deliverables-section { padding: 64px 24px; }
       .deliverables { grid-template-columns: 1fr; margin-top: 40px; }
       .pricing-grid { grid-template-columns: 1fr; }
@@ -313,7 +323,11 @@
         Proprietary AI buyer simulation
       </div>
       <h1 class="hero-title">Your buyers ask AI<br>for a shortlist <span class="accent">before your<br>team gets the call.</span></h1>
-      <p class="hero-sub">RootACE simulates how real buyers discover your category across 7 AI platforms — diagnoses exactly why competitors win in AI results — and delivers a concrete plan to close the gap.</p>
+      <ul class="hero-bullets">
+        <li>Simulates how your buyers search AI for vendors like you</li>
+        <li>Diagnoses why competitors show up and you don't</li>
+        <li>Delivers a concrete 90-day plan to fix it</li>
+      </ul>
       <div class="hero-actions">
         <a href="/order.html" class="btn-hero">Run your audit — $299</a>
         <a href="/sample-audit.html" class="btn-hero-ghost">
@@ -386,27 +400,44 @@
 
 <!-- WHY DIFFERENT -->
 <div class="diff-section">
-  <div class="diff-inner">
-    <div>
-      <div class="diff-label">Why RootACE is different</div>
-      <div class="diff-title">More than a score.<br>A strategic diagnosis.</div>
-      <p class="diff-body">Every AI visibility tool tells you where you rank. RootACE tells you <strong>why you're losing</strong> — and exactly what to do about it.</p>
-      <p class="diff-body">Our proprietary Synthetic Buyer Simulation methodology constructs realistic buyer personas and runs them through blind AI evaluations across 7 platforms. We extract the causal reasons your competitors win in AI results — whether that's content gaps, structural deficiencies, or authority signals you haven't built yet.</p>
-      <p class="diff-attr">Built on RootPartners' proprietary AI buyer research framework.</p>
+  <div class="diff-hd">
+    <div class="diff-label">Why RootACE is different</div>
+    <div class="diff-title">More than a score.<br>A strategic diagnosis.</div>
+    <p class="diff-intro">Every AI visibility tool tells you where you rank. <strong>Root<span class="brand-ace">ACE</span> tells you why you're losing</strong> — and exactly what to do about it.</p>
+  </div>
+  <div class="diff-table">
+    <div class="dt-header">
+      <div></div>
+      <div class="dt-header-them">Others offer</div>
+      <div class="dt-header-us">Root<span class="brand-ace">ACE</span> delivers</div>
     </div>
-    <div class="diff-cards">
-      <div class="diff-card them">
-        <div class="diff-card-label">Others offer</div>
-        <div class="diff-card-title">An AI visibility score</div>
-        <div class="diff-card-desc">A number that tells you where you are. Useful as a benchmark. Not enough to act on.</div>
-      </div>
-      <div class="diff-card us">
-        <div class="diff-card-label">RootACE delivers</div>
-        <div class="diff-card-title">A strategic diagnosis + roadmap</div>
-        <div class="diff-card-desc">Root cause analysis. Competitive gap mapping. A 90-day action plan built from synthetic buyer intelligence — not keyword rankings.</div>
-      </div>
+    <div class="dt-row">
+      <div class="dt-crit">What you get</div>
+      <div class="dt-them">A visibility score</div>
+      <div class="dt-us">A strategic diagnosis + roadmap</div>
+    </div>
+    <div class="dt-row">
+      <div class="dt-crit">How it works</div>
+      <div class="dt-them">Keyword and ranking analysis</div>
+      <div class="dt-us">Synthetic buyer simulation across 7 AI platforms</div>
+    </div>
+    <div class="dt-row">
+      <div class="dt-crit">The output</div>
+      <div class="dt-them">Where you rank</div>
+      <div class="dt-us">Why you're losing and exactly what to fix</div>
+    </div>
+    <div class="dt-row">
+      <div class="dt-crit">Action plan</div>
+      <div class="dt-them"><span class="dt-no">✕</span></div>
+      <div class="dt-us"><span class="dt-yes">✓ 90-day roadmap included</span></div>
+    </div>
+    <div class="dt-row">
+      <div class="dt-crit">Root cause analysis</div>
+      <div class="dt-them"><span class="dt-no">✕</span></div>
+      <div class="dt-us"><span class="dt-yes">✓ Structural diagnosis</span></div>
     </div>
   </div>
+  <p class="diff-attr">Built on RootPartners' proprietary AI buyer research framework.</p>
 </div>
 
 <!-- HOW IT WORKS -->
@@ -424,7 +455,7 @@
       <div class="step">
         <div class="step-num">02 — Simulation</div>
         <div class="step-title">We simulate your buyers</div>
-        <div class="step-desc">RootACE constructs synthetic buyer personas and runs real-world queries across ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok — blind, with no brand signaling.</div>
+        <div class="step-desc">Root<span class="brand-ace">ACE</span> constructs synthetic buyer personas and runs real-world queries across ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok — blind, with no brand signaling.</div>
       </div>
       <div class="step">
         <div class="step-num">03 — Intelligence</div>
@@ -531,7 +562,7 @@
     <div>
       <div class="rp-label">Powered by RootPartners</div>
       <div class="rp-title">The firm behind the tool.</div>
-      <p class="rp-body">RootACE is built on the research and methodology developed by RootPartners — a consulting firm that helps B2B companies adapt their go-to-market systems for AI-driven buying environments. The audit is the starting point. The strategy is where we go next.</p>
+      <p class="rp-body">Root<span class="brand-ace">ACE</span> is built on the research and methodology developed by RootPartners — a consulting firm that helps B2B companies adapt their go-to-market systems for AI-driven buying environments. The audit is the starting point. The strategy is where we go next.</p>
       <a href="https://rootpartners.co" target="_blank" class="rp-cta">Learn about RootPartners →</a>
     </div>
     <div class="rp-cards">
