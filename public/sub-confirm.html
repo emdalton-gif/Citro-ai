@@ -28,18 +28,20 @@
     .card {
       background: #fff; border: 1px solid #E2E8F0; border-radius: 14px;
       padding: 44px 40px; max-width: 500px; width: 100%;
+      transition: max-width 0.3s ease;
     }
+    .card.wide { max-width: 740px; }
 
     /* Step indicator */
-    .steps { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; }
-    .step { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+    .steps { display: flex; align-items: center; gap: 6px; margin-bottom: 32px; }
+    .step { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; }
     .step-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
     .step.active .step-dot { background: var(--accent); color: #fff; }
     .step.done .step-dot { background: var(--green); color: #fff; }
     .step.inactive .step-dot { background: #F1F5F9; color: #94A3B8; }
     .step.active span { color: var(--dark); }
     .step.inactive span { color: #94A3B8; }
-    .step-divider { flex: 1; height: 1px; background: #E2E8F0; }
+    .step-divider { flex: 1; height: 1px; background: #E2E8F0; min-width: 12px; }
 
     .success-icon { width: 48px; height: 48px; background: #D1FAE5; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; }
     h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
@@ -78,11 +80,60 @@
     .spinner { width: 36px; height: 36px; border: 3px solid #E2E8F0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .section-divider { border: none; border-top: 1px solid #F1F5F9; margin: 24px 0; }
+    /* Research loading banner */
+    .research-banner {
+      display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+      background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px;
+      margin-bottom: 20px; font-size: 13px; color: #1D4ED8;
+    }
+    .mini-spinner { width: 16px; height: 16px; border: 2px solid #BFDBFE; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
 
-    @media (max-width: 560px) {
+    /* Persona cards */
+    .personas-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 16px; }
+    .persona-card { border: 1px solid #E2E8F0; border-radius: 10px; overflow: hidden; }
+    .persona-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #F8FAFC; padding: 11px 14px; border-bottom: 1px solid #E2E8F0;
+    }
+    .persona-num { font-size: 11px; font-weight: 700; color: var(--accent); font-family: var(--mono); margin-right: 10px; flex-shrink: 0; }
+    .persona-label-input {
+      flex: 1; font-size: 13px; font-weight: 700; color: var(--dark);
+      background: transparent; border: none; outline: none; font-family: var(--sans); min-width: 0;
+    }
+    .persona-label-input:focus { border-bottom: 1px solid var(--accent); }
+    .persona-delete { background: none; border: none; cursor: pointer; color: #CBD5E1; font-size: 15px; padding: 0 0 0 10px; line-height: 1; flex-shrink: 0; }
+    .persona-delete:hover { color: #DC2626; }
+    .persona-card-body { padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .persona-field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .persona-field input, .persona-field textarea {
+      width: 100%; font-family: var(--sans); font-size: 13px; color: var(--dark);
+      border: 1px solid #E2E8F0; border-radius: 5px; padding: 8px 10px;
+      outline: none; background: var(--bg); transition: border-color 0.2s;
+    }
+    .persona-field input:focus, .persona-field textarea:focus { border-color: var(--accent); background: #fff; }
+    .persona-field textarea { resize: vertical; min-height: 58px; }
+    .persona-field.full { grid-column: 1 / -1; }
+
+    .persona-actions { display: flex; gap: 10px; margin-bottom: 16px; }
+    .ghost-btn {
+      flex: 1; font-family: var(--sans); font-size: 13px; font-weight: 600;
+      padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    }
+    .ghost-btn.dashed { background: #F8FAFC; border: 1px dashed #CBD5E1; color: var(--muted); }
+    .ghost-btn.dashed:hover { border-color: var(--accent); color: var(--accent); background: #EFF6FF; }
+    .ghost-btn.solid { background: #F8FAFC; border: 1px solid #E2E8F0; color: var(--muted); }
+    .ghost-btn.solid:hover { border-color: #94A3B8; color: var(--dark); }
+
+    .persona-gen-loading { text-align: center; padding: 48px 0; }
+    .persona-gen-loading .spinner { margin-bottom: 14px; }
+    .persona-gen-loading p { font-size: 14px; color: var(--muted); }
+
+    @media (max-width: 600px) {
       .card { padding: 32px 24px; }
+      .card.wide { max-width: 100%; }
       .form-row { grid-template-columns: 1fr; }
+      .persona-card-body { grid-template-columns: 1fr; }
+      .step span { display: none; }
     }
   </style>
 </head>
@@ -95,7 +146,7 @@
 </nav>
 
 <div class="page-center">
-  <div class="card">
+  <div class="card" id="mainCard">
 
     <!-- Loading -->
     <div id="stateLoading">
@@ -111,6 +162,8 @@
         <div class="step active"><div class="step-dot">1</div><span>Create account</span></div>
         <div class="step-divider"></div>
         <div class="step inactive"><div class="step-dot">2</div><span>Company profile</span></div>
+        <div class="step-divider"></div>
+        <div class="step inactive"><div class="step-dot">3</div><span>Buyer personas</span></div>
       </div>
       <div class="success-icon">✓</div>
       <h1>Subscription confirmed.</h1>
@@ -137,11 +190,27 @@
         <div class="step done"><div class="step-dot">✓</div><span>Account created</span></div>
         <div class="step-divider"></div>
         <div class="step active"><div class="step-dot">2</div><span>Company profile</span></div>
+        <div class="step-divider"></div>
+        <div class="step inactive"><div class="step-dot">3</div><span>Buyer personas</span></div>
       </div>
-      <h1>Set up your first audit.</h1>
-      <p class="sub">Tell us about your business so we can simulate how your buyers search for you across AI platforms. This takes about 2 minutes and is saved for every future run.</p>
+      <h1>Review your company profile.</h1>
+      <p class="sub">We've pulled your basics from checkout and researched your company. Review the details below and make any changes before we build your buyer personas.</p>
+      <div id="researchBanner" class="research-banner" style="display:none;">
+        <div class="mini-spinner"></div>
+        <span>Researching your company…</span>
+      </div>
       <div class="error-msg" id="profileError"></div>
       <form id="profileForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Company name</label>
+            <input type="text" id="p-company" placeholder="Acme Corp" />
+          </div>
+          <div class="form-group">
+            <label>Website</label>
+            <input type="text" id="p-website" placeholder="yourcompany.com" />
+          </div>
+        </div>
         <div class="form-group">
           <label>Industry</label>
           <select id="p-industry">
@@ -160,17 +229,13 @@
           </select>
         </div>
         <div class="form-group">
-          <label>What product or service should we audit?</label>
+          <label>Specific product or service to audit</label>
           <input type="text" id="p-product" placeholder="e.g. our CRM platform, our consulting practice" />
           <span class="hint">Leave blank to audit your company overall</span>
         </div>
         <div class="form-group">
           <label>What problem do you solve for customers?</label>
           <textarea id="p-offer" placeholder="Brief description of your core value proposition..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Who is your ideal buyer?</label>
-          <input type="text" id="p-buyer" placeholder="e.g. VP of Marketing at Series B SaaS companies" />
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -182,9 +247,39 @@
             <input type="text" id="p-competitors" placeholder="Competitor A, B, C" />
           </div>
         </div>
-        <button type="submit" class="submit-btn" id="profileBtn">Save &amp; run my first audit →</button>
+        <button type="submit" class="submit-btn" id="profileBtn">Continue to buyer personas →</button>
       </form>
       <span class="skip-link" id="skipProfile">Skip for now, go to dashboard →</span>
+    </div>
+
+    <!-- Step 3: Buyer personas -->
+    <div id="statePersonas" style="display:none;">
+      <div class="steps">
+        <div class="step done"><div class="step-dot">✓</div><span>Account created</span></div>
+        <div class="step-divider"></div>
+        <div class="step done"><div class="step-dot">✓</div><span>Company profile</span></div>
+        <div class="step-divider"></div>
+        <div class="step active"><div class="step-dot">3</div><span>Buyer personas</span></div>
+      </div>
+
+      <div id="personaGenLoading" class="persona-gen-loading">
+        <div class="spinner"></div>
+        <p>Building your buyer personas…</p>
+      </div>
+
+      <div id="personaContent" style="display:none;">
+        <h1>Verify your buyer personas.</h1>
+        <p class="sub">We've built three personas based on your company profile. Edit any details, add more, or upload your own — these drive how we simulate buyer searches across AI platforms.</p>
+        <div class="error-msg" id="personaError"></div>
+        <div class="personas-grid" id="personasGrid"></div>
+        <div class="persona-actions">
+          <button class="ghost-btn dashed" onclick="addPersonaCard({})">+ Add persona</button>
+          <button class="ghost-btn solid" onclick="document.getElementById('personaUpload').click()">↑ Upload CSV</button>
+          <input type="file" id="personaUpload" accept=".csv,.txt" style="display:none;" onchange="handlePersonaUpload(event)" />
+        </div>
+        <button class="submit-btn" id="personaBtn" onclick="savePersonas()">Save personas &amp; run my first audit →</button>
+        <span class="skip-link" onclick="window.location.href='/sub-dashboard.html'">Skip for now, go to dashboard →</span>
+      </div>
     </div>
 
     <!-- Error state -->
@@ -201,11 +296,14 @@
   const sessionId = params.get('session_id');
   let sessionData = null;
   let subToken = null;
+  let savedProfile = null;
+  let personaCount = 0;
 
   function showState(id) {
-    ['stateLoading','statePassword','stateProfile','stateError'].forEach(s => {
+    ['stateLoading','statePassword','stateProfile','statePersonas','stateError'].forEach(s => {
       document.getElementById(s).style.display = s === id ? 'block' : 'none';
     });
+    document.getElementById('mainCard').classList.toggle('wide', id === 'statePersonas');
   }
 
   async function init() {
@@ -280,6 +378,7 @@
       localStorage.setItem('sub_token', data.token);
       localStorage.setItem('sub_email', data.email);
       showState('stateProfile');
+      prefillAndResearch();
     } catch (err) {
       errEl.textContent = 'Network error. Please try again.';
       errEl.style.display = 'block';
@@ -287,19 +386,68 @@
     }
   });
 
+  // Pre-fill form and auto-research company
+  async function prefillAndResearch() {
+    const companyName = sessionData.profile?.company_name || '';
+    const website = sessionData.profile?.website || '';
+
+    document.getElementById('p-company').value = companyName;
+    document.getElementById('p-website').value = website;
+
+    if (!companyName && !website) return;
+
+    document.getElementById('researchBanner').style.display = 'flex';
+
+    try {
+      const resp = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriberToken: subToken,
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 600,
+          system: 'You are a B2B market researcher. Return ONLY a valid JSON object, no explanation or markdown.',
+          messages: [{
+            role: 'user',
+            content: `Research this company and return a JSON object with these exact keys:\n- "industry": one of: "SaaS / Software", "Professional Services", "Financial Services", "Healthcare / Life Sciences", "Manufacturing / Industrial", "E-commerce / Retail", "Marketing / Advertising", "Real Estate", "Legal", "Education", "Other"\n- "offer": 2-3 sentence description of their core value proposition\n- "geo": their primary market geography (e.g. "United States", "North America", "Global")\n- "competitors": comma-separated list of 3-5 likely direct competitors\n\nCompany name: "${companyName}"\nWebsite: "${website}"\n\nReturn only the JSON object.`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = data.content?.[0]?.text || (typeof data.content === 'string' ? data.content : '') || '';
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        const r = JSON.parse(match[0]);
+        if (r.industry) {
+          const sel = document.getElementById('p-industry');
+          for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].text === r.industry) { sel.selectedIndex = i; break; }
+          }
+        }
+        if (r.offer) document.getElementById('p-offer').value = r.offer;
+        if (r.geo) document.getElementById('p-geo').value = r.geo;
+        if (r.competitors) document.getElementById('p-competitors').value = r.competitors;
+      }
+    } catch (err) { /* non-critical — user can fill manually */ }
+
+    document.getElementById('researchBanner').style.display = 'none';
+  }
+
   // Step 2: save profile
   document.getElementById('profileForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('profileBtn');
     btn.disabled = true; btn.textContent = 'Saving…';
 
-    const profile = {
-      company_name: sessionData.profile?.company_name || '',
-      website: sessionData.profile?.website || '',
+    let website = document.getElementById('p-website').value.trim();
+    if (website && !/^https?:\/\//i.test(website)) website = 'https://' + website;
+
+    savedProfile = {
+      company_name: document.getElementById('p-company').value.trim() || sessionData.profile?.company_name || '',
+      website,
       industry: document.getElementById('p-industry').value,
       specific_product: document.getElementById('p-product').value.trim(),
       offer: document.getElementById('p-offer').value.trim(),
-      buyer: document.getElementById('p-buyer').value.trim(),
       geo: document.getElementById('p-geo').value.trim(),
       competitors: document.getElementById('p-competitors').value.trim(),
     };
@@ -308,17 +456,151 @@
       await fetch('/api/sub-register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
-        body: JSON.stringify({ email: sessionData.email, password: '_noop_update_', profile }),
+        body: JSON.stringify({ email: sessionData.email, password: '_noop_update_', profile: savedProfile }),
       });
-    } catch (e) { /* non-critical, profile can be set on first run */ }
+    } catch (err) { /* non-critical */ }
 
-    window.location.href = '/sub-audit.html';
+    showState('statePersonas');
+    generatePersonas();
   });
 
-  // Skip profile
   document.getElementById('skipProfile').addEventListener('click', () => {
     window.location.href = '/sub-dashboard.html';
   });
+
+  // Step 3: generate personas
+  async function generatePersonas() {
+    document.getElementById('personaGenLoading').style.display = 'block';
+    document.getElementById('personaContent').style.display = 'none';
+
+    try {
+      const profile = savedProfile || { company_name: sessionData.profile?.company_name, website: sessionData.profile?.website };
+      const resp = await fetch('/api/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscriberToken: subToken,
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1200,
+          system: 'You are a B2B buyer persona expert. Return ONLY a valid JSON array, no explanation or markdown.',
+          messages: [{
+            role: 'user',
+            content: `Generate exactly 3 distinct buyer personas for this company. Return a JSON array of 3 objects, each with:\n- "label": 2-3 word persona archetype (e.g. "Strategic Buyer", "Technical Evaluator", "Executive Sponsor")\n- "title": specific job title (e.g. "VP of Marketing", "Director of IT")\n- "companyType": type and size of company this persona works at (e.g. "Series B SaaS, 50-200 employees")\n- "concern": their primary buying concern or pain point in 1-2 sentences\n\nCompany profile:\n${JSON.stringify(profile, null, 2)}\n\nReturn only the JSON array.`
+          }]
+        })
+      });
+      const data = await resp.json();
+      const text = data.content?.[0]?.text || (typeof data.content === 'string' ? data.content : '') || '';
+      const match = text.match(/\[[\s\S]*\]/);
+      if (match) {
+        renderPersonas(JSON.parse(match[0]));
+      } else {
+        renderPersonas([{}, {}, {}]);
+      }
+    } catch (err) {
+      renderPersonas([{}, {}, {}]);
+    }
+
+    document.getElementById('personaGenLoading').style.display = 'none';
+    document.getElementById('personaContent').style.display = 'block';
+  }
+
+  function renderPersonas(personas) {
+    document.getElementById('personasGrid').innerHTML = '';
+    personaCount = 0;
+    personas.forEach(p => addPersonaCard(p));
+  }
+
+  function addPersonaCard(p) {
+    p = p || {};
+    const id = personaCount++;
+    const grid = document.getElementById('personasGrid');
+    const card = document.createElement('div');
+    card.className = 'persona-card';
+    card.id = `pcard-${id}`;
+
+    const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+    card.innerHTML = `
+      <div class="persona-card-header">
+        <span class="persona-num">P${id + 1}</span>
+        <input class="persona-label-input" value="${esc(p.label)}" placeholder="Persona label (e.g. Strategic Buyer)" data-field="label" />
+        <button class="persona-delete" onclick="removePersona('pcard-${id}')" title="Remove">✕</button>
+      </div>
+      <div class="persona-card-body">
+        <div class="persona-field">
+          <label>Job title</label>
+          <input type="text" value="${esc(p.title)}" placeholder="e.g. VP of Marketing" data-field="title" />
+        </div>
+        <div class="persona-field">
+          <label>Company type</label>
+          <input type="text" value="${esc(p.companyType)}" placeholder="e.g. Series B SaaS, 50-200 employees" data-field="companyType" />
+        </div>
+        <div class="persona-field full">
+          <label>Primary concern</label>
+          <textarea data-field="concern" placeholder="Their main buying concern or pain point…">${esc(p.concern)}</textarea>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  }
+
+  function removePersona(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) card.remove();
+  }
+
+  function getPersonasFromDOM() {
+    return Array.from(document.querySelectorAll('#personasGrid .persona-card')).map(card => ({
+      label: card.querySelector('[data-field="label"]')?.value || '',
+      title: card.querySelector('[data-field="title"]')?.value || '',
+      companyType: card.querySelector('[data-field="companyType"]')?.value || '',
+      concern: card.querySelector('[data-field="concern"]')?.value || '',
+    })).filter(p => p.label || p.title);
+  }
+
+  function handlePersonaUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const lines = e.target.result.trim().split('\n').filter(l => l.trim());
+      const startIdx = lines[0]?.toLowerCase().includes('label') || lines[0]?.toLowerCase().includes('title') ? 1 : 0;
+      let added = 0;
+      for (let i = startIdx; i < lines.length; i++) {
+        const parts = lines[i].split(',').map(p => p.trim().replace(/^"|"$/g, ''));
+        if (parts.length >= 2) {
+          addPersonaCard({ label: parts[0], title: parts[1], companyType: parts[2] || '', concern: parts[3] || '' });
+          added++;
+        }
+      }
+      if (added === 0) {
+        const err = document.getElementById('personaError');
+        err.textContent = 'Could not parse the file. Expected CSV format: label, title, company type, concern.';
+        err.style.display = 'block';
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  }
+
+  async function savePersonas() {
+    const btn = document.getElementById('personaBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const personas = getPersonasFromDOM();
+    const profileWithPersonas = { ...(savedProfile || {}), personas };
+
+    try {
+      await fetch('/api/sub-register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
+        body: JSON.stringify({ email: sessionData.email, password: '_noop_update_', profile: profileWithPersonas }),
+      });
+    } catch (err) { /* non-critical */ }
+
+    window.location.href = '/sub-audit.html';
+  }
 
   init();
 </script>
