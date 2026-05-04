@@ -181,15 +181,15 @@
 
   <!-- RIGHT — form -->
   <div class="form-card">
-    <h2>Set up your subscription</h2>
-    <p>Tell us about your company and we'll set up your account. You'll choose a password after checkout.</p>
+    <h2>Get started in 30 seconds.</h2>
+    <p>Enter your details to go to checkout. You'll set a password and complete your company profile right after — it only takes a minute.</p>
 
     <div class="error-msg" id="errorMsg"></div>
 
     <form id="subscribeForm">
       <div class="form-group">
         <label for="email">Work email *</label>
-        <input type="email" id="email" name="email" placeholder="you@company.com" required />
+        <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email" />
       </div>
 
       <div class="form-group">
@@ -200,51 +200,6 @@
       <div class="form-group">
         <label for="website">Company website *</label>
         <input type="url" id="website" name="website" placeholder="https://yourcompany.com" required />
-      </div>
-
-      <div class="form-group">
-        <label for="industry">Industry</label>
-        <select id="industry" name="industry">
-          <option value="">Select industry...</option>
-          <option>SaaS / Software</option>
-          <option>Professional Services</option>
-          <option>Financial Services</option>
-          <option>Healthcare / Life Sciences</option>
-          <option>Manufacturing / Industrial</option>
-          <option>E-commerce / Retail</option>
-          <option>Marketing / Advertising</option>
-          <option>Real Estate</option>
-          <option>Legal</option>
-          <option>Education</option>
-          <option>Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="specific_product">What product or service should we audit?</label>
-        <input type="text" id="specific_product" name="specific_product" placeholder="e.g. our CRM platform, our HR consulting practice" />
-        <span class="hint">Leave blank to audit your company overall</span>
-      </div>
-
-      <div class="form-group">
-        <label for="offer">What problem do you solve for customers?</label>
-        <textarea id="offer" name="offer" placeholder="Brief description of your core value proposition..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="buyer">Who is your ideal buyer?</label>
-        <input type="text" id="buyer" name="buyer" placeholder="e.g. VP of Marketing at Series B SaaS companies" />
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="geo">Primary geography</label>
-          <input type="text" id="geo" name="geo" placeholder="e.g. US, North America" />
-        </div>
-        <div class="form-group">
-          <label for="competitors">Key competitors</label>
-          <input type="text" id="competitors" name="competitors" placeholder="Competitor A, B, C" />
-        </div>
       </div>
 
       <button type="submit" class="submit-btn" id="submitBtn">
@@ -288,12 +243,6 @@
       email: document.getElementById('email').value.trim(),
       name: document.getElementById('name').value.trim(),
       website: document.getElementById('website').value.trim(),
-      industry: document.getElementById('industry').value,
-      specific_product: document.getElementById('specific_product').value.trim(),
-      offer: document.getElementById('offer').value.trim(),
-      buyer: document.getElementById('buyer').value.trim(),
-      geo: document.getElementById('geo').value.trim(),
-      competitors: document.getElementById('competitors').value.trim(),
     };
 
     try {
