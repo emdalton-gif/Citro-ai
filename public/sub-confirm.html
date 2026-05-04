@@ -233,10 +233,6 @@
           <input type="text" id="p-product" placeholder="e.g. our CRM platform, our consulting practice" />
           <span class="hint">Leave blank to audit your company overall</span>
         </div>
-        <div class="form-group">
-          <label>What problem do you solve for customers?</label>
-          <textarea id="p-offer" placeholder="Brief description of your core value proposition..."></textarea>
-        </div>
         <div class="form-row">
           <div class="form-group">
             <label>Primary geography</label>
@@ -401,9 +397,8 @@
     try {
       const resp = await fetch('/api/claude', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
         body: JSON.stringify({
-          subscriberToken: subToken,
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 600,
           system: 'You are a B2B market researcher. Return ONLY a valid JSON object, no explanation or markdown.',
@@ -447,7 +442,6 @@
       website,
       industry: document.getElementById('p-industry').value,
       specific_product: document.getElementById('p-product').value.trim(),
-      offer: document.getElementById('p-offer').value.trim(),
       geo: document.getElementById('p-geo').value.trim(),
       competitors: document.getElementById('p-competitors').value.trim(),
     };
@@ -477,9 +471,8 @@
       const profile = savedProfile || { company_name: sessionData.profile?.company_name, website: sessionData.profile?.website };
       const resp = await fetch('/api/claude', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
         body: JSON.stringify({
-          subscriberToken: subToken,
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 1200,
           system: 'You are a B2B buyer persona expert. Return ONLY a valid JSON array, no explanation or markdown.',
