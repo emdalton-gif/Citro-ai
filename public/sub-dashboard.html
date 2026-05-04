@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — RootACE Active Optimization</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8FAFC; --dark: #0B0F1A; --dark-2: #111827; --dark-3: #1E293B;
+      --accent: #2563EB; --accent-light: #3B82F6; --accent-dim: #93C5FD;
+      --green: #059669; --green-bg: #D1FAE5; --amber: #D97706; --amber-bg: #FEF3C7;
+      --red: #DC2626; --red-bg: #FEF2F2;
+      --muted: #64748B; --border: #E2E8F0;
+      --sans: 'Inter', system-ui, sans-serif; --mono: 'DM Mono', monospace;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 60px; background: var(--dark);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 700; color: #fff; }
+    .nav-logo-ace { font-size: 18px; font-weight: 800; color: #2563EB; }
+    .nav-tag { font-size: 11px; font-family: var(--mono); color: rgba(255,255,255,0.35); margin-left: 10px; letter-spacing: 0.06em; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-email { font-size: 13px; color: rgba(255,255,255,0.45); }
+    .nav-signout { font-size: 13px; color: rgba(255,255,255,0.4); text-decoration: none; cursor: pointer; background: none; border: none; font-family: var(--sans); transition: color 0.2s; }
+    .nav-signout:hover { color: rgba(255,255,255,0.8); }
+
+    /* LAYOUT */
+    .page { max-width: 1000px; margin: 0 auto; padding: 48px 32px; }
+
+    /* STATUS BANNER */
+    .status-banner {
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 32px;
+      display: flex; align-items: center; gap: 12px; font-size: 14px;
+    }
+    .status-banner.active { background: var(--green-bg); color: #065F46; border: 1px solid #A7F3D0; }
+    .status-banner.past_due { background: var(--amber-bg); color: #92400E; border: 1px solid #FDE68A; }
+    .status-banner.canceled { background: var(--red-bg); color: #991B1B; border: 1px solid #FCA5A5; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.active { background: var(--green); }
+    .status-dot.past_due { background: var(--amber); }
+    .status-dot.canceled { background: var(--red); }
+
+    /* TOP ROW */
+    .top-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; flex-wrap: wrap; gap: 16px; }
+    .top-row h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+    .run-btn {
+      background: var(--accent); color: #fff; font-family: var(--sans); font-size: 14px;
+      font-weight: 600; padding: 12px 24px; border-radius: 8px; border: none;
+      cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-block;
+    }
+    .run-btn:hover { background: var(--accent-light); }
+    .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* STATS ROW */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+    .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+    .stat-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dark); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.amber { color: var(--amber); }
+    .stat-value.red { color: var(--red); }
+    .stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    /* RUN HISTORY */
+    .section-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .runs-table { background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .runs-header { display: grid; grid-template-columns: 1fr 120px 100px 100px; padding: 12px 20px; background: #F8FAFC; border-bottom: 1px solid var(--border); }
+    .runs-header span { font-size: 11px; font-family: var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .run-row { display: grid; grid-template-columns: 1fr 120px 100px 100px; padding: 16px 20px; border-bottom: 1px solid #F1F5F9; align-items: center; transition: background 0.15s; cursor: pointer; text-decoration: none; color: inherit; }
+    .run-row:last-child { border-bottom: none; }
+    .run-row:hover { background: #F8FAFC; }
+    .run-company { font-size: 14px; font-weight: 600; color: var(--dark); }
+    .run-date { font-size: 13px; color: var(--muted); }
+    .run-score { font-size: 16px; font-weight: 700; }
+    .run-score.green { color: var(--green); }
+    .run-score.amber { color: var(--amber); }
+    .run-score.red { color: var(--red); }
+    .run-score.none { color: #CBD5E1; font-size: 13px; font-weight: 400; }
+    .run-action { font-size: 13px; color: var(--accent); font-weight: 500; }
+
+    .empty-runs {
+      padding: 48px 24px; text-align: center;
+    }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-runs h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .empty-runs p { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; max-width: 360px; margin-left: auto; margin-right: auto; }
+
+    /* LOADING */
+    .loading-wrap { text-align: center; padding: 80px 20px; }
+    .spinner { width: 36px; height: 36px; border: 3px solid #E2E8F0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* BILLING LINK */
+    .billing-row { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .billing-text { font-size: 14px; color: var(--muted); }
+    .billing-link { font-size: 14px; color: var(--accent); text-decoration: none; font-weight: 500; }
+    .billing-link:hover { text-decoration: underline; }
+
+    @media (max-width: 700px) {
+      .page { padding: 32px 16px; }
+      nav { padding: 0 20px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .runs-header { grid-template-columns: 1fr 90px 80px; }
+      .run-row { grid-template-columns: 1fr 90px 80px; }
+      .runs-header span:last-child, .run-row > *:last-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span>
+    <span class="nav-tag">Active Optimization</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-email" id="navEmail"></span>
+    <button class="nav-signout" id="signOutBtn">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+  <!-- Loading state -->
+  <div class="loading-wrap" id="loadingWrap">
+    <div class="spinner"></div>
+    <p style="font-size:14px;color:var(--muted);">Loading your dashboard…</p>
+  </div>
+
+  <!-- Dashboard content -->
+  <div id="dashContent" style="display:none;">
+
+    <div id="statusBanner" class="status-banner active" style="display:none;">
+      <div class="status-dot active" id="statusDot"></div>
+      <span id="statusText"></span>
+    </div>
+
+    <div class="top-row">
+      <h1>Your audits</h1>
+      <a href="/sub-audit.html" class="run-btn" id="runBtn">+ Run new audit</a>
+    </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-label">Total runs</div>
+        <div class="stat-value" id="statRuns">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Latest score</div>
+        <div class="stat-value" id="statLatest">—</div>
+        <div class="stat-sub" id="statLatestSub">Run an audit to see your score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Score trend</div>
+        <div class="stat-value" id="statTrend">—</div>
+        <div class="stat-sub" id="statTrendSub">vs. previous run</div>
+      </div>
+    </div>
+
+    <div class="section-label">Run history</div>
+    <div class="runs-table" id="runsTable">
+      <div class="empty-runs">
+        <div class="empty-icon">📊</div>
+        <h3>No audits yet.</h3>
+        <p>Run your first audit to see how you're showing up across AI platforms — and what it would take to rank higher.</p>
+        <a href="/sub-audit.html" class="run-btn">Run your first audit →</a>
+      </div>
+    </div>
+
+    <div class="billing-row">
+      <span class="billing-text">Manage your subscription, update payment method, or cancel.</span>
+      <a href="#" class="billing-link" id="billingPortalLink">Billing portal →</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const token = localStorage.getItem('sub_token');
+  const email = localStorage.getItem('sub_email');
+
+  if (!token) window.location.href = '/sub-login.html';
+
+  document.getElementById('navEmail').textContent = email || '';
+  document.getElementById('signOutBtn').addEventListener('click', () => {
+    localStorage.removeItem('sub_token');
+    localStorage.removeItem('sub_email');
+    window.location.href = '/sub-login.html';
+  });
+
+  // Billing portal
+  document.getElementById('billingPortalLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const resp = await fetch('/api/customer-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ email }),
+      });
+      const data = await resp.json();
+      if (data.url) window.location.href = data.url;
+    } catch (err) {
+      alert('Could not open billing portal. Please contact support@rootpartners.co');
+    }
+  });
+
+  function scoreClass(s) {
+    if (s === null || s === undefined) return 'none';
+    if (s >= 65) return 'green';
+    if (s >= 40) return 'amber';
+    return 'red';
+  }
+
+  function formatDate(ts) {
+    return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  async function loadDashboard() {
+    try {
+      const resp = await fetch('/api/sub-dashboard', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (resp.status === 401) {
+        localStorage.removeItem('sub_token');
+        window.location.href = '/sub-login.html';
+        return;
+      }
+
+      const data = await resp.json();
+
+      document.getElementById('loadingWrap').style.display = 'none';
+      document.getElementById('dashContent').style.display = 'block';
+
+      // Status banner
+      const banner = document.getElementById('statusBanner');
+      const dot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const status = data.subscriptionStatus || 'active';
+
+      if (status !== 'active') {
+        banner.style.display = 'flex';
+        banner.className = `status-banner ${status}`;
+        dot.className = `status-dot ${status}`;
+        if (status === 'past_due') {
+          statusText.innerHTML = 'Your last payment failed. Please <a href="#" id="updatePayLink" style="color:inherit;font-weight:700;">update your payment method</a> to keep running audits.';
+          document.getElementById('runBtn').disabled = false; // still allow for now
+        } else if (status === 'canceled') {
+          statusText.innerHTML = 'Your subscription has been canceled. <a href="/subscribe.html" style="color:inherit;font-weight:700;">Resubscribe →</a>';
+          document.getElementById('runBtn').disabled = true;
+          document.getElementById('runBtn').style.opacity = '0.4';
+          document.getElementById('runBtn').removeAttribute('href');
+        }
+      }
+
+      // Stats
+      const runs = data.runs || [];
+      document.getElementById('statRuns').textContent = runs.length;
+
+      if (runs.length > 0 && runs[0].overallScore !== null) {
+        const latest = runs[0].overallScore;
+        const el = document.getElementById('statLatest');
+        el.textContent = latest + '%';
+        el.className = `stat-value ${scoreClass(latest)}`;
+        document.getElementById('statLatestSub').textContent = formatDate(runs[0].createdAt);
+
+        if (runs.length > 1 && runs[1].overallScore !== null) {
+          const prev = runs[1].overallScore;
+          const diff = latest - prev;
+          const trendEl = document.getElementById('statTrend');
+          trendEl.textContent = (diff >= 0 ? '+' : '') + diff + '%';
+          trendEl.className = `stat-value ${diff >= 0 ? 'green' : 'red'}`;
+          document.getElementById('statTrendSub').textContent = 'vs. previous run';
+        } else {
+          document.getElementById('statTrend').textContent = '—';
+          document.getElementById('statTrendSub').textContent = 'Need 2+ runs to compare';
+        }
+      }
+
+      // Runs table
+      if (runs.length > 0) {
+        const table = document.getElementById('runsTable');
+        table.innerHTML = `
+          <div class="runs-header">
+            <span>Company</span>
+            <span>Date</span>
+            <span>Score</span>
+            <span>Action</span>
+          </div>
+        `;
+        runs.forEach(run => {
+          const row = document.createElement('a');
+          row.className = 'run-row';
+          row.href = `/sub-audit.html?runId=${run.runId}`;
+          const sc = run.overallScore;
+          row.innerHTML = `
+            <div class="run-company">${run.companyName || '—'}</div>
+            <div class="run-date">${formatDate(run.createdAt)}</div>
+            <div class="run-score ${scoreClass(sc)}">${sc !== null && sc !== undefined ? sc + '%' : '—'}</div>
+            <div class="run-action">View report →</div>
+          `;
+          table.appendChild(row);
+        });
+      }
+
+    } catch (err) {
+      console.error('Dashboard load error:', err);
+      document.getElementById('loadingWrap').innerHTML = '<p style="text-align:center;color:var(--muted);padding:48px;">Could not load dashboard. Please refresh or contact support.</p>';
+    }
+  }
+
+  loadDashboard();
+</script>
+</body>
+</html>
