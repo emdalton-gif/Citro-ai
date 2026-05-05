@@ -97,6 +97,9 @@
     .ql-dot.fail { background: var(--red); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
     .ql-platform { font-family: var(--mono); font-size: 11px; color: var(--muted); width: 100px; flex-shrink: 0; }
+    .ql-source-badge { font-size: 9px; font-weight: 700; letter-spacing: .05em; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
+    .ql-source-badge.live { background: #DCFCE7; color: #15803D; }
+    .ql-source-badge.est  { background: #F1F5F9; color: #94A3B8; }
     .ql-text { color: var(--dark); }
 
     /* ── RESULTS SCREEN ── */
@@ -423,7 +426,7 @@
     const ps = personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const currentYear = new Date().getFullYear();
-    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an AI visibility audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query.\n- Assign each query to a realistic platform (mix across ChatGPT, Perplexity, Google Gemini, Claude, Microsoft Copilot, Meta AI, Grok).\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot|Meta AI|Grok","brand_specific":true|false}` }]);
+    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an AI visibility audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query.\n- Platform assignment (IMPORTANT — assign exactly): 3 queries to Perplexity, 2 queries to ChatGPT, and the remaining 3 distributed across Google Gemini, Claude, and Microsoft Copilot.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot","brand_specific":true|false}` }]);
     return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(q => ({...q, checked: true}));
   }
 
@@ -437,8 +440,12 @@
     function normalizeComp(name) { return aliasMap[name.toLowerCase()] || name; }
     const aliasCtx = Object.keys(aliasMap).length ? `\nIMPORTANT: normalize competitor names: ${Object.entries(aliasMap).map(([k,v]) => `"${k}" -> "${v}"`).join(', ')}.` : '';
 
+    const LIVE_PLATFORMS = ['Perplexity', 'ChatGPT'];
     const qlItems = document.getElementById('ql-items');
-    qlItems.innerHTML = active.map((q, i) => `<div class="ql-item"><div class="ql-dot pending" id="qldot-${i}"></div><span class="ql-platform">${esc(q.platform)}</span><span class="ql-text">${esc(q.text)}</span></div>`).join('');
+    qlItems.innerHTML = active.map((q, i) => {
+      const isLive = LIVE_PLATFORMS.includes(q.platform);
+      return `<div class="ql-item"><div class="ql-dot pending" id="qldot-${i}"></div><span class="ql-platform">${esc(q.platform)}</span><span class="ql-text">${esc(q.text)}</span></div>`;
+    }).join('');
     document.getElementById('query-log').style.display = 'block';
 
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
@@ -449,9 +456,31 @@
       const convLabel = {'lead':'your goal is to find a vendor and submit a lead form','call':'your goal is to find the right vendor and call their sales team','ecommerce':'your goal is to find the right product and purchase it online'}[persona?.conversionGoal] || 'your goal is to find a solution';
       const pCtx = persona ? `You are ${persona.name||'a buyer'}, ${persona.title||'decision maker'} at ${persona.company||'a company'} (${persona.buyerType||'B2C'} buyer). Goal: ${persona.goal}. Pain: ${persona.pain}.${persona.motivation?' Motivation: '+persona.motivation:''} When searching, ${convLabel}.` : 'You are a buyer looking for a solution.';
       try {
-        const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
-        const simResponse = await callClaude([{ role:'user', content:`Query: "${q.text}"` }], simSys, 600);
-        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${simResponse}"\n\nEvaluate for the brand "${subjectCtx}". Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named in the response"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
+        // ── Get platform response: live API or simulation ──
+        let platformResponse = '';
+        let isLive = false;
+        if (LIVE_PLATFORMS.includes(q.platform)) {
+          try {
+            const liveResp = await fetch('/api/live-query', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+              body: JSON.stringify({ query: q.text, platform: q.platform }),
+            });
+            if (liveResp.ok) {
+              const liveData = await liveResp.json();
+              platformResponse = liveData.response;
+              isLive = true;
+            }
+          } catch(liveErr) { /* fall through to simulation */ }
+        }
+        if (!platformResponse) {
+          // Simulation fallback for non-live platforms (or if live call failed)
+          const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
+          platformResponse = await callClaude([{ role:'user', content:`Query: "${q.text}"` }], simSys, 600);
+        }
+
+        // ── Evaluate the response ──
+        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${platformResponse}"\n\nEvaluate for the brand "${subjectCtx}". Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named in the response"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
         const evalRaw = await callClaude([{ role:'user', content:evalPrompt }], null, 400);
         const evaluated = JSON.parse(evalRaw.replace(/```json|```/g,'').trim());
         if (evaluated.mention_rank != null) {
@@ -460,10 +489,10 @@
         }
         if (evaluated.competitors_mentioned) evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))];
         if (dot) dot.className = 'ql-dot done';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, ...evaluated };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: isLive, response: platformResponse, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, visibility: 'none', mentions_client: false, insight: 'Simulation error', response: '', competitors_mentioned: [] };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: false, visibility: 'none', mentions_client: false, insight: 'Query error', response: '', competitors_mentioned: [] };
       }
     }));
     return results;
@@ -503,7 +532,10 @@
     const sc = scoreClass(score);
 
     document.getElementById('res-title').textContent = `AI Visibility Report — ${profile.company_name}`;
-    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${organic.length} advisory simulations · ${platforms} platforms`;
+    const liveCount = simResults.filter(x=>x.is_live).length;
+    const estCount = simResults.filter(x=>!x.is_live).length;
+    const sourceLabel = liveCount > 0 ? `${liveCount} live · ${estCount} estimated` : `${estCount} simulated`;
+    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${sourceLabel} · ${platforms} platforms`;
 
     const scoreNum = document.getElementById('score-num');
     scoreNum.textContent = score + '%';
