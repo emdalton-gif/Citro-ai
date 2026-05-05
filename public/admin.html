@@ -969,6 +969,16 @@ function renderReport(id) {
           </div>`).join('')}
         </div>
       </div>` : ''}
+
+      <div style="margin-top:32px;padding:28px 32px;background:linear-gradient(135deg,rgba(29,158,117,0.06) 0%,rgba(29,158,117,0.02) 100%);border:1px solid rgba(29,158,117,0.2);border-radius:12px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#1D9E75;margin-bottom:12px">What This Report Surfaces</div>
+        <p style="font-size:15px;line-height:1.7;color:var(--dark);margin-bottom:10px;font-weight:500">This audit shows the external problem: where you stand with AI buyers today, and what to change.</p>
+        <p style="font-size:14px;line-height:1.75;color:var(--muted);margin-bottom:20px">Closing a visibility gap requires the internal capability to act on it consistently over time. Most organizations that see results like these move from a single audit to a structured program — either ongoing optimization to track whether changes are moving the needle, or a deeper engagement to redesign how the marketing function is built.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a href="https://rootpartners.co#services" target="_blank" style="display:inline-block;padding:10px 20px;background:#1D9E75;color:#fff;text-decoration:none;border-radius:6px;font-size:13px;font-weight:500;letter-spacing:.01em">See how Root Partners works →</a>
+          <a href="https://calendly.com/eric-rootpartners/30min" target="_blank" style="display:inline-block;padding:10px 20px;background:transparent;color:#1D9E75;text-decoration:none;border-radius:6px;font-size:13px;font-weight:500;border:1px solid rgba(29,158,117,0.35)">Talk to us about your results →</a>
+        </div>
+      </div>
     </div>`;
 
   requestAnimationFrame(() => initReportCharts(id, score, scoreColor, platforms, organic, topComps));
