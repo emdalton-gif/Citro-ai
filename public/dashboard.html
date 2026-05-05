@@ -3,153 +3,436 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Dashboard | RootACE</title>
+  <title>My Reports | RootACE</title>
   <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #F5F0E8; --surface: #FAF7F2; --ink: #1A1A18; --ink-2: #3D3D3B;
-      --mid: #6B6B67; --quiet: #9E9E9A; --faint: rgba(26,26,24,0.04);
-      --border: rgba(26,26,24,0.1);
-      --green: #1D9E75; --green-d: #723D22; --green-bg: rgba(29,158,117,0.08);
-      --red: #C0392B; --red-bg: rgba(192,57,43,0.07);
-      --serif: 'Playfair Display', Georgia, serif;
-      --sans: 'Inter', system-ui, sans-serif;
-      --mono: 'DM Mono', monospace;
+      --bg:          #F8FAFC;
+      --surface:     #FFFFFF;
+      --surface-2:   #F1F5F9;
+      --dark:        #0B0F1A;
+      --ink:         #0F172A;
+      --ink-2:       #1E293B;
+      --mid:         #64748B;
+      --quiet:       #94A3B8;
+      --border:      rgba(15,23,42,0.08);
+      --accent:      #2563EB;
+      --accent-d:    #1D4ED8;
+      --accent-light:rgba(37,99,235,0.08);
+      --accent-ring: rgba(37,99,235,0.18);
+      --green:       #059669;
+      --green-bg:    rgba(5,150,105,0.08);
+      --amber:       #D97706;
+      --red:         #DC2626;
+      --red-bg:      rgba(220,38,38,0.06);
+      --sans:        'Inter', system-ui, sans-serif;
+      --mono:        'DM Mono', monospace;
     }
     body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; }
 
-    /* NAV */
-    nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-family: var(--serif); font-size: 22px; font-style: italic; text-decoration: none; color: var(--ink); }
-    .nav-logo em { font-style: normal; color: var(--green); }
+    /* ── NAV ── */
+    nav {
+      background: rgba(248,250,252,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
     .nav-right { display: flex; align-items: center; gap: 20px; }
     .nav-email { font-size: 13px; color: var(--mid); }
-    .nav-signout { font-size: 13px; color: var(--mid); background: none; border: none; cursor: pointer; padding: 0; }
+    .nav-signout { font-size: 13px; font-weight: 500; color: var(--mid); background: none; border: none; cursor: pointer; padding: 0; font-family: var(--sans); transition: color 0.15s; }
     .nav-signout:hover { color: var(--ink); }
 
-    /* LAYOUT */
-    .wrap { max-width: 900px; margin: 0 auto; padding: 0 32px; }
+    /* ── LAYOUT ── */
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 32px 80px; }
 
-    /* HEADER */
-    .page-header { padding: 48px 0 36px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
-    .page-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
-    .page-title { font-family: var(--serif); font-size: 36px; margin-bottom: 6px; }
-    .page-sub { color: var(--mid); font-size: 15px; }
-
-    /* ACTION BAR */
-    .action-bar { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; border: 1px solid var(--border); background: var(--surface); color: var(--ink); transition: all 0.15s; }
-    .btn:hover { border-color: var(--ink); }
-    .btn.primary { background: var(--green); color: white; border-color: var(--green); }
-    .btn.primary:hover { background: var(--green-d); border-color: var(--green-d); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* SECTION LABEL */
-    .section-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--quiet); margin-bottom: 16px; }
-
-    /* AUDIT CARDS */
-    .audit-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 60px; }
-    .audit-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-      padding: 24px 28px; display: flex; align-items: center; justify-content: space-between;
-      gap: 24px; transition: border-color 0.15s;
+    /* ── PAGE HEADER ── */
+    .page-header {
+      padding: 48px 0 40px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
     }
-    .audit-card:hover { border-color: rgba(26,26,24,0.25); }
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .page-sub { color: var(--mid); font-size: 14px; line-height: 1.5; }
+
+    /* ── HEADER ACTIONS ── */
+    .header-actions { display: flex; gap: 10px; flex-shrink: 0; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      letter-spacing: -0.1px;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--accent-d); }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 18px;
+      background: var(--surface);
+      color: var(--ink-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-outline:hover { border-color: var(--ink); }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--quiet);
+      margin-bottom: 16px;
+    }
+
+    /* ── AUDIT CARDS ── */
+    .audit-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
+    .audit-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+    }
+    .audit-card:hover { border-color: rgba(37,99,235,0.25); box-shadow: 0 2px 8px rgba(15,23,42,0.07); }
     .audit-info { flex: 1; min-width: 0; }
-    .audit-company { font-size: 17px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .audit-company {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.2px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .audit-meta { font-size: 13px; color: var(--mid); }
-    .audit-score { flex-shrink: 0; text-align: center; }
-    .score-num { font-family: var(--mono); font-size: 28px; font-weight: 500; line-height: 1; }
-    .score-label { font-size: 11px; color: var(--quiet); margin-top: 2px; }
-    .score-high { color: var(--green); }
-    .score-mid { color: #D97706; }
-    .score-low { color: var(--red); }
+    .plan-pill {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .plan-pill.snapshot { background: var(--surface-2); color: var(--quiet); border: 1px solid var(--border); }
+    .plan-pill.active   { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(37,99,235,0.2); }
+
+    .audit-score { flex-shrink: 0; text-align: center; min-width: 64px; }
+    .score-num {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: 500;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .score-num.high { color: var(--green); }
+    .score-num.mid  { color: var(--amber); }
+    .score-num.low  { color: var(--red); }
+    .score-label { font-size: 11px; color: var(--quiet); }
+
     .audit-actions { flex-shrink: 0; }
-    .view-btn { padding: 8px 16px; background: var(--faint); border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-weight: 500; color: var(--ink); text-decoration: none; transition: all 0.15s; white-space: nowrap; }
-    .view-btn:hover { background: var(--ink); color: white; border-color: var(--ink); }
+    .view-btn {
+      padding: 8px 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink-2);
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .view-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    /* PLAN BADGE */
-    .plan-badge { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: var(--green-bg); color: var(--green); margin-left: 8px; vertical-align: middle; }
-    .plan-badge.snapshot { background: var(--faint); color: var(--quiet); }
+    /* ── UPGRADE CALLOUT ── */
+    .upgrade-callout {
+      background: var(--dark);
+      border-radius: 14px;
+      padding: 32px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+    .upgrade-text {}
+    .upgrade-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(248,250,252,0.4);
+      margin-bottom: 8px;
+    }
+    .upgrade-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #F8FAFC;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+    .upgrade-sub {
+      font-size: 13px;
+      color: rgba(248,250,252,0.55);
+      line-height: 1.55;
+      max-width: 420px;
+    }
+    .upgrade-actions { display: flex; gap: 10px; flex-shrink: 0; }
+    .btn-upgrade-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 22px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+      letter-spacing: -0.1px;
+      white-space: nowrap;
+    }
+    .btn-upgrade-primary:hover { background: var(--accent-d); }
+    .btn-upgrade-ghost {
+      display: inline-flex;
+      align-items: center;
+      padding: 11px 22px;
+      background: transparent;
+      color: rgba(248,250,252,0.6);
+      border: 1px solid rgba(248,250,252,0.15);
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-upgrade-ghost:hover { color: #F8FAFC; border-color: rgba(248,250,252,0.3); }
 
-    /* EMPTY STATE */
-    .empty { text-align: center; padding: 64px 24px; color: var(--mid); }
-    .empty-icon { font-size: 36px; margin-bottom: 16px; }
-    .empty-title { font-family: var(--serif); font-size: 22px; color: var(--ink); margin-bottom: 8px; }
-    .empty-sub { font-size: 14px; line-height: 1.7; max-width: 380px; margin: 0 auto 24px; }
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 72px 24px;
+      color: var(--mid);
+    }
+    .empty-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--accent-light);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .empty-icon svg { color: var(--accent); }
+    .empty-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.3px;
+      margin-bottom: 8px;
+    }
+    .empty-sub {
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 380px;
+      margin: 0 auto 28px;
+    }
 
-    /* LOADING */
+    /* ── STATES ── */
     .loading { text-align: center; padding: 80px 24px; }
-    .spin { display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+    .spin { display: inline-block; width: 28px; height: 28px; border: 2.5px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-text { color: var(--mid); font-size: 14px; }
+    .error-banner {
+      background: var(--red-bg);
+      border: 1px solid rgba(220,38,38,0.18);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 13px 16px;
+      font-size: 14px;
+      margin-bottom: 24px;
+      display: none;
+    }
 
-    /* ERROR */
-    .error-banner { background: var(--red-bg); border: 1px solid rgba(192,57,43,0.2); color: var(--red); border-radius: 10px; padding: 14px 18px; font-size: 14px; margin-bottom: 24px; display: none; }
+    /* ── PORTAL OVERLAY ── */
+    .portal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(248,250,252,0.88);
+      backdrop-filter: blur(8px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .portal-overlay.active { display: flex; }
+    .portal-overlay .spin { width: 36px; height: 36px; margin-bottom: 12px; }
+    .portal-overlay p { color: var(--mid); font-size: 14px; }
 
-    /* PORTAL SPINNER overlay */
-    .portal-loading { position: fixed; inset: 0; background: rgba(250,250,247,0.92); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; }
-    .portal-loading.active { display: flex; }
-    .portal-loading .spin { width: 40px; height: 40px; }
-    .portal-loading p { color: var(--mid); font-size: 14px; margin-top: 12px; }
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 20px; }
+      .wrap { padding: 0 20px 60px; }
+      .page-header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 32px 0 28px; }
+      .audit-card { flex-wrap: wrap; }
+      .audit-score { order: -1; text-align: left; }
+      .upgrade-callout { flex-direction: column; padding: 24px; }
+      .upgrade-actions { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
 
+<!-- NAV -->
 <nav>
-  <a class="nav-logo" href="/" style="font-family:var(--serif);font-size:22px;font-style:normal;text-decoration:none;color:var(--ink)"><span style="font-family:var(--serif);font-weight:700;font-style:normal;color:var(--ink)">Root</span><span style="font-family:var(--serif);font-weight:400;font-style:italic;color:#8B4A2A">ACE</span></a>
+  <a class="nav-logo" href="/">
+    <span class="logo-root">Root</span><span class="logo-ace">ACE</span>
+  </a>
   <div class="nav-right">
     <span class="nav-email" id="nav-email"></span>
     <button class="nav-signout" onclick="signOut()">Sign out</button>
   </div>
 </nav>
 
-<div class="portal-loading" id="portal-loading">
+<!-- PORTAL OVERLAY -->
+<div class="portal-overlay" id="portal-overlay">
   <div class="spin"></div>
   <p>Opening billing portal...</p>
 </div>
 
 <div class="wrap">
+
+  <!-- PAGE HEADER -->
   <div class="page-header">
-    <div class="page-eyebrow">My Account</div>
-    <div class="page-title">Dashboard</div>
-    <div class="page-sub" id="welcome-sub">Your audit reports and account settings.</div>
+    <div>
+      <div class="page-eyebrow">My Account</div>
+      <div class="page-title">Your Reports</div>
+      <div class="page-sub" id="welcome-sub">AI visibility audits you've run, accessible anytime.</div>
+    </div>
+    <div class="header-actions">
+      <a class="btn-primary" href="/order.html?plan=snapshot">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        New audit — $299
+      </a>
+    </div>
   </div>
 
-  <div class="action-bar">
-    <a class="btn primary" href="/order.html">+ Run a new audit</a>
-    <button class="btn" id="billing-btn" onclick="openBillingPortal()">Manage billing</button>
-  </div>
-
+  <!-- ERROR BANNER -->
   <div id="error-banner" class="error-banner"></div>
 
-  <div class="section-label">Your audits</div>
-
+  <!-- LOADING -->
   <div id="loading" class="loading">
     <div class="spin"></div>
     <div class="loading-text">Loading your reports...</div>
   </div>
 
-  <div id="audit-list" class="audit-list" style="display:none"></div>
+  <!-- AUDIT LIST -->
+  <div id="audit-list-wrap" style="display:none">
+    <div class="section-label">Completed audits</div>
+    <div id="audit-list" class="audit-list"></div>
 
-  <div id="empty-state" class="empty" style="display:none">
-    <div class="empty-icon">📊</div>
-    <div class="empty-title">No audits yet</div>
-    <div class="empty-sub">Run your first Competitive AI Audit to see where your brand stands in AI-driven search.</div>
-    <a class="btn primary" href="/order.html">Run your first audit</a>
+    <!-- UPGRADE CALLOUT (shown only if all audits are snapshot-type) -->
+    <div id="upgrade-callout" class="upgrade-callout" style="display:none">
+      <div class="upgrade-text">
+        <div class="upgrade-label">Active Optimization</div>
+        <div class="upgrade-title">Track your score every month, automatically.</div>
+        <div class="upgrade-sub">Re-runs your simulation monthly, surfaces what changed, and flags competitor shifts before they cost you deals. $199/month, cancel anytime.</div>
+      </div>
+      <div class="upgrade-actions">
+        <a class="btn-upgrade-primary" href="/subscribe.html">Upgrade to Active Optimization →</a>
+        <button class="btn-upgrade-ghost" onclick="openBillingPortal()">Manage billing</button>
+      </div>
+    </div>
   </div>
+
+  <!-- EMPTY STATE -->
+  <div id="empty-state" class="empty" style="display:none">
+    <div class="empty-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    <div class="empty-title">No reports yet</div>
+    <div class="empty-sub">Run your first AI Visibility Audit to see how you appear across ChatGPT, Perplexity, Gemini, and four more platforms.</div>
+    <a class="btn-primary" href="/order.html?plan=snapshot">Run your first audit — $299</a>
+  </div>
+
 </div>
 
 <script>
   const token = localStorage.getItem('rp_customer_token');
   const email = localStorage.getItem('rp_customer_email');
 
-  if (!token || !email) {
-    location.href = '/login-customer.html';
-  }
+  if (!token) location.href = '/login-customer.html';
 
   document.getElementById('nav-email').textContent = email || '';
 
@@ -160,9 +443,9 @@
   }
 
   function scoreClass(score) {
-    if (score >= 60) return 'score-high';
-    if (score >= 30) return 'score-mid';
-    return 'score-low';
+    if (score >= 60) return 'high';
+    if (score >= 30) return 'mid';
+    return 'low';
   }
 
   function formatDate(ts) {
@@ -175,19 +458,20 @@
     el.style.display = 'block';
   }
 
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   async function loadDashboard() {
     try {
       const res = await fetch('/api/dashboard-data', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
 
-      if (res.status === 401) {
-        signOut();
-        return;
-      }
+      if (res.status === 401) { signOut(); return; }
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Could not load dashboard');
+      if (!res.ok) throw new Error(data.error || 'Could not load reports');
 
       document.getElementById('loading').style.display = 'none';
 
@@ -202,7 +486,7 @@
           <div class="audit-info">
             <div class="audit-company">
               ${escHtml(a.companyName)}
-              <span class="plan-badge ${a.plan === 'active' ? 'active' : 'snapshot'}">${a.plan === 'active' ? 'Active' : 'Snapshot'}</span>
+              <span class="plan-pill ${a.plan === 'active' ? 'active' : 'snapshot'}">${a.plan === 'active' ? 'Active' : 'Snapshot'}</span>
             </div>
             <div class="audit-meta">${a.industry ? escHtml(a.industry) + ' · ' : ''}${formatDate(a.createdAt)}</div>
           </div>
@@ -211,12 +495,19 @@
             <div class="score-label">AI visibility</div>
           </div>
           <div class="audit-actions">
-            <a class="view-btn" href="/audit-results.html?id=${encodeURIComponent(a.resultId)}">View report</a>
+            <a class="view-btn" href="/audit.html?id=${encodeURIComponent(a.resultId)}">View report</a>
           </div>
         </div>
       `).join('');
 
-      list.style.display = 'flex';
+      document.getElementById('audit-list-wrap').style.display = 'block';
+
+      // Show upgrade callout if user only has snapshot audits (no active subscription)
+      const hasActive = data.audits.some(a => a.plan === 'active');
+      if (!hasActive) {
+        document.getElementById('upgrade-callout').style.display = 'flex';
+      }
+
     } catch (err) {
       document.getElementById('loading').style.display = 'none';
       showError(err.message);
@@ -224,17 +515,13 @@
   }
 
   async function openBillingPortal() {
-    const overlay = document.getElementById('portal-loading');
+    const overlay = document.getElementById('portal-overlay');
     overlay.classList.add('active');
     document.getElementById('error-banner').style.display = 'none';
-
     try {
-      const res = await fetch('/api/customer-portal', {
+      const res  = await fetch('/api/customer-portal', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
@@ -243,10 +530,6 @@
       overlay.classList.remove('active');
       showError(err.message);
     }
-  }
-
-  function escHtml(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   loadDashboard();
