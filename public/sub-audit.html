@@ -608,6 +608,8 @@
     }
   }
 
+  let subscriberEmail = '';
+
   // ── Start ─────────────────────────────────────────────────────────────────
   async function init() {
     const params = new URLSearchParams(window.location.search);
@@ -627,6 +629,8 @@
       });
       if (resp.status === 401) { localStorage.removeItem('sub_token'); window.location.href = '/sub-login.html'; return; }
       const data = await resp.json();
+
+      subscriberEmail = data.email || '';
 
       if (data.subscriptionStatus === 'canceled') {
         document.getElementById('error-title').textContent = 'Subscription required.';
@@ -659,6 +663,14 @@
       if (!profile.company_name || !profile.website) {
         alert('Please enter your company name and website before running.');
         return;
+      }
+      // Persist profile so future visits pre-fill
+      if (subscriberEmail) {
+        fetch('/api/sub-register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: subscriberEmail, password: '_noop_update_', profile }),
+        }).catch(() => {});
       }
       runAudit(profile);
     });
