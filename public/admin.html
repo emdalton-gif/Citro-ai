@@ -914,7 +914,7 @@ function renderReport(id) {
           </div>
         </div>
         <div class="chart-card">
-          <div class="rdoc-label">Visibility by Platform</div>
+          <div class="rdoc-label">Query Results by Platform</div>
           <canvas id="rc-plat-${id}"></canvas>
         </div>
       </div>
@@ -1135,7 +1135,7 @@ body{font-family:Inter,-apple-system,system-ui,sans-serif;background:#F8FAFC;col
         </div>
       </div>
     </div>
-    <div class="cc"><div class="lbl">Visibility by Platform</div><canvas id="sa-plat"></canvas></div>
+    <div class="cc"><div class="lbl">Query Results by Platform</div><canvas id="sa-plat"></canvas></div>
   </div>
   ${topComps.length ? `<div class="cc sec"><div class="lbl">Competitor Mentions</div><canvas id="sa-comp" style="max-height:180px"></canvas></div>` : ''}
   ${r.executive_summary ? `<div class="sec"><div class="lbl">Executive Summary</div><div class="body">${e(r.executive_summary)}</div></div>` : ''}
