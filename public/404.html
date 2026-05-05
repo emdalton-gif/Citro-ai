@@ -5,44 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Page Not Found | RootACE</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #F5F0E8; --surface: #FAF7F2; --ink: #2C2318;
-      --mid: #6B5D4F; --quiet: #9E8E7E; --border: rgba(44,35,24,0.12);
-      --terra: #8B4A2A;
-      --serif: 'Playfair Display', Georgia, serif;
-      --sans: 'Inter', system-ui, sans-serif;
-      --mono: 'DM Mono', monospace;
+      --bg:     #F8FAFC;
+      --ink:    #0F172A;
+      --ink-2:  #1E293B;
+      --mid:    #64748B;
+      --border: rgba(15,23,42,0.08);
+      --accent: #2563EB;
+      --sans:   'Inter', system-ui, sans-serif;
+      --mono:   'DM Mono', monospace;
     }
     body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
-    nav { background: rgba(245,240,232,0.95); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; }
-    .nav-logo { text-decoration: none; display: flex; align-items: baseline; }
-    .nav-logo-root { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); }
-    .nav-logo-ace  { font-family: var(--serif); font-size: 22px; font-weight: 400; font-style: italic; color: var(--terra); }
-    .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 80px 24px; }
-    .code { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terra); margin-bottom: 20px; }
-    .title { font-family: var(--serif); font-size: 52px; font-weight: 700; color: var(--ink); margin-bottom: 16px; line-height: 1.1; }
-    .sub { font-size: 16px; color: var(--mid); line-height: 1.75; max-width: 400px; margin-bottom: 40px; }
-    .btn { display: inline-block; background: var(--ink); color: var(--bg); padding: 13px 28px; border-radius: 100px; font-size: 15px; font-weight: 500; text-decoration: none; margin-right: 12px; }
-    .btn:hover { background: #3D3228; }
-    .btn-ghost { display: inline-block; font-size: 15px; color: var(--mid); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+
+    nav {
+      background: rgba(248,250,252,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+
+    .center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px;
+    }
+    .code {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 52px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+      margin-bottom: 16px;
+      line-height: 1.05;
+    }
+    .sub {
+      font-size: 16px;
+      color: var(--mid);
+      line-height: 1.75;
+      max-width: 380px;
+      margin-bottom: 40px;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--ink);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      margin-right: 12px;
+      transition: background 0.15s;
+      letter-spacing: -0.1px;
+    }
+    .btn:hover { background: var(--ink-2); }
+    .btn-ghost {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--mid);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2px;
+      transition: color 0.15s;
+    }
     .btn-ghost:hover { color: var(--ink); }
   </style>
 </head>
 <body>
+
 <nav>
-  <a class="nav-logo" href="/"><span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span></a>
+  <a class="nav-logo" href="/">
+    <span class="logo-root">Root</span><span class="logo-ace">ACE</span>
+  </a>
 </nav>
+
 <div class="center">
   <div class="code">404 — Page not found</div>
   <div class="title">This page doesn't<br>exist (yet).</div>
   <div class="sub">The link may be broken, or the page may have moved. Let's get you back on track.</div>
   <div>
     <a href="/" class="btn">Go home</a>
-    <a href="/order.html" class="btn-ghost">Run an audit →</a>
+    <a href="/#pricing" class="btn-ghost">See plans →</a>
   </div>
 </div>
+
 </body>
 </html>
