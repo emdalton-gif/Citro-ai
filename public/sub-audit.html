@@ -218,44 +218,26 @@
         </div>
         <div class="form-group">
           <label>Website *</label>
-          <input type="url" id="f-website" placeholder="https://yourcompany.com" required />
+          <input type="text" id="f-website" placeholder="https://yourcompany.com" required />
         </div>
         <div class="form-group">
-          <label>Industry</label>
-          <select id="f-industry">
-            <option value="">Select...</option>
-            <option>SaaS / Software</option>
-            <option>Professional Services</option>
-            <option>Financial Services</option>
-            <option>Healthcare / Life Sciences</option>
-            <option>Manufacturing / Industrial</option>
-            <option>E-commerce / Retail</option>
-            <option>Marketing / Advertising</option>
-            <option>Real Estate</option>
-            <option>Legal</option>
-            <option>Education</option>
-            <option>Other</option>
-          </select>
+          <label>Industry / niche</label>
+          <input type="text" id="f-industry" placeholder="e.g. AI marketing consulting, B2B SaaS" />
         </div>
         <div class="form-group">
-          <label>Primary geography</label>
-          <input type="text" id="f-geo" placeholder="e.g. US, North America" />
+          <label>Specific geography</label>
+          <input type="text" id="f-geo" placeholder="e.g. Detroit, US only, Northeast" />
+          <span style="font-size:11px;color:var(--muted);">Leave blank if you serve everywhere</span>
         </div>
         <div class="form-group full">
-          <label>What product or service should we audit?</label>
+          <label>Specific product or service to audit</label>
           <input type="text" id="f-product" placeholder="e.g. our CRM platform, our HR consulting practice" />
-        </div>
-        <div class="form-group full">
-          <label>What problem do you solve for customers?</label>
-          <textarea id="f-offer" placeholder="Brief description of your core value proposition..."></textarea>
-        </div>
-        <div class="form-group full">
-          <label>Who is your ideal buyer?</label>
-          <input type="text" id="f-buyer" placeholder="e.g. VP of Marketing at Series B SaaS companies" />
+          <span style="font-size:11px;color:var(--muted);">Leave blank to audit your company overall</span>
         </div>
         <div class="form-group full">
           <label>Key competitors</label>
-          <input type="text" id="f-competitors" placeholder="Competitor A, Competitor B, Competitor C" />
+          <textarea id="f-competitors" style="min-height:80px;" placeholder="Competitor A, Competitor B, Competitor C"></textarea>
+          <span style="font-size:11px;color:var(--muted);">Edit the list — add anyone we missed or remove ones that don't apply</span>
         </div>
       </div>
       <button class="run-btn" id="startRunBtn">Run audit →</button>
@@ -659,8 +641,6 @@
       if (p.industry) document.getElementById('f-industry').value = p.industry;
       if (p.geo) document.getElementById('f-geo').value = p.geo;
       if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
-      if (p.offer) document.getElementById('f-offer').value = p.offer;
-      if (p.buyer) document.getElementById('f-buyer').value = p.buyer;
       if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
 
     } catch(e) { /* show form anyway */ }
@@ -671,11 +651,9 @@
       const profile = {
         company_name: document.getElementById('f-name').value.trim(),
         website: document.getElementById('f-website').value.trim(),
-        industry: document.getElementById('f-industry').value,
+        industry: document.getElementById('f-industry').value.trim(),
         geo: document.getElementById('f-geo').value.trim(),
         specific_product: document.getElementById('f-product').value.trim(),
-        offer: document.getElementById('f-offer').value.trim(),
-        buyer: document.getElementById('f-buyer').value.trim(),
         competitors: document.getElementById('f-competitors').value.trim(),
       };
       if (!profile.company_name || !profile.website) {
