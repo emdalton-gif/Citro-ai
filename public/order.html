@@ -3,32 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Start Your Audit | RootACE</title>
+  <title>Get Started | RootACE</title>
   <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #F5F0E8;
-      --surface:  #FAF7F2;
-      --ink:      #1A1A18;
-      --ink-2:    #3D3D3B;
-      --mid:      #6B6B67;
-      --quiet:    #9E9E9A;
-      --faint:    rgba(26,26,24,0.05);
-      --border:   rgba(26,26,24,0.1);
-      --border-focus: rgba(139,74,42,0.5);
-      --green:    #8B4A2A;
-      --green-dim:#723D22;
-      --green-bg: rgba(139,74,42,0.08);
-      --green-ring: rgba(139,74,42,0.2);
-      --serif:    'Playfair Display', Georgia, serif;
-      --sans:     'Inter', system-ui, sans-serif;
-      --mono:     'DM Mono', monospace;
-      --radius:   8px;
+      --bg:           #F8FAFC;
+      --surface:      #FFFFFF;
+      --surface-2:    #F1F5F9;
+      --dark:         #0B0F1A;
+      --dark-2:       #111827;
+      --ink:          #0F172A;
+      --ink-2:        #1E293B;
+      --mid:          #64748B;
+      --quiet:        #94A3B8;
+      --border:       rgba(15,23,42,0.08);
+      --border-focus: rgba(37,99,235,0.4);
+      --accent:       #2563EB;
+      --accent-d:     #1D4ED8;
+      --accent-light: rgba(37,99,235,0.08);
+      --accent-ring:  rgba(37,99,235,0.18);
+      --green:        #059669;
+      --green-bg:     rgba(5,150,105,0.08);
+      --green-ring:   rgba(5,150,105,0.2);
+      --sans:         'Inter', system-ui, sans-serif;
+      --mono:         'DM Mono', monospace;
+      --radius:       8px;
     }
 
     html { scroll-behavior: smooth; }
@@ -40,70 +44,73 @@
       min-height: 100vh;
     }
 
-    /* NAV */
+    /* ── NAV ── */
     .order-nav {
-      background: var(--bg);
+      background: rgba(248,250,252,0.95);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
-      height: 60px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 40px;
+      padding: 0 48px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .order-nav .logo {
-      font-size: 22px;
       text-decoration: none;
       display: flex;
-      align-items: baseline;
+      align-items: center;
     }
-    .order-nav .secure-badge {
+    .logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .secure-badge {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 12px;
+      font-weight: 500;
       color: var(--mid);
     }
-    .order-nav .secure-badge svg { color: var(--green); }
+    .secure-badge svg { color: var(--green); }
 
-    /* LAYOUT */
+    /* ── LAYOUT ── */
     .order-layout {
       max-width: 1080px;
       margin: 0 auto;
-      padding: 48px 40px;
+      padding: 48px 40px 80px;
       display: grid;
-      grid-template-columns: 1fr 380px;
-      gap: 64px;
+      grid-template-columns: 1fr 360px;
+      gap: 56px;
       align-items: start;
     }
 
-    /* PROGRESS */
-    .progress-track {
-      margin-bottom: 40px;
-    }
+    /* ── PROGRESS ── */
+    .progress-track { margin-bottom: 36px; }
     .steps-row {
       display: flex;
       align-items: center;
-      gap: 0;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
     .step-dot {
       width: 28px;
       height: 28px;
       border-radius: 50%;
       border: 1.5px solid var(--border);
-      background: var(--bg);
+      background: var(--surface);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--quiet);
       flex-shrink: 0;
       transition: all 0.2s ease;
     }
     .step-dot.active {
-      border-color: var(--green);
-      background: var(--green);
+      border-color: var(--accent);
+      background: var(--accent);
       color: #fff;
     }
     .step-dot.done {
@@ -136,43 +143,45 @@
       color: var(--quiet);
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
     }
-    .step-labels span.active { color: var(--green); }
-    .step-labels span.done { color: var(--ink-2); }
+    .step-labels span.active { color: var(--accent); }
+    .step-labels span.done   { color: var(--ink-2); }
 
-    /* FORM CARD */
+    /* ── FORM CARD ── */
     .form-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 40px;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.06);
     }
     .step-panel { display: none; }
     .step-panel.active { display: block; }
 
     .step-title {
-      font-family: var(--serif);
-      font-size: 26px;
+      font-size: 22px;
+      font-weight: 700;
       color: var(--ink);
+      letter-spacing: -0.4px;
       margin-bottom: 6px;
-      line-height: 1.2;
+      line-height: 1.25;
     }
     .step-sub {
       font-size: 14px;
       color: var(--mid);
       margin-bottom: 32px;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
-    /* FIELDS */
-    .field-group { margin-bottom: 22px; }
+    /* ── FIELDS ── */
+    .field-group { margin-bottom: 20px; }
     .field-group label {
       display: block;
       font-size: 13px;
       font-weight: 500;
       color: var(--ink-2);
-      margin-bottom: 7px;
+      margin-bottom: 6px;
     }
     .field-group label .optional {
       font-weight: 400;
@@ -183,7 +192,7 @@
     .field-group select,
     .field-group textarea {
       width: 100%;
-      padding: 11px 14px;
+      padding: 10px 13px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
       background: var(--bg);
@@ -195,7 +204,7 @@
       appearance: none;
     }
     .field-group select {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6B67' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
       padding-right: 36px;
@@ -203,14 +212,14 @@
     }
     .field-group textarea {
       resize: none;
-      height: 90px;
-      line-height: 1.5;
+      height: 88px;
+      line-height: 1.55;
     }
     .field-group input:focus,
     .field-group select:focus,
     .field-group textarea:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px var(--green-ring);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ring);
     }
     .field-group input::placeholder,
     .field-group textarea::placeholder { color: var(--quiet); }
@@ -218,19 +227,17 @@
       font-size: 12px;
       color: var(--quiet);
       margin-top: 5px;
-      line-height: 1.4;
+      line-height: 1.45;
     }
     .field-error {
       font-size: 12px;
-      color: #C0392B;
+      color: #DC2626;
       margin-top: 5px;
       display: none;
     }
     .field-group.has-error input,
     .field-group.has-error select,
-    .field-group.has-error textarea {
-      border-color: #C0392B;
-    }
+    .field-group.has-error textarea { border-color: #DC2626; }
     .field-group.has-error .field-error { display: block; }
 
     .field-row {
@@ -239,52 +246,52 @@
       gap: 16px;
     }
 
-    /* PLAN CARDS */
+    /* ── PLAN CARDS ── */
     .plan-toggle {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
     .plan-card {
       border: 1.5px solid var(--border);
       border-radius: 10px;
-      padding: 20px;
+      padding: 18px;
       cursor: pointer;
       transition: all 0.15s ease;
       position: relative;
       background: var(--bg);
     }
-    .plan-card:hover { border-color: var(--green); }
+    .plan-card:hover { border-color: rgba(37,99,235,0.35); }
     .plan-card.selected {
-      border-color: var(--green);
-      background: var(--green-bg);
+      border-color: var(--accent);
+      background: var(--accent-light);
     }
-    .plan-card .plan-radio {
+    .plan-radio {
       position: absolute;
-      top: 16px; right: 16px;
-      width: 18px; height: 18px;
+      top: 14px; right: 14px;
+      width: 17px; height: 17px;
       border-radius: 50%;
       border: 1.5px solid var(--border);
-      background: var(--bg);
+      background: var(--surface);
       transition: all 0.15s;
     }
     .plan-card.selected .plan-radio {
-      border-color: var(--green);
-      background: var(--green);
-      box-shadow: inset 0 0 0 3px var(--bg);
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: inset 0 0 0 3px var(--surface);
     }
     .plan-badge {
       display: inline-block;
       font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      font-weight: 700;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
-      background: var(--green);
+      background: var(--accent);
       color: #fff;
       padding: 2px 8px;
       border-radius: 20px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .plan-badge.ghost {
       background: transparent;
@@ -295,58 +302,61 @@
       font-weight: 600;
       font-size: 14px;
       color: var(--ink);
-      margin-bottom: 4px;
+      margin-bottom: 3px;
+      letter-spacing: -0.1px;
     }
     .plan-price {
-      font-family: var(--serif);
       font-size: 22px;
+      font-weight: 700;
       color: var(--ink);
+      letter-spacing: -0.5px;
       margin-bottom: 2px;
     }
     .plan-price span {
-      font-family: var(--sans);
       font-size: 12px;
       font-weight: 400;
       color: var(--mid);
+      letter-spacing: 0;
     }
     .plan-desc {
       font-size: 12px;
       color: var(--mid);
-      line-height: 1.4;
+      line-height: 1.45;
       margin-top: 6px;
     }
 
-    /* ORDER SUMMARY */
+    /* ── ORDER SUMMARY ── */
     .order-summary-block {
-      background: var(--faint);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 18px;
-      margin-bottom: 24px;
+      padding: 16px 18px;
+      margin-bottom: 22px;
     }
     .summary-row {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      font-size: 14px;
+      font-size: 13.5px;
       color: var(--ink-2);
       margin-bottom: 8px;
     }
     .summary-row:last-child { margin-bottom: 0; }
     .summary-row.total {
-      font-weight: 600;
+      font-weight: 700;
       font-size: 15px;
       color: var(--ink);
-      padding-top: 12px;
+      padding-top: 10px;
       border-top: 1px solid var(--border);
-      margin-top: 8px;
+      margin-top: 6px;
     }
-    .summary-row .label { color: var(--mid); }
+    .summary-row .label { color: var(--mid); font-weight: 400; }
 
-    /* BUTTONS */
+    /* ── BUTTONS ── */
     .btn-primary {
       width: 100%;
-      padding: 15px 24px;
-      background: var(--green);
+      padding: 14px 24px;
+      background: var(--accent);
       color: #fff;
       border: none;
       border-radius: var(--radius);
@@ -361,8 +371,10 @@
       transition: background 0.15s, transform 0.1s;
       letter-spacing: -0.1px;
     }
-    .btn-primary:hover { background: var(--green-dim); }
+    .btn-primary:hover { background: var(--accent-d); }
     .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.65; cursor: not-allowed; }
+
     .btn-back {
       background: none;
       border: none;
@@ -385,28 +397,30 @@
       margin-top: 10px;
       line-height: 1.4;
     }
+    .btn-note a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 
-    /* SIDEBAR */
+    /* ── SIDEBAR ── */
     .order-sidebar { position: sticky; top: 80px; }
     .sidebar-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 28px;
-      margin-bottom: 16px;
+      padding: 24px;
+      margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.05);
     }
     .sidebar-title {
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: var(--mid);
+      color: var(--quiet);
       margin-bottom: 18px;
     }
     .deliverable-item {
       display: flex;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       align-items: flex-start;
     }
     .deliverable-item:last-child { margin-bottom: 0; }
@@ -414,40 +428,41 @@
       width: 28px;
       height: 28px;
       border-radius: 6px;
-      background: var(--green-bg);
+      background: var(--accent-light);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .d-icon svg { color: var(--green); }
+    .d-icon svg { color: var(--accent); }
     .d-text { font-size: 13px; }
-    .d-text strong { display: block; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
-    .d-text span { color: var(--mid); line-height: 1.4; }
+    .d-text strong { display: block; font-weight: 600; color: var(--ink); margin-bottom: 2px; letter-spacing: -0.1px; }
+    .d-text span { color: var(--mid); line-height: 1.45; }
 
     .stat-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 0;
+      gap: 8px;
     }
     .stat-cell {
-      background: var(--faint);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 14px;
+      padding: 12px;
       text-align: center;
     }
     .stat-number {
-      font-family: var(--serif);
-      font-size: 22px;
+      font-size: 20px;
+      font-weight: 800;
       color: var(--ink);
+      letter-spacing: -0.5px;
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
     .stat-label {
       font-size: 11px;
       color: var(--mid);
-      line-height: 1.3;
+      line-height: 1.35;
     }
 
     .guarantee-badge {
@@ -457,47 +472,47 @@
       padding: 16px;
       background: var(--green-bg);
       border-radius: 8px;
-      border: 1px solid rgba(29,158,117,0.15);
+      border: 1px solid var(--green-ring);
     }
     .guarantee-badge svg { color: var(--green); flex-shrink: 0; margin-top: 1px; }
-    .guarantee-text { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
-    .guarantee-text strong { font-weight: 500; }
+    .guarantee-text { font-size: 12.5px; color: var(--ink-2); line-height: 1.55; }
+    .guarantee-text strong { font-weight: 600; color: var(--ink); }
 
-    /* COMPLETION STATE */
-    .completion-state {
-      text-align: center;
-      padding: 20px 0;
-    }
-    .completion-icon {
-      width: 64px;
-      height: 64px;
-      background: var(--green-bg);
-      border-radius: 50%;
-      display: flex;
+    /* ── RESEARCH STATUS ── */
+    #research-status {
+      display: none;
+      font-size: 13px;
+      color: var(--accent);
+      font-family: var(--mono);
+      margin-bottom: 16px;
       align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
+      gap: 8px;
     }
-    .completion-icon svg { color: var(--green); }
-    .completion-title {
-      font-family: var(--serif);
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-    .completion-sub {
-      font-size: 15px;
-      color: var(--mid);
-      line-height: 1.6;
-      max-width: 400px;
-      margin: 0 auto 28px;
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-dot {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid var(--accent);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
     }
 
-    /* MOBILE */
+    /* ── ANIMATIONS ── */
+    .step-panel.entering {
+      animation: slideIn 0.18s ease forwards;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ── MOBILE ── */
     @media (max-width: 768px) {
       .order-nav { padding: 0 20px; }
       .order-layout {
         grid-template-columns: 1fr;
-        padding: 24px 20px;
+        padding: 24px 20px 60px;
         gap: 24px;
       }
       .order-sidebar { position: static; }
@@ -507,25 +522,17 @@
       .plan-toggle { grid-template-columns: 1fr; }
       .step-labels span { font-size: 10px; }
     }
-
-    /* SUBTLE ANIMATIONS */
-    .step-panel { animation: none; }
-    .step-panel.entering {
-      animation: slideIn 0.2s ease forwards;
-    }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(12px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
   </style>
 </head>
 <body>
 
   <!-- NAV -->
   <nav class="order-nav">
-    <a href="/" class="logo" style="display:flex;align-items:baseline;text-decoration:none;"><span style="font-family:var(--serif);font-weight:700;font-style:normal;color:var(--ink)">Root</span><span style="font-family:var(--serif);font-weight:400;font-style:italic;color:#8B4A2A">ACE</span></a>
+    <a href="/" class="logo">
+      <span class="logo-root">Root</span><span class="logo-ace">ACE</span>
+    </a>
     <div class="secure-badge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
@@ -578,7 +585,7 @@
           <div class="field-group" id="fg-specific-product">
             <label for="f-specific-product">Specific product or service to test <span class="optional">optional</span></label>
             <input type="text" id="f-specific-product" placeholder="e.g. Fractional CFO services, Commercial HVAC installation" />
-            <div class="field-hint">Leave blank to test your overall brand. Fill this in if you want to audit a specific offering.</div>
+            <div class="field-hint">Leave blank to test your overall brand. Fill this in to audit a specific offering.</div>
           </div>
 
           <div class="field-group" id="fg-industry">
@@ -633,7 +640,7 @@
 
           <button class="btn-primary" id="step1-continue" onclick="continueToStep2()">
             Continue
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
 
@@ -641,8 +648,9 @@
         <div class="step-panel" id="step-2">
           <h1 class="step-title">Who buys from you?</h1>
           <p class="step-sub">We've pre-filled these based on your company. Edit anything that's off — the more specific you are, the more useful the results.</p>
-          <div id="research-status" style="display:none; font-size:13px; color:var(--green); font-family:var(--mono); margin-bottom:16px; display:none; align-items:center; gap:8px;">
-            <span style="display:inline-block;width:12px;height:12px;border:2px solid var(--green);border-top-color:transparent;border-radius:50%;animation:spin 0.7s linear infinite"></span>
+
+          <div id="research-status">
+            <span class="spin-dot"></span>
             Researching your company...
           </div>
 
@@ -656,7 +664,7 @@
           <div class="field-group" id="fg-buyer">
             <label for="f-buyer">Who is your ideal buyer?</label>
             <textarea id="f-buyer" placeholder="e.g. CFOs and controllers at PE-backed rollups, typically searching during diligence or post-close integration"></textarea>
-            <div class="field-hint">Job title, company type, where they are in the buying process. Any of this helps.</div>
+            <div class="field-hint">Job title, company type, where they are in the buying process.</div>
             <div class="field-error">Please describe your ideal buyer.</div>
           </div>
 
@@ -674,10 +682,10 @@
 
           <button class="btn-primary" onclick="goStep(3)">
             Continue
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
           <button class="btn-back" onclick="goStep(1)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             Back
           </button>
         </div>
@@ -692,7 +700,7 @@
               <div class="plan-radio"></div>
               <div class="plan-badge ghost">One-time</div>
               <div class="plan-name">Snapshot Audit</div>
-              <div class="plan-price">$149 <span>one-time</span></div>
+              <div class="plan-price">$299 <span>one-time</span></div>
               <div class="plan-desc">Full simulation, visibility score, competitive matrix, and priority recommendations.</div>
             </div>
             <div class="plan-card" id="plan-active" onclick="selectPlan('active')">
@@ -723,22 +731,22 @@
             </div>
             <div class="summary-row total">
               <span id="sum-plan-name">Snapshot Audit</span>
-              <span id="sum-price">$149</span>
+              <span id="sum-price">$299</span>
             </div>
           </div>
 
           <button class="btn-primary" id="checkout-btn" onclick="proceedToCheckout()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
             Proceed to Secure Payment
           </button>
           <p class="btn-note">You'll be taken to a secure payment page. We accept all major cards.</p>
-          <p class="btn-note" style="margin-top:8px;">By purchasing you agree to our <a href="/terms.html" target="_blank" style="color:var(--green);text-decoration:underline;text-underline-offset:3px;">Terms of Service</a> and <a href="/privacy.html" target="_blank" style="color:var(--green);text-decoration:underline;text-underline-offset:3px;">Privacy Policy</a>.</p>
+          <p class="btn-note" style="margin-top:6px;">By purchasing you agree to our <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>.</p>
 
           <button class="btn-back" onclick="goStep(2)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             Back
           </button>
         </div>
@@ -758,8 +766,8 @@
 
         <div class="deliverable-item">
           <div class="d-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
           <div class="d-text">
@@ -770,7 +778,7 @@
 
         <div class="deliverable-item">
           <div class="d-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
           </div>
@@ -782,7 +790,7 @@
 
         <div class="deliverable-item">
           <div class="d-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
           </div>
@@ -794,7 +802,7 @@
 
         <div class="deliverable-item">
           <div class="d-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
             </svg>
           </div>
@@ -806,7 +814,7 @@
 
         <div class="deliverable-item">
           <div class="d-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
             </svg>
           </div>
@@ -860,43 +868,42 @@
     let selectedPlan = 'snapshot';
 
     const PLAN_DATA = {
-      snapshot: { name: 'Snapshot Audit', price: '$149', priceDisplay: '$149 one-time' },
-      active:   { name: 'Active Optimization', price: '$199/mo', priceDisplay: '$199 / month' }
+      snapshot: { name: 'Snapshot Audit',      price: '$299',     priceDisplay: '$299 one-time' },
+      active:   { name: 'Active Optimization', price: '$199/mo',  priceDisplay: '$199 / month'  }
     };
 
     const INDUSTRY_LABELS = {
-      'accounting': 'Accounting & Tax',
-      'legal': 'Legal Services',
-      'financial-advisory': 'Financial Advisory',
-      'management-consulting': 'Management Consulting',
-      'insurance': 'Insurance Brokerage',
-      'recruiting': 'Recruiting & Staffing',
-      'saas-b2b': 'B2B SaaS / Software',
-      'it-services': 'IT Services & MSP',
-      'cybersecurity': 'Cybersecurity',
-      'commercial-re': 'Commercial Real Estate',
-      'construction': 'Commercial Construction',
-      'engineering': 'Engineering & Architecture',
-      'dental': 'Dental / Orthodontics',
+      'accounting':       'Accounting & Tax',
+      'legal':            'Legal Services',
+      'financial-advisory':'Financial Advisory',
+      'management-consulting':'Management Consulting',
+      'insurance':        'Insurance Brokerage',
+      'recruiting':       'Recruiting & Staffing',
+      'saas-b2b':         'B2B SaaS / Software',
+      'it-services':      'IT Services & MSP',
+      'cybersecurity':    'Cybersecurity',
+      'commercial-re':    'Commercial Real Estate',
+      'construction':     'Commercial Construction',
+      'engineering':      'Engineering & Architecture',
+      'dental':           'Dental / Orthodontics',
       'medical-practice': 'Private Medical Practice',
       'physical-therapy': 'Physical Therapy / Chiro',
-      'restaurant': 'Restaurant / Food & Beverage',
-      'home-services': 'Home Services',
-      'retail': 'Retail',
-      'other': 'Other'
+      'restaurant':       'Restaurant / Food & Beverage',
+      'home-services':    'Home Services',
+      'retail':           'Retail',
+      'other':            'Other'
     };
 
-    // VALIDATION
+    // ── VALIDATION ──
     function validateStep1() {
       let ok = true;
-      const name = document.getElementById('f-name').value.trim();
+      const name     = document.getElementById('f-name').value.trim();
       const industry = document.getElementById('f-industry').value;
-      const email = document.getElementById('f-email').value.trim();
+      const email    = document.getElementById('f-email').value.trim();
 
-      setError('fg-name', !name);
+      setError('fg-name',     !name);
       setError('fg-industry', !industry);
 
-      // If "other" is selected, require the text field
       if (industry === 'other') {
         const other = document.getElementById('f-industry-other').value.trim();
         setError('fg-industry-other', !other);
@@ -909,22 +916,6 @@
       if (!name || !industry || !emailOk) ok = false;
       return ok;
     }
-
-    // Auto-prepend https:// to website on blur
-    document.addEventListener('DOMContentLoaded', function() {
-      const ws = document.getElementById('f-website');
-      if (ws) ws.addEventListener('blur', function() {
-        let v = ws.value.trim();
-        if (v && !v.match(/^https?:\/\//)) ws.value = 'https://' + v;
-      });
-      // Show/hide "other" industry field
-      const ind = document.getElementById('f-industry');
-      if (ind) ind.addEventListener('change', function() {
-        const otherGroup = document.getElementById('fg-industry-other');
-        otherGroup.style.display = ind.value === 'other' ? 'block' : 'none';
-        if (ind.value !== 'other') document.getElementById('f-industry-other').value = '';
-      });
-    });
 
     function validateStep2() {
       let ok = true;
@@ -946,7 +937,32 @@
       }
     }
 
-    // STEP 1 → STEP 2 with auto-research
+    // ── DOM READY ──
+    document.addEventListener('DOMContentLoaded', function() {
+      // Auto-prepend https://
+      const ws = document.getElementById('f-website');
+      if (ws) ws.addEventListener('blur', function() {
+        let v = ws.value.trim();
+        if (v && !v.match(/^https?:\/\//)) ws.value = 'https://' + v;
+      });
+      // Show/hide "other" industry field
+      const ind = document.getElementById('f-industry');
+      if (ind) ind.addEventListener('change', function() {
+        const otherGroup = document.getElementById('fg-industry-other');
+        otherGroup.style.display = ind.value === 'other' ? 'block' : 'none';
+        if (ind.value !== 'other') document.getElementById('f-industry-other').value = '';
+      });
+      // Clear errors on input
+      document.addEventListener('input', function(e) {
+        const fg = e.target.closest('.field-group');
+        if (fg && fg.classList.contains('has-error')) fg.classList.remove('has-error');
+      });
+      // Pre-select plan from URL param
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('plan') === 'active') selectPlan('active');
+    });
+
+    // ── STEP 1 → STEP 2 with auto-research ──
     async function continueToStep2() {
       if (!validateStep1()) return;
 
@@ -954,86 +970,73 @@
       btn.disabled = true;
       btn.innerHTML = '<span style="opacity:0.7">Researching your company...</span>';
 
-      // Navigate first so user sees something happening
       goStep(2);
 
-      // Show research status
       const status = document.getElementById('research-status');
-      if (status) { status.style.display = 'flex'; }
+      if (status) status.style.display = 'flex';
 
-      const name = document.getElementById('f-name').value.trim();
-      const website = document.getElementById('f-website').value.trim();
-      const industry = document.getElementById('f-industry').value;
-      const industryOther = document.getElementById('f-industry-other').value.trim();
-      const specificProduct = document.getElementById('f-specific-product').value.trim();
-      const industryLabel = industry === 'other' ? industryOther : (INDUSTRY_LABELS[industry] || industry);
+      const name           = document.getElementById('f-name').value.trim();
+      const website        = document.getElementById('f-website').value.trim();
+      const industry       = document.getElementById('f-industry').value;
+      const industryOther  = document.getElementById('f-industry-other').value.trim();
+      const specificProduct= document.getElementById('f-specific-product').value.trim();
+      const industryLabel  = industry === 'other' ? industryOther : (INDUSTRY_LABELS[industry] || industry);
 
       try {
-        const res = await fetch('/api/research', {
+        const res  = await fetch('/api/research', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, website, industry: industryLabel, specific_product: specificProduct }),
         });
         const data = await res.json();
-        // Pre-fill step 2 fields only if they're currently empty
         const offerEl = document.getElementById('f-offer');
         const buyerEl = document.getElementById('f-buyer');
         const geoEl   = document.getElementById('f-geo');
         const compEl  = document.getElementById('f-competitors');
-        if (data.offer && !offerEl.value.trim())       offerEl.value = data.offer;
-        if (data.buyer && !buyerEl.value.trim())       buyerEl.value = data.buyer;
-        if (data.geo && !geoEl.value.trim())           geoEl.value = data.geo;
-        if (data.competitors && !compEl.value.trim())  compEl.value = data.competitors;
+        if (data.offer       && !offerEl.value.trim()) offerEl.value = data.offer;
+        if (data.buyer       && !buyerEl.value.trim()) buyerEl.value = data.buyer;
+        if (data.geo         && !geoEl.value.trim())   geoEl.value   = data.geo;
+        if (data.competitors && !compEl.value.trim())  compEl.value  = data.competitors;
       } catch(e) { /* fail silently — user fills in manually */ }
 
       if (status) status.style.display = 'none';
       btn.disabled = false;
-      btn.innerHTML = 'Continue <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+      btn.innerHTML = 'Continue <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
     }
 
-    // STEP NAV
+    // ── STEP NAVIGATION ──
     function goStep(n) {
       if (n > currentStep) {
         if (currentStep === 1 && !validateStep1()) return;
         if (currentStep === 2 && !validateStep2()) return;
       }
 
-      // Update progress dots
       for (let i = 1; i <= 3; i++) {
-        const dot = document.getElementById(`dot-${i}`);
+        const dot   = document.getElementById(`dot-${i}`);
         const label = document.getElementById(`label-${i}`);
         dot.classList.remove('active', 'done');
         label.classList.remove('active', 'done');
-        if (i < n) {
-          dot.classList.add('done');
-          label.classList.add('done');
-        } else if (i === n) {
-          dot.classList.add('active');
-          label.classList.add('active');
-        }
+        if (i < n)       { dot.classList.add('done');   label.classList.add('done');   }
+        else if (i === n){ dot.classList.add('active'); label.classList.add('active'); }
       }
       for (let i = 1; i <= 2; i++) {
-        const line = document.getElementById(`line-${i}`);
-        line.classList.toggle('done', i < n);
+        document.getElementById(`line-${i}`).classList.toggle('done', i < n);
       }
 
-      // Hide current, show new
       document.getElementById(`step-${currentStep}`).classList.remove('active', 'entering');
       const next = document.getElementById(`step-${n}`);
       next.classList.add('active', 'entering');
 
-      // Populate order summary on step 3
       if (n === 3) populateSummary();
-
       currentStep = n;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function populateSummary() {
-      const name = document.getElementById('f-name').value.trim();
-      const industry = document.getElementById('f-industry').value;
-      const industryOther = document.getElementById('f-industry-other')?.value.trim();
-      const industryLabel = industry === 'other' ? (industryOther || 'Other') : (INDUSTRY_LABELS[industry] || industry);
+      const name         = document.getElementById('f-name').value.trim();
+      const industry     = document.getElementById('f-industry').value;
+      const industryOther= document.getElementById('f-industry-other')?.value.trim();
+      const industryLabel= industry === 'other' ? (industryOther || 'Other') : (INDUSTRY_LABELS[industry] || industry);
       document.getElementById('sum-business').textContent = name || '—';
       document.getElementById('sum-industry').textContent = industryLabel || '—';
       updatePriceDisplay();
@@ -1049,35 +1052,34 @@
     function updatePriceDisplay() {
       const p = PLAN_DATA[selectedPlan];
       document.getElementById('sum-plan-name').textContent = p.name;
-      document.getElementById('sum-price').textContent = p.price;
+      document.getElementById('sum-price').textContent     = p.price;
     }
 
+    // ── CHECKOUT ──
     async function proceedToCheckout() {
-      // Collect all form data
-      const rawIndustry = document.getElementById('f-industry').value;
+      const rawIndustry   = document.getElementById('f-industry').value;
       const industryOther = document.getElementById('f-industry-other')?.value.trim();
       const industryLabel = rawIndustry === 'other' ? (industryOther || 'Other') : (INDUSTRY_LABELS[rawIndustry] || rawIndustry);
 
       const data = {
-        name: document.getElementById('f-name').value.trim(),
-        website: document.getElementById('f-website').value.trim(),
-        industry: industryLabel,
-        email: document.getElementById('f-email').value.trim(),
+        name:             document.getElementById('f-name').value.trim(),
+        website:          document.getElementById('f-website').value.trim(),
+        industry:         industryLabel,
+        email:            document.getElementById('f-email').value.trim(),
         specific_product: document.getElementById('f-specific-product')?.value.trim() || '',
-        offer: document.getElementById('f-offer').value.trim(),
-        buyer: document.getElementById('f-buyer').value.trim(),
-        geo: document.getElementById('f-geo').value.trim(),
-        competitors: document.getElementById('f-competitors').value.trim(),
-        plan: selectedPlan
+        offer:            document.getElementById('f-offer').value.trim(),
+        buyer:            document.getElementById('f-buyer').value.trim(),
+        geo:              document.getElementById('f-geo').value.trim(),
+        competitors:      document.getElementById('f-competitors').value.trim(),
+        plan:             selectedPlan
       };
 
-      // Send to server to create a Stripe Checkout Session
       const btn = document.getElementById('checkout-btn');
       btn.disabled = true;
       btn.innerHTML = '<span style="opacity:0.7">Redirecting to payment...</span>';
 
       try {
-        const res = await fetch('/api/create-checkout', {
+        const res  = await fetch('/api/create-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -1087,24 +1089,10 @@
         window.location.href = json.url;
       } catch(e) {
         btn.disabled = false;
-        btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Proceed to Secure Payment';
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Proceed to Secure Payment';
         alert('Something went wrong: ' + e.message + '. Please try again or contact hello@rootpartners.co.');
       }
     }
-
-    // Pre-select plan from URL param
-    (function() {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('plan') === 'active') selectPlan('active');
-    })();
-
-    // Clear errors on input
-    document.addEventListener('input', function(e) {
-      const fg = e.target.closest('.field-group');
-      if (fg && fg.classList.contains('has-error')) {
-        fg.classList.remove('has-error');
-      }
-    });
   </script>
 
 </body>
