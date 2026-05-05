@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -153,7 +154,22 @@
     .qb-insight { font-size: 11px; color: var(--muted); line-height: 1.5; }
 
     /* ── Report ── */
-    .report-body { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; font-family: var(--sans); color: var(--text); max-height: 70vh; overflow-y: auto; }
+    .report-doc { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px 36px; max-width: 880px; }
+    .rdoc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 2px solid var(--dark); }
+    .rdoc-section { margin-bottom: 22px; }
+    .rdoc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 8px; }
+    .rdoc-text { font-size: 13px; line-height: 1.75; color: var(--text); }
+    .chart-card { background: var(--bg); border-radius: 10px; padding: 16px 18px; }
+    .rec-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .rec-num { font-size: 20px; font-weight: 800; color: var(--border-2); width: 24px; flex-shrink: 0; line-height: 1.2; }
+    /* ── Print ── */
+    @media print {
+      body { overflow: visible !important; height: auto !important; background: #fff !important; }
+      nav, aside, .tabs, .cv-header, .tab-panel:not(.active), #report-toolbar { display: none !important; }
+      .shell, main, .client-view { overflow: visible !important; height: auto !important; }
+      .tab-panel.active { display: block !important; overflow: visible !important; padding-top: 0 !important; }
+      .report-doc { border: none !important; border-radius: 0 !important; padding: 0 !important; }
+    }
 
     /* ── Spinner / utils ── */
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -822,19 +838,324 @@ function renderReport(id) {
     el.innerHTML = `<p style="font-size:13px;color:var(--muted)">${c.results?.length ? 'Report is generating…' : 'Run the audit first.'}</p>`; return;
   }
   const r = c.report;
-  const renderRecs = (recs) => (recs||[]).map((rec,i) => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--border-2);width:20px;flex-shrink:0">${i+1}</div><div><div style="font-size:12px;font-weight:600">${esc(rec.action)}</div><div style="display:flex;gap:6px;margin-top:4px"><span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${rec.impact==='high'?'#DCFCE7':'#F1F5F9'};color:${rec.impact==='high'?'#15803D':'#64748B'}">${rec.impact} impact</span><span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#F1F5F9;color:#64748B">${rec.effort} effort</span><span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#F1F5F9;color:#64748B">${rec.category}</span></div></div></div>`).join('');
+  const score = r.visibility_projection?.current_score ?? getScore(c) ?? 0;
+  const projected = r.visibility_projection?.projected_score ?? Math.min(score + 35, 100);
+  const sc = scoreClass(score);
+  const scoreColor = sc === 'high' ? '#059669' : sc === 'mid' ? '#D97706' : '#DC2626';
+  const date = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+  const organic = (c.results||[]).filter(x => !x.brand_specific);
+  const platforms = [...new Set((c.results||[]).map(x => x.platform))];
+  const compFreq = {};
+  (c.results||[]).forEach(x => (x.competitors_mentioned||[]).forEach(cn => { compFreq[cn] = (compFreq[cn]||0)+1; }));
+  const topComps = Object.entries(compFreq).sort((a,b) => b[1]-a[1]).slice(0,8);
+
+  const renderRecs = (recs) => (recs||[]).map((rec,i) => `
+    <div class="rec-item">
+      <div class="rec-num">${i+1}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;margin-bottom:5px">${esc(rec.action)}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;background:${rec.impact==='high'?'#DCFCE7':'#F1F5F9'};color:${rec.impact==='high'?'#15803D':'#64748B'}">${rec.impact} impact</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#F1F5F9;color:#64748B">${rec.effort} effort</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#F1F5F9;color:#64748B">${rec.category}</span>
+        </div>
+      </div>
+    </div>`).join('');
+
   el.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div id="report-toolbar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
       <div class="sec-head" style="margin-bottom:0">Audit Report — ${esc(c.name)}</div>
-      <button class="btn sec" onclick="copyReport('${id}')">Copy as text</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" onclick="copyReport('${id}')">Copy text</button>
+        <button class="btn sec" onclick="exportReportHTML('${id}')">Download HTML</button>
+        <button class="btn pri" onclick="printReport('${id}')">Print / PDF</button>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      ${r.key_finding ? `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 16px;font-size:13px;font-weight:500;color:#1E40AF">${esc(r.key_finding)}</div>` : ''}
-      ${r.executive_summary ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Executive Summary</div><div style="font-size:13px;line-height:1.7">${esc(r.executive_summary)}</div></div>` : ''}
-      ${r.competitive_analysis ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Competitive Analysis</div><div style="font-size:13px;line-height:1.7">${esc(r.competitive_analysis)}</div>${r.competitor_insights?.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:10px">${r.competitor_insights.map(ci=>`<div style="background:var(--bg);border-radius:8px;padding:10px 12px"><div style="font-size:12px;font-weight:700;margin-bottom:4px">${esc(ci.competitor)}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${esc(ci.insight)}</div></div>`).join('')}</div>` : ''}</div>` : ''}
-      ${r.recommendations?.length ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Recommendations</div>${renderRecs(r.recommendations)}</div>` : ''}
-      ${r.roadmap_phases?.length ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">90-Day Roadmap</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">${r.roadmap_phases.map(p=>`<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px">${esc(p.days)}</div><div style="font-size:12px;font-weight:600;margin-bottom:8px">${esc(p.theme)}</div>${(p.actions||[]).map(a=>`<div style="font-size:11px;color:var(--muted);padding:3px 0;border-top:1px solid var(--border)">→ ${esc(a)}</div>`).join('')}</div>`).join('')}</div></div>` : ''}
+
+    <div class="report-doc" id="report-doc-${id}">
+      <div class="rdoc-header">
+        <div>
+          <div style="margin-bottom:6px"><span style="font-size:17px;font-weight:700;color:var(--dark)">Root</span><span style="font-size:17px;font-weight:800;color:var(--accent)">ACE</span></div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">${esc(c.name)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">AI Visibility Audit · ${date}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:38px;font-weight:800;letter-spacing:-.03em;color:${scoreColor}">${score}%</div>
+          <div style="font-size:11px;color:var(--muted)">AI Visibility Score</div>
+        </div>
+      </div>
+
+      ${r.key_finding ? `
+      <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;margin-bottom:22px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:4px">Key Finding</div>
+        <div style="font-size:13px;font-weight:500;color:#1E40AF;line-height:1.65">${esc(r.key_finding)}</div>
+      </div>` : ''}
+
+      <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:22px">
+        <div class="chart-card">
+          <div class="rdoc-label">Score Overview</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+            <div style="position:relative;width:130px;height:130px">
+              <canvas id="rc-score-${id}" width="130" height="130"></canvas>
+            </div>
+            <div style="width:100%">
+              <div style="margin-bottom:10px">
+                <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Current</div>
+                <div style="height:7px;border-radius:4px;background:var(--border);overflow:hidden"><div style="height:100%;width:${score}%;background:${scoreColor};border-radius:4px"></div></div>
+                <div style="font-size:12px;font-weight:700;margin-top:3px;color:${scoreColor}">${score}%</div>
+              </div>
+              <div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Projected</div>
+                <div style="height:7px;border-radius:4px;background:var(--border);overflow:hidden"><div style="height:100%;width:${projected}%;background:var(--accent);border-radius:4px"></div></div>
+                <div style="font-size:12px;font-weight:700;margin-top:3px;color:var(--accent)">${projected}%</div>
+              </div>
+              ${r.visibility_projection?.projection_narrative ? `<div style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">${esc(r.visibility_projection.projection_narrative)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="rdoc-label">Visibility by Platform</div>
+          <canvas id="rc-plat-${id}"></canvas>
+        </div>
+      </div>
+
+      ${topComps.length ? `
+      <div class="chart-card" style="margin-bottom:22px">
+        <div class="rdoc-label">Competitor Mentions</div>
+        <canvas id="rc-comp-${id}" style="max-height:190px"></canvas>
+      </div>` : ''}
+
+      ${r.executive_summary ? `
+      <div class="rdoc-section">
+        <div class="rdoc-label">Executive Summary</div>
+        <div class="rdoc-text">${esc(r.executive_summary)}</div>
+      </div>` : ''}
+
+      ${(r.technical_recommendations || r.content_gaps) ? `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
+        ${r.technical_recommendations ? `<div class="chart-card"><div class="rdoc-label">Technical Gaps</div><div style="font-size:12px;line-height:1.7;color:var(--text)">${esc(r.technical_recommendations)}</div></div>` : ''}
+        ${r.content_gaps ? `<div class="chart-card"><div class="rdoc-label">Content Gaps</div><div style="font-size:12px;line-height:1.7;color:var(--text)">${esc(r.content_gaps)}</div></div>` : ''}
+      </div>` : ''}
+
+      ${r.competitive_analysis ? `
+      <div class="rdoc-section">
+        <div class="rdoc-label">Competitive Analysis</div>
+        <div class="rdoc-text" style="margin-bottom:${r.competitor_insights?.length ? '12px' : '0'}">${esc(r.competitive_analysis)}</div>
+        ${r.competitor_insights?.length ? `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px">
+          ${r.competitor_insights.map(ci => `
+          <div style="background:var(--bg);border-radius:8px;padding:10px 12px">
+            <div style="font-size:12px;font-weight:700;margin-bottom:4px">${esc(ci.competitor)}</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.5">${esc(ci.insight)}</div>
+          </div>`).join('')}
+        </div>` : ''}
+      </div>` : ''}
+
+      ${r.recommendations?.length ? `
+      <div class="rdoc-section">
+        <div class="rdoc-label">Recommendations</div>
+        ${renderRecs(r.recommendations)}
+      </div>` : ''}
+
+      ${r.roadmap_phases?.length ? `
+      <div class="rdoc-section" style="margin-bottom:0">
+        <div class="rdoc-label">90-Day Roadmap</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+          ${r.roadmap_phases.map(p => `
+          <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
+            <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:2px;text-transform:uppercase;letter-spacing:.06em">${esc(p.days)}</div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px">${esc(p.theme)}</div>
+            ${(p.actions||[]).map(a => `<div style="font-size:11px;color:var(--muted);padding:5px 0;border-top:1px solid var(--border);line-height:1.4">→ ${esc(a)}</div>`).join('')}
+          </div>`).join('')}
+        </div>
+      </div>` : ''}
     </div>`;
+
+  requestAnimationFrame(() => initReportCharts(id, score, scoreColor, platforms, organic, topComps));
+}
+
+function initReportCharts(id, score, scoreColor, platforms, organic, topComps) {
+  const scoreCanvas = document.getElementById(`rc-score-${id}`);
+  if (scoreCanvas) {
+    new Chart(scoreCanvas, {
+      type: 'doughnut',
+      data: { datasets: [{ data: [score, 100-score], backgroundColor: [scoreColor, '#F1F5F9'], borderWidth: 0 }] },
+      options: { cutout:'70%', plugins:{ legend:{display:false}, tooltip:{enabled:false} }, animation:false },
+      plugins: [{ id:'ct', afterDraw(chart) {
+        const ctx2 = chart.ctx; const {width,height} = chart; ctx2.save();
+        ctx2.font = 'bold 24px Inter,system-ui,sans-serif'; ctx2.fillStyle = scoreColor;
+        ctx2.textAlign = 'center'; ctx2.textBaseline = 'middle';
+        ctx2.fillText(score+'%', width/2, height/2-7);
+        ctx2.font = '11px Inter,system-ui,sans-serif'; ctx2.fillStyle = '#64748B';
+        ctx2.fillText('score', width/2, height/2+13); ctx2.restore();
+      }}]
+    });
+  }
+  const platCanvas = document.getElementById(`rc-plat-${id}`);
+  if (platCanvas && platforms.length) {
+    const vc = { high:'#059669', medium:'#D97706', low:'#EF4444', none:'#CBD5E1' };
+    new Chart(platCanvas, {
+      type: 'bar',
+      data: {
+        labels: platforms,
+        datasets: ['high','medium','low','none'].map(v => ({
+          label: v.charAt(0).toUpperCase()+v.slice(1),
+          data: platforms.map(p => organic.filter(x=>x.platform===p&&x.visibility===v).length),
+          backgroundColor: vc[v], borderRadius: 3
+        }))
+      },
+      options: {
+        scales: { x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}}, y:{stacked:true,beginAtZero:true,ticks:{stepSize:1,font:{size:10}}} },
+        plugins: { legend:{ position:'bottom', labels:{font:{size:10},boxWidth:10,padding:8} } },
+        animation: false
+      }
+    });
+  }
+  const compCanvas = document.getElementById(`rc-comp-${id}`);
+  if (compCanvas && topComps.length) {
+    new Chart(compCanvas, {
+      type: 'bar',
+      data: {
+        labels: topComps.map(([n])=>n),
+        datasets: [{ data:topComps.map(([,v])=>v), backgroundColor:'#3B82F6', borderRadius:3, label:'Mentions' }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend:{display:false} },
+        scales: { x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{display:false}}, y:{ticks:{font:{size:10}}} },
+        animation: false
+      }
+    });
+  }
+}
+
+function printReport(id) {
+  const win = window.open('', '_blank');
+  if (!win) { alert('Allow pop-ups for this site and try again.'); return; }
+  win.document.write(generateStandaloneReportHTML(id));
+  win.document.close();
+  win.addEventListener('load', () => setTimeout(() => win.print(), 700));
+}
+
+function exportReportHTML(id) {
+  const c = getClient(id);
+  if (!c.report) return;
+  const html = generateStandaloneReportHTML(id);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${c.name.replace(/\s+/g,'-').toLowerCase()}-ai-visibility-audit.html`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+function generateStandaloneReportHTML(id) {
+  const c = getClient(id); const r = c.report;
+  if (!r) return '<p>No report.</p>';
+  const score = r.visibility_projection?.current_score ?? getScore(c) ?? 0;
+  const projected = r.visibility_projection?.projected_score ?? Math.min(score+35,100);
+  const sc = scoreClass(score);
+  const scoreColor = sc==='high'?'#059669':sc==='mid'?'#D97706':'#DC2626';
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const organic = (c.results||[]).filter(x=>!x.brand_specific);
+  const platforms = [...new Set((c.results||[]).map(x=>x.platform))];
+  const compFreq = {};
+  (c.results||[]).forEach(x=>(x.competitors_mentioned||[]).forEach(cn=>{compFreq[cn]=(compFreq[cn]||0)+1;}));
+  const topComps = Object.entries(compFreq).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const platDataJSON = JSON.stringify(platforms.map(p=>({
+    platform:p,
+    high:organic.filter(x=>x.platform===p&&x.visibility==='high').length,
+    medium:organic.filter(x=>x.platform===p&&x.visibility==='medium').length,
+    low:organic.filter(x=>x.platform===p&&x.visibility==='low').length,
+    none:organic.filter(x=>x.platform===p&&x.visibility==='none').length,
+  })));
+  const compDataJSON = JSON.stringify(topComps);
+  const e = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const renderRecsStatic = (recs) => (recs||[]).map((rec,i) => `
+    <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #E2E8F0">
+      <div style="font-size:20px;font-weight:800;color:#CBD5E1;width:24px;flex-shrink:0;line-height:1.2">${i+1}</div>
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:5px">${e(rec.action)}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;background:${rec.impact==='high'?'#DCFCE7':'#F1F5F9'};color:${rec.impact==='high'?'#15803D':'#64748B'}">${e(rec.impact)} impact</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#F1F5F9;color:#64748B">${e(rec.effort)} effort</span>
+          <span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#F1F5F9;color:#64748B">${e(rec.category)}</span>
+        </div>
+      </div>
+    </div>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Visibility Audit — ${e(c.name)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"><\/script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,system-ui,sans-serif;background:#F8FAFC;color:#1E293B;-webkit-font-smoothing:antialiased}
+.page{max-width:860px;margin:0 auto;padding:40px 24px}
+.pbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:24px}
+.btn{padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #CBD5E1;background:#fff;font-family:inherit}
+.btn-pri{background:#2563EB;color:#fff;border-color:#2563EB}
+.doc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid #0B0F1A}
+.sec{margin-bottom:22px}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#64748B;margin-bottom:8px}
+.body{font-size:13px;line-height:1.75;color:#1E293B}
+.cc{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:16px 18px}
+.cg{display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:22px}
+.gg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ig{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:12px}
+@media print{.pbar{display:none!important}body{background:#fff}.page{padding:20px}.cc,.ig > div,.rg > div{break-inside:avoid}}
+</style></head>
+<body><div class="page">
+  <div class="pbar">
+    <button class="btn" onclick="window.close()">Close</button>
+    <button class="btn btn-pri" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <div class="doc-header">
+    <div>
+      <div style="margin-bottom:6px"><span style="font-size:17px;font-weight:700;color:#0B0F1A">Root</span><span style="font-size:17px;font-weight:800;color:#2563EB">ACE</span></div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">${e(c.name)}</div>
+      <div style="font-size:12px;color:#64748B;margin-top:2px">AI Visibility Audit · ${date}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:38px;font-weight:800;letter-spacing:-.03em;color:${scoreColor}">${score}%</div>
+      <div style="font-size:11px;color:#64748B">AI Visibility Score</div>
+    </div>
+  </div>
+  ${r.key_finding ? `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;margin-bottom:22px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#2563EB;margin-bottom:4px">Key Finding</div><div style="font-size:13px;font-weight:500;color:#1E40AF;line-height:1.65">${e(r.key_finding)}</div></div>` : ''}
+  <div class="cg">
+    <div class="cc">
+      <div class="lbl">Score Overview</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+        <div style="position:relative;width:130px;height:130px"><canvas id="sa-score" width="130" height="130"></canvas></div>
+        <div style="width:100%">
+          <div style="margin-bottom:10px"><div style="font-size:11px;color:#64748B;margin-bottom:4px">Current</div><div style="height:7px;border-radius:4px;background:#E2E8F0;overflow:hidden"><div style="height:100%;width:${score}%;background:${scoreColor};border-radius:4px"></div></div><div style="font-size:12px;font-weight:700;margin-top:3px;color:${scoreColor}">${score}%</div></div>
+          <div><div style="font-size:11px;color:#64748B;margin-bottom:4px">Projected</div><div style="height:7px;border-radius:4px;background:#E2E8F0;overflow:hidden"><div style="height:100%;width:${projected}%;background:#2563EB;border-radius:4px"></div></div><div style="font-size:12px;font-weight:700;margin-top:3px;color:#2563EB">${projected}%</div></div>
+          ${r.visibility_projection?.projection_narrative ? `<div style="font-size:11px;color:#64748B;margin-top:10px;line-height:1.5">${e(r.visibility_projection.projection_narrative)}</div>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="cc"><div class="lbl">Visibility by Platform</div><canvas id="sa-plat"></canvas></div>
+  </div>
+  ${topComps.length ? `<div class="cc sec"><div class="lbl">Competitor Mentions</div><canvas id="sa-comp" style="max-height:180px"></canvas></div>` : ''}
+  ${r.executive_summary ? `<div class="sec"><div class="lbl">Executive Summary</div><div class="body">${e(r.executive_summary)}</div></div>` : ''}
+  ${(r.technical_recommendations||r.content_gaps) ? `<div class="gg">${r.technical_recommendations?`<div class="cc"><div class="lbl">Technical Gaps</div><div style="font-size:12px;line-height:1.7">${e(r.technical_recommendations)}</div></div>`:''}${r.content_gaps?`<div class="cc"><div class="lbl">Content Gaps</div><div style="font-size:12px;line-height:1.7">${e(r.content_gaps)}</div></div>`:''}</div>` : ''}
+  ${r.competitive_analysis ? `<div class="sec"><div class="lbl">Competitive Analysis</div><div class="body" style="margin-bottom:${r.competitor_insights?.length?'12px':'0'}">${e(r.competitive_analysis)}</div>${r.competitor_insights?.length?`<div class="ig">${r.competitor_insights.map(ci=>`<div style="background:#F8FAFC;border-radius:8px;padding:10px 12px"><div style="font-size:12px;font-weight:700;margin-bottom:4px">${e(ci.competitor)}</div><div style="font-size:11px;color:#64748B;line-height:1.5">${e(ci.insight)}</div></div>`).join('')}</div>`:''}` + '</div>' : ''}
+  ${r.recommendations?.length ? `<div class="sec"><div class="lbl">Recommendations</div>${renderRecsStatic(r.recommendations)}</div>` : ''}
+  ${r.roadmap_phases?.length ? `<div class="sec"><div class="lbl">90-Day Roadmap</div><div class="rg">${r.roadmap_phases.map(p=>`<div style="background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:14px 16px"><div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">${e(p.days)}</div><div style="font-size:13px;font-weight:700;margin-bottom:10px">${e(p.theme)}</div>${(p.actions||[]).map(a=>`<div style="font-size:11px;color:#64748B;padding:5px 0;border-top:1px solid #E2E8F0;line-height:1.4">→ ${e(a)}</div>`).join('')}</div>`).join('')}</div></div>` : ''}
+</div>
+<script>
+(function(){
+  const scoreColor='${scoreColor}',score=${score};
+  const platData=${platDataJSON},topComps=${compDataJSON};
+  const sc=document.getElementById('sa-score');
+  if(sc){new Chart(sc,{type:'doughnut',data:{datasets:[{data:[score,100-score],backgroundColor:[scoreColor,'#F1F5F9'],borderWidth:0}]},options:{cutout:'70%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:false},plugins:[{id:'ct',afterDraw(chart){const c2=chart.ctx,{width:w,height:h}=chart;c2.save();c2.font='bold 24px Inter,system-ui,sans-serif';c2.fillStyle=scoreColor;c2.textAlign='center';c2.textBaseline='middle';c2.fillText(score+'%',w/2,h/2-7);c2.font='11px Inter,system-ui,sans-serif';c2.fillStyle='#64748B';c2.fillText('score',w/2,h/2+13);c2.restore();}}]});}
+  const pc=document.getElementById('sa-plat');
+  if(pc&&platData.length){const vc={high:'#059669',medium:'#D97706',low:'#EF4444',none:'#CBD5E1'};new Chart(pc,{type:'bar',data:{labels:platData.map(p=>p.platform),datasets:['high','medium','low','none'].map(v=>({label:v.charAt(0).toUpperCase()+v.slice(1),data:platData.map(p=>p[v]),backgroundColor:vc[v],borderRadius:3}))},options:{scales:{x:{stacked:true,grid:{display:false},ticks:{font:{size:10}}},y:{stacked:true,beginAtZero:true,ticks:{stepSize:1,font:{size:10}}}},plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:8}}},animation:false}});}
+  const cc=document.getElementById('sa-comp');
+  if(cc&&topComps.length){new Chart(cc,{type:'bar',data:{labels:topComps.map(([n])=>n),datasets:[{data:topComps.map(([,v])=>v),backgroundColor:'#3B82F6',borderRadius:3,label:'Mentions'}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}}}},animation:false}});}
+})();
+<\/script></body></html>`;
 }
 
 function copyReport(id) {
@@ -843,14 +1164,14 @@ function copyReport(id) {
   const r = c.report;
   const text = [
     `AI VISIBILITY AUDIT — ${c.name.toUpperCase()}`,
-    `\nKEY FINDING\n${r.key_finding}`,
-    `\nEXECUTIVE SUMMARY\n${r.executive_summary}`,
-    `\nCOMPETITIVE ANALYSIS\n${r.competitive_analysis}`,
+    r.key_finding ? `\nKEY FINDING\n${r.key_finding}` : '',
+    r.executive_summary ? `\nEXECUTIVE SUMMARY\n${r.executive_summary}` : '',
+    r.competitive_analysis ? `\nCOMPETITIVE ANALYSIS\n${r.competitive_analysis}` : '',
     r.competitor_insights?.length ? `\nCOMPETITOR INSIGHTS\n${r.competitor_insights.map(ci=>`${ci.competitor}: ${ci.insight}`).join('\n')}` : '',
     r.recommendations?.length ? `\nRECOMMENDATIONS\n${r.recommendations.map((rec,i)=>`${i+1}. ${rec.action} [${rec.impact} impact, ${rec.effort} effort]`).join('\n')}` : '',
     r.roadmap_phases?.length ? `\n90-DAY ROADMAP\n${r.roadmap_phases.map(p=>`${p.days} — ${p.theme}\n${(p.actions||[]).map(a=>`  → ${a}`).join('\n')}`).join('\n\n')}` : '',
   ].filter(Boolean).join('\n');
-  navigator.clipboard.writeText(text).then(() => alert('Report copied to clipboard.')).catch(() => alert('Could not copy — try selecting text manually.'));
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard.')).catch(() => alert('Could not copy — try selecting text manually.'));
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
