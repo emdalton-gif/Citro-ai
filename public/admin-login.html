@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — RootACE</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8FAFC; --dark: #0B0F1A; --accent: #2563EB;
+      --muted: #64748B; --border: #CBD5E1; --sans: 'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--dark); min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+    nav { display: flex; align-items: center; justify-content: center; height: 60px; background: var(--dark); }
+    .logo-root { font-size: 18px; font-weight: 700; color: #fff; }
+    .logo-ace  { font-size: 18px; font-weight: 800; color: #2563EB; }
+    .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
+    .card { background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; padding: 44px 40px; max-width: 380px; width: 100%; }
+    .tag { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    h1 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; margin-bottom: 28px; }
+    .fg { margin-bottom: 16px; }
+    .fg label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+    .fg input { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: var(--sans); outline: none; transition: border .15s; }
+    .fg input:focus { border-color: var(--accent); }
+    .btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; margin-top: 8px; transition: opacity .15s; }
+    .btn:hover { opacity: .9; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .err { font-size: 13px; color: #DC2626; margin-top: 12px; display: none; }
+  </style>
+</head>
+<body>
+<nav><span class="logo-root">Root</span><span class="logo-ace">ACE</span></nav>
+<div class="page">
+  <div class="card">
+    <div class="tag">Admin access</div>
+    <h1>Sign in</h1>
+    <div class="fg">
+      <label>Admin password</label>
+      <input type="password" id="pw" placeholder="Enter password" />
+    </div>
+    <button class="btn" id="btn" onclick="login()">Sign in →</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+<script>
+  if (localStorage.getItem('admin_token')) window.location.href = '/admin.html';
+
+  document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+  async function login() {
+    const pw = document.getElementById('pw').value.trim();
+    if (!pw) return;
+    const btn = document.getElementById('btn');
+    const err = document.getElementById('err');
+    btn.disabled = true; btn.textContent = 'Signing in…'; err.style.display = 'none';
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+      localStorage.setItem('admin_token', data.token);
+      window.location.href = '/admin.html';
+    } catch(e) {
+      err.textContent = e.message; err.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Sign in →';
+    }
+  }
+</script>
+</body>
+</html>
