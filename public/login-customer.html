@@ -3,58 +3,147 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In | Root</title>
+  <title>Sign In | RootACE</title>
   <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #F5F0E8; --surface: #FAF7F2; --ink: #1A1A18; --ink-2: #3D3D3B;
-      --mid: #6B6B67; --quiet: #9E9E9A; --border: rgba(26,26,24,0.1);
-      --green: #1D9E75; --green-d: #723D22; --green-bg: rgba(29,158,117,0.08);
-      --red: #C0392B; --red-bg: rgba(192,57,43,0.07);
-      --serif: 'Playfair Display', Georgia, serif;
-      --sans: 'Inter', system-ui, sans-serif;
-      --mono: 'DM Mono', monospace;
+      --bg:          #F8FAFC;
+      --surface:     #FFFFFF;
+      --ink:         #0F172A;
+      --ink-2:       #1E293B;
+      --mid:         #64748B;
+      --quiet:       #94A3B8;
+      --border:      rgba(15,23,42,0.08);
+      --accent:      #2563EB;
+      --accent-d:    #1D4ED8;
+      --accent-light:rgba(37,99,235,0.08);
+      --accent-ring: rgba(37,99,235,0.18);
+      --red:         #DC2626;
+      --red-bg:      rgba(220,38,38,0.06);
+      --sans:        'Inter', system-ui, sans-serif;
+      --mono:        'DM Mono', monospace;
     }
     body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; }
-    nav { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; }
-    .nav-logo { font-family: var(--serif); font-size: 22px; font-style: italic; text-decoration: none; color: var(--ink); }
-    .nav-logo em { font-style: normal; color: var(--green); }
 
-    .page { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 60px); padding: 48px 24px; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px; width: 100%; max-width: 440px; }
+    nav {
+      background: rgba(248,250,252,0.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
 
-    .card-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
-    .card-title { font-family: var(--serif); font-size: 30px; margin-bottom: 8px; }
+    .page { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 64px); padding: 48px 24px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 1px 4px rgba(15,23,42,0.06);
+    }
+
+    .card-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.4px;
+      margin-bottom: 8px;
+    }
     .card-sub { color: var(--mid); font-size: 14px; line-height: 1.6; margin-bottom: 32px; }
 
     .field { margin-bottom: 20px; }
     label { display: block; font-size: 13px; font-weight: 500; color: var(--ink-2); margin-bottom: 6px; }
-    input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: var(--sans); font-size: 15px; color: var(--ink); background: var(--bg); outline: none; transition: border-color 0.15s; }
-    input:focus { border-color: var(--green); background: var(--surface); }
+    input {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--ink);
+      background: var(--bg);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); background: var(--surface); }
     input::placeholder { color: var(--quiet); }
 
-    .btn-primary { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 8px; font-family: var(--sans); font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 8px; transition: background 0.15s; }
-    .btn-primary:hover:not(:disabled) { background: var(--green-d); }
+    .btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.15s;
+      letter-spacing: -0.1px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-d); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .error-msg { background: var(--red-bg); border: 1px solid rgba(192,57,43,0.2); color: var(--red); border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 20px; display: none; }
+    .error-msg {
+      background: var(--red-bg);
+      border: 1px solid rgba(220,38,38,0.18);
+      color: var(--red);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
     .divider { text-align: center; color: var(--quiet); font-size: 13px; margin: 24px 0; }
     .register-link { text-align: center; font-size: 14px; color: var(--mid); }
-    .register-link a { color: var(--green); text-decoration: none; font-weight: 500; }
+    .register-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
     .register-link a:hover { text-decoration: underline; }
 
-    .spin { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+    .audit-notice {
+      background: var(--accent-light);
+      border: 1px solid rgba(37,99,235,0.18);
+      border-radius: 8px;
+      padding: 13px 15px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.5;
+    }
+    .audit-notice strong { color: var(--accent); }
+
+    .spin { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .audit-notice { background: var(--green-bg); border: 1px solid rgba(29,158,117,0.2); border-radius: 10px; padding: 14px 16px; margin-bottom: 28px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
-    .audit-notice strong { color: var(--green); }
+    @media (max-width: 480px) { .card { padding: 32px 24px; } nav { padding: 0 20px; } }
   </style>
 </head>
 <body>
-<nav><a class="nav-logo" href="/" style="font-family:var(--serif);font-size:22px;font-style:normal;text-decoration:none;color:var(--ink)"><span style="font-family:var(--serif);font-weight:700;font-style:normal;color:var(--ink)">Root</span><span style="font-family:var(--serif);font-weight:400;font-style:italic;color:#8B4A2A">ACE</span></a></nav>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <span class="logo-root">Root</span><span class="logo-ace">ACE</span>
+  </a>
+</nav>
 
 <div class="page">
   <div class="card">
@@ -63,7 +152,7 @@
     <div class="card-sub">View your audit reports and manage your subscription.</div>
 
     <div id="audit-notice" class="audit-notice" style="display:none">
-      Sign in to save your <strong>Competitive AI Audit</strong> to your account.
+      Sign in to save your <strong>AI Visibility Audit</strong> to your account.
     </div>
 
     <div id="error-msg" class="error-msg"></div>
@@ -85,24 +174,20 @@
 </div>
 
 <script>
-  const params = new URLSearchParams(location.search);
-  const resultId = params.get('resultId');
+  const params       = new URLSearchParams(location.search);
+  const resultId     = params.get('resultId');
   const prefillEmail = params.get('email');
 
-  if (prefillEmail) {
-    document.getElementById('email').value = decodeURIComponent(prefillEmail);
-  }
+  if (prefillEmail) document.getElementById('email').value = decodeURIComponent(prefillEmail);
 
   if (resultId) {
     document.getElementById('audit-notice').style.display = 'block';
-    document.getElementById('register-link').href = `/register.html?resultId=${encodeURIComponent(resultId)}${prefillEmail ? '&email=' + encodeURIComponent(prefillEmail) : ''}`;
+    document.getElementById('register-link').href =
+      `/register.html?resultId=${encodeURIComponent(resultId)}${prefillEmail ? '&email=' + encodeURIComponent(prefillEmail) : ''}`;
   }
 
-  // If already logged in, redirect to dashboard
   const existingToken = localStorage.getItem('rp_customer_token');
-  if (existingToken && !resultId) {
-    location.href = '/dashboard.html';
-  }
+  if (existingToken && !resultId) location.href = '/dashboard.html';
 
   function showError(msg) {
     const el = document.getElementById('error-msg');
@@ -111,11 +196,10 @@
   }
 
   async function login() {
-    const email = document.getElementById('email').value.trim();
+    const email    = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    const btn = document.getElementById('submit-btn');
-    const errEl = document.getElementById('error-msg');
-    errEl.style.display = 'none';
+    const btn      = document.getElementById('submit-btn');
+    document.getElementById('error-msg').style.display = 'none';
 
     if (!email || !password) return showError('Please enter your email and password.');
 
@@ -123,7 +207,7 @@
     btn.innerHTML = '<span class="spin"></span>Signing in...';
 
     try {
-      const res = await fetch('/api/auth-login', {
+      const res  = await fetch('/api/auth-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -134,15 +218,11 @@
       localStorage.setItem('rp_customer_token', data.token);
       localStorage.setItem('rp_customer_email', data.email);
 
-      // Link audit if coming from post-audit flow
       if (resultId) {
         try {
           await fetch('/api/link-audit', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${data.token}`,
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${data.token}` },
             body: JSON.stringify({ resultId }),
           });
         } catch { /* non-fatal */ }
