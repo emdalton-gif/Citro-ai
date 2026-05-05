@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — RootACE</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F1F5F9; --surface: #fff; --dark: #0B0F1A; --accent: #2563EB;
+      --green: #059669; --red: #DC2626; --muted: #64748B; --text: #1E293B;
+      --border: #E2E8F0; --border-2: #CBD5E1; --sans: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+      --nav-h: 52px; --sb-w: 220px;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ── Nav ── */
+    nav { height: var(--nav-h); background: var(--dark); display: flex; align-items: center; padding: 0 20px; gap: 16px; flex-shrink: 0; }
+    .logo-root { font-size: 16px; font-weight: 700; color: #fff; }
+    .logo-ace  { font-size: 16px; font-weight: 800; color: #2563EB; }
+    .nav-tag   { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #64748B; padding: 2px 8px; border: 1px solid #334155; border-radius: 4px; }
+    .nav-logout { margin-left: auto; font-size: 12px; color: #64748B; cursor: pointer; text-decoration: none; }
+    .nav-logout:hover { color: #fff; }
+
+    /* ── Shell ── */
+    .shell { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    aside { width: var(--sb-w); background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .sb-header { padding: 14px 14px 10px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .sb-list { flex: 1; overflow-y: auto; padding: 6px; }
+    .sb-item { padding: 8px 10px; border-radius: 7px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .1s; }
+    .sb-item:hover { background: var(--bg); }
+    .sb-item.active { background: #EFF6FF; }
+    .sb-avatar { width: 28px; height: 28px; border-radius: 6px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .sb-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-status { font-size: 10px; color: var(--muted); }
+    .sb-add { margin: 6px; }
+    .sb-add button { width: 100%; padding: 7px; background: var(--bg); border: 1.5px dashed var(--border-2); border-radius: 7px; font-size: 12px; color: var(--muted); cursor: pointer; font-family: var(--sans); transition: border-color .15s, color .15s; }
+    .sb-add button:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Main ── */
+    main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); gap: 8px; }
+    .empty-state svg { opacity: .3; }
+    .empty-state p { font-size: 14px; }
+
+    /* ── Client view ── */
+    .client-view { flex: 1; display: flex; flex-direction: column; }
+    .cv-header { padding: 20px 24px 0; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .cv-name { font-size: 20px; font-weight: 800; letter-spacing: -.02em; flex: 1; }
+    .cv-delete { font-size: 11px; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 5px; }
+    .cv-delete:hover { color: var(--red); background: #FEF2F2; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 2px; padding: 16px 24px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .tab { padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .15s; white-space: nowrap; }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+    /* ── Tab panels ── */
+    .tab-panel { display: none; padding: 24px; flex: 1; }
+    .tab-panel.active { display: block; }
+
+    /* ── Form elements ── */
+    .fg { margin-bottom: 16px; }
+    .fg label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+    .fg input, .fg select, .fg textarea { width: 100%; padding: 9px 11px; border: 1px solid var(--border-2); border-radius: 7px; font-size: 13px; font-family: var(--sans); color: var(--text); background: var(--surface); outline: none; transition: border .15s; }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--accent); }
+    .fg textarea { resize: vertical; min-height: 70px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+    /* ── Buttons ── */
+    .btn { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--sans); border: none; transition: opacity .15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn.pri { background: var(--accent); color: #fff; }
+    .btn.pri:hover:not(:disabled) { opacity: .88; }
+    .btn.sec { background: var(--bg); color: var(--text); border: 1px solid var(--border-2); }
+    .btn.sec:hover:not(:disabled) { background: var(--border); }
+    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+
+    /* ── Section headers ── */
+    .sec-head { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .sec-head .ct { font-size: 10px; font-weight: 600; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 10px; }
+
+    /* ── Persona cards ── */
+    .persona-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .persona-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .pc-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .pc-name { font-size: 13px; font-weight: 700; }
+    .pc-del { font-size: 10px; color: var(--muted); cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+    .pc-del:hover { color: var(--red); background: #FEF2F2; }
+    .pc-field { margin-bottom: 6px; }
+    .pc-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 2px; }
+    .pc-input { width: 100%; padding: 5px 7px; border: 1px solid var(--border); border-radius: 5px; font-size: 11px; font-family: var(--sans); color: var(--text); background: #FAFAFA; outline: none; }
+    .pc-input:focus { border-color: var(--accent); background: #fff; }
+
+    /* ── Upload zone ── */
+    .upload-zone { border: 2px dashed var(--border-2); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+    .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: #EFF6FF; }
+    .upload-zone p { font-size: 13px; color: var(--muted); }
+    .upload-zone .uz-types { font-size: 11px; color: var(--border-2); margin-top: 4px; font-family: var(--mono); }
+    #file-input { display: none; }
+
+    /* ── Query list ── */
+    .q-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    .q-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; font-size: 12px; }
+    .q-check { width: 15px; height: 15px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+    .q-text { flex: 1; outline: none; border: none; background: transparent; font-size: 12px; font-family: var(--sans); color: var(--text); }
+    .q-platform { font-size: 10px; font-family: var(--mono); color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+    .q-brand { font-size: 9px; background: #FEF3C7; color: #92400E; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
+    .q-del { font-size: 10px; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; }
+    .q-del:hover { color: var(--red); background: #FEF2F2; }
+
+    /* ── Query log (run) ── */
+    .run-log { background: var(--dark); border-radius: 10px; padding: 14px 16px; font-family: var(--mono); font-size: 11px; min-height: 120px; max-height: 260px; overflow-y: auto; }
+    .log-line { display: flex; align-items: center; gap: 8px; padding: 3px 0; color: #94A3B8; }
+    .log-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .log-dot.pending { background: #475569; }
+    .log-dot.running { background: var(--accent); animation: pulse 1s infinite; }
+    .log-dot.done    { background: var(--green); }
+    .log-dot.fail    { background: var(--red); }
+    .log-plat { color: #60A5FA; width: 110px; flex-shrink: 0; }
+
+    /* ── Results ── */
+    .score-hero { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+    .score-big { font-size: 48px; font-weight: 800; letter-spacing: -.03em; }
+    .score-big.high { color: var(--green); }
+    .score-big.mid  { color: #D97706; }
+    .score-big.low  { color: var(--red); }
+    .score-meta { font-size: 13px; color: var(--muted); }
+    .metrics-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .metric-val { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+    .metric-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .qb-list { display: flex; flex-direction: column; gap: 6px; }
+    .qb-item { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; }
+    .qb-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+    .qb-plat { font-size: 10px; font-family: var(--mono); color: var(--muted); flex-shrink: 0; }
+    .qb-query { font-size: 12px; font-weight: 500; flex: 1; }
+    .vis-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+    .vis-pill.high   { background: #DCFCE7; color: #15803D; }
+    .vis-pill.medium { background: #FEF9C3; color: #854D0E; }
+    .vis-pill.low    { background: #FEE2E2; color: #991B1B; }
+    .vis-pill.none   { background: #F1F5F9; color: #64748B; }
+    .qb-insight { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Report ── */
+    .report-body { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; font-family: var(--sans); color: var(--text); max-height: 70vh; overflow-y: auto; }
+
+    /* ── Spinner / utils ── */
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    @keyframes spin   { to{transform:rotate(360deg)} }
+    .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    .spin.dark { border-color: rgba(0,0,0,.15); border-top-color: var(--accent); }
+    .tag-note { font-size: 11px; color: var(--muted); font-style: italic; }
+    .file-status { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="logo-root">Root</span><span class="logo-ace">ACE</span>
+  <span class="nav-tag">Admin</span>
+  <a class="nav-logout" onclick="logout()">Sign out</a>
+</nav>
+
+<div class="shell">
+  <!-- Sidebar -->
+  <aside>
+    <div class="sb-header">Clients</div>
+    <div class="sb-list" id="sb-list"></div>
+    <div class="sb-add"><button onclick="newClient()">+ New client</button></div>
+  </aside>
+
+  <!-- Main -->
+  <main id="main">
+    <div class="empty-state" id="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12h6M12 9v6"/></svg>
+      <p>Select a client or create a new one</p>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Auth ──────────────────────────────────────────────────────────────────────
+const TOKEN = localStorage.getItem('admin_token');
+if (!TOKEN) window.location.href = '/admin-login.html';
+function logout() { localStorage.removeItem('admin_token'); window.location.href = '/admin-login.html'; }
+
+// ── DB (localStorage) ─────────────────────────────────────────────────────────
+const STORE_KEY = 'rp_admin_db';
+let DB = { clients: [], activeId: null };
+try { DB = JSON.parse(localStorage.getItem(STORE_KEY)) || DB; } catch(e) {}
+function saveDB() { localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }
+function getClient(id) { return DB.clients.find(c => c.id === id); }
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function uid() { return Math.random().toString(36).slice(2, 9); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function ini(n) { return String(n||'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?'; }
+function scoreClass(s) { return s >= 65 ? 'high' : s >= 40 ? 'mid' : 'low'; }
+
+// ── Claude API ────────────────────────────────────────────────────────────────
+async function callClaude(messages, system, maxTokens = 1000) {
+  const body = { model: 'claude-sonnet-4-6', max_tokens: maxTokens, messages };
+  if (system) body.system = system;
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 401) { localStorage.removeItem('admin_token'); window.location.href = '/admin-login.html'; }
+  if (!res.ok) throw new Error('API error ' + res.status);
+  const d = await res.json();
+  return d.content?.[0]?.text || '';
+}
+
+async function callClaudeWithContent(content, system, maxTokens = 1500) {
+  const body = { model: 'claude-sonnet-4-6', max_tokens: maxTokens, messages: [{ role: 'user', content }] };
+  if (system) body.system = system;
+  const res = await fetch('/api/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('API error ' + res.status);
+  const d = await res.json();
+  return d.content?.[0]?.text || '';
+}
+
+async function callLiveQuery(query, platform) {
+  const res = await fetch('/api/live-query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+    body: JSON.stringify({ query, platform }),
+  });
+  if (!res.ok) return null;
+  const d = await res.json();
+  return d.response || null;
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const el = document.getElementById('sb-list');
+  if (!DB.clients.length) { el.innerHTML = '<div style="padding:10px 12px;font-size:11px;color:var(--muted)">No clients yet</div>'; return; }
+  el.innerHTML = DB.clients.map(c => {
+    const score = getScore(c);
+    const status = c.results?.length ? (score !== null ? score + '%' : 'ran') : c.queries?.length ? 'ready' : 'setup';
+    return `<div class="sb-item${c.id === DB.activeId ? ' active' : ''}" onclick="selectClient('${c.id}')">
+      <div class="sb-avatar" style="background:${c.color||'var(--accent)'}">${ini(c.name)}</div>
+      <div style="overflow:hidden">
+        <div class="sb-name">${esc(c.name||'Unnamed')}</div>
+        <div class="sb-status">${status}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getScore(c) {
+  if (!c.results?.length) return null;
+  const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
+  const organic = c.results.filter(x => !x.brand_specific);
+  return organic.length ? Math.round(organic.reduce((s,x)=>s+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+}
+
+function newClient() {
+  const name = prompt('Client name:');
+  if (!name) return;
+  const colors = ['#2563EB','#059669','#7C3AED','#DC2626','#D97706','#0891B2'];
+  const c = {
+    id: uid(), name, color: colors[DB.clients.length % colors.length],
+    website:'', industry:'', specificProduct:'', geo:'', competitors:'', analystNotes:'',
+    personas:[], queries:[], results:[], report:null, activeTab:'setup',
+  };
+  DB.clients.push(c);
+  DB.activeId = c.id;
+  saveDB();
+  renderSidebar();
+  renderClient(c.id);
+}
+
+function selectClient(id) {
+  DB.activeId = id;
+  saveDB();
+  renderSidebar();
+  renderClient(id);
+}
+
+function deleteClient(id) {
+  if (!confirm('Delete this client? This cannot be undone.')) return;
+  DB.clients = DB.clients.filter(c => c.id !== id);
+  DB.activeId = DB.clients[0]?.id || null;
+  saveDB();
+  renderSidebar();
+  if (DB.activeId) renderClient(DB.activeId);
+  else document.getElementById('main').innerHTML = document.getElementById('empty-state')?.outerHTML || '';
+}
+
+// ── Client view ───────────────────────────────────────────────────────────────
+function renderClient(id) {
+  const c = getClient(id);
+  if (!c) return;
+  const tabs = ['setup','personas','queries','run','results','report'];
+  const tabLabels = { setup:'Setup', personas:'Personas', queries:'Queries', run:'Run', results:'Results', report:'Report' };
+  document.getElementById('main').innerHTML = `
+    <div class="client-view">
+      <div class="cv-header">
+        <div class="cv-name" contenteditable="true" spellcheck="false"
+          onblur="renameClient('${id}', this.textContent)"
+          style="outline:none;cursor:text">${esc(c.name)}</div>
+        <span class="cv-delete" onclick="deleteClient('${id}')">Delete client</span>
+      </div>
+      <div class="tabs" id="tabs-${id}">
+        ${tabs.map(t => `<div class="tab${t===c.activeTab?' active':''}" onclick="switchTab('${id}','${t}')">${tabLabels[t]}</div>`).join('')}
+      </div>
+      <div id="panels-${id}">
+        ${tabs.map(t => `<div class="tab-panel${t===c.activeTab?' active':''}" id="panel-${id}-${t}"></div>`).join('')}
+      </div>
+    </div>`;
+  tabs.forEach(t => renderPanel(id, t));
+}
+
+function switchTab(id, tab) {
+  const c = getClient(id);
+  if (!c) return;
+  c.activeTab = tab;
+  saveDB();
+  document.querySelectorAll(`#tabs-${id} .tab`).forEach((el,i) => {
+    el.classList.toggle('active', ['setup','personas','queries','run','results','report'][i] === tab);
+  });
+  document.querySelectorAll(`#panels-${id} .tab-panel`).forEach(el => el.classList.remove('active'));
+  const panel = document.getElementById(`panel-${id}-${tab}`);
+  if (panel) { panel.classList.add('active'); renderPanel(id, tab); }
+}
+
+function renameClient(id, name) {
+  const c = getClient(id);
+  if (c && name.trim()) { c.name = name.trim(); saveDB(); renderSidebar(); }
+}
+
+// ── Panel renderers ───────────────────────────────────────────────────────────
+function renderPanel(id, tab) {
+  const fn = { setup: renderSetup, personas: renderPersonas, queries: renderQueries, run: renderRun, results: renderResults, report: renderReport };
+  fn[tab]?.(id);
+}
+
+// SETUP
+function renderSetup(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`panel-${id}-setup`);
+  el.innerHTML = `
+    <div class="row2">
+      <div class="fg"><label>Company name</label><input id="s-name-${id}" value="${esc(c.name)}" onchange="sp('${id}','name',this.value)" placeholder="Acme Corp"/></div>
+      <div class="fg"><label>Website</label><input id="s-web-${id}" value="${esc(c.website)}" onchange="sp('${id}','website',this.value)" placeholder="https://acme.com"/></div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>Industry / niche</label><input id="s-ind-${id}" value="${esc(c.industry)}" onchange="sp('${id}','industry',this.value)" placeholder="e.g. B2B SaaS, healthcare IT"/></div>
+      <div class="fg"><label>Specific geography</label><input id="s-geo-${id}" value="${esc(c.geo)}" onchange="sp('${id}','geo',this.value)" placeholder="Leave blank if global"/></div>
+    </div>
+    <div class="fg"><label>Specific product or service to audit</label>
+      <input id="s-prod-${id}" value="${esc(c.specificProduct)}" onchange="sp('${id}','specificProduct',this.value)" placeholder="Leave blank to audit the company overall"/>
+    </div>
+    <div class="fg"><label>Key competitors</label>
+      <textarea id="s-comp-${id}" onchange="sp('${id}','competitors',this.value)" placeholder="Competitor A, Competitor B, Competitor C&#10;Use Name (Alias) format for alias normalization">${esc(c.competitors)}</textarea>
+    </div>
+    <div class="fg"><label>Analyst notes <span class="tag-note">— instructions applied to every simulation</span></label>
+      <textarea id="s-notes-${id}" style="min-height:100px" onchange="sp('${id}','analystNotes',this.value)" placeholder="e.g. Focus on enterprise buyers. Weight queries toward financial services vertical. Ignore SMB comparison queries.">${esc(c.analystNotes)}</textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn pri" onclick="setupNext('${id}')">Save & continue to personas →</button>
+      <button class="btn sec" id="res-btn-${id}" onclick="researchClient('${id}')">Research with AI</button>
+      <span id="res-status-${id}" style="font-size:11px;color:var(--muted)"></span>
+    </div>`;
+}
+
+function sp(id, key, val) {
+  const c = getClient(id);
+  if (c) { c[key] = val; if (key === 'name') { renderSidebar(); } saveDB(); }
+}
+
+async function researchClient(id) {
+  const c = getClient(id);
+  const btn = document.getElementById(`res-btn-${id}`);
+  const status = document.getElementById(`res-status-${id}`);
+  if (!c.name) { alert('Enter a company name first.'); return; }
+  btn.disabled = true; status.textContent = 'Researching…';
+  try {
+    const res = await fetch('/api/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: c.name, website: c.website, industry: c.industry }),
+    });
+    const r = await res.json();
+    if (r.industry && !c.industry) { c.industry = r.industry; document.getElementById(`s-ind-${id}`).value = r.industry; }
+    if (r.competitors && !c.competitors) { c.competitors = r.competitors; document.getElementById(`s-comp-${id}`).value = r.competitors; }
+    saveDB(); status.textContent = 'Done ✓';
+  } catch(e) { status.textContent = 'Research failed'; }
+  btn.disabled = false;
+}
+
+function setupNext(id) {
+  // Sync all fields before switching
+  const c = getClient(id);
+  ['name','website','industry','geo','specificProduct','competitors','analystNotes'].forEach(key => {
+    const fieldMap = { name:`s-name-${id}`, website:`s-web-${id}`, industry:`s-ind-${id}`, geo:`s-geo-${id}`, specificProduct:`s-prod-${id}`, competitors:`s-comp-${id}`, analystNotes:`s-notes-${id}` };
+    const el = document.getElementById(fieldMap[key]);
+    if (el) c[key] = el.value;
+  });
+  saveDB();
+  switchTab(id, 'personas');
+}
+
+// PERSONAS
+function renderPersonas(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`panel-${id}-personas`);
+  el.innerHTML = `
+    <div class="sec-head">Buyer personas <span class="ct">${c.personas.length}</span></div>
+    <div class="persona-grid" id="pg-${id}"></div>
+    <div class="btn-row" style="margin-bottom:20px">
+      <button class="btn pri" id="gen-p-btn-${id}" onclick="genPersonas('${id}')">
+        <span class="spin dark" id="gen-p-spin-${id}" style="display:none"></span> Generate with AI
+      </button>
+      <button class="btn sec" onclick="addPersona('${id}', {})">+ Add manually</button>
+    </div>
+    <hr class="divider"/>
+    <div class="sec-head" style="margin-bottom:12px">Upload from file <span class="tag-note">— PDF, DOCX, CSV, TXT, or image</span></div>
+    <div class="upload-zone" id="uz-${id}" onclick="document.getElementById('file-input-${id}').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="event.preventDefault();this.classList.remove('drag');handlePersonaFile('${id}',event.dataTransfer.files[0])">
+      <p>Click to upload or drag a file here</p>
+      <div class="uz-types">PDF · DOCX · CSV · TXT · PNG · JPG</div>
+    </div>
+    <input type="file" id="file-input-${id}" accept=".pdf,.docx,.csv,.txt,.png,.jpg,.jpeg" onchange="handlePersonaFile('${id}',this.files[0])"/>
+    <div class="file-status" id="fs-${id}"></div>
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn pri" onclick="switchTab('${id}','queries')">Continue to queries →</button>
+    </div>`;
+  renderPersonaGrid(id);
+}
+
+function renderPersonaGrid(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`pg-${id}`);
+  if (!el) return;
+  if (!c.personas.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0">No personas yet — generate or upload</div>'; return; }
+  el.innerHTML = c.personas.map((p, i) => `
+    <div class="persona-card">
+      <div class="pc-head">
+        <div class="pc-name">${esc(p.name||'Persona '+(i+1))}</div>
+        <span class="pc-del" onclick="removePersona('${id}',${i})">✕</span>
+      </div>
+      ${['title','company','goal','pain'].map(f => `
+      <div class="pc-field">
+        <div class="pc-label">${f}</div>
+        <input class="pc-input" value="${esc(p[f]||'')}" onchange="editPersona('${id}',${i},'${f}',this.value)" placeholder="${f}"/>
+      </div>`).join('')}
+    </div>`).join('');
+}
+
+async function genPersonas(id) {
+  const c = getClient(id);
+  const btn = document.getElementById(`gen-p-btn-${id}`);
+  const spin = document.getElementById(`gen-p-spin-${id}`);
+  if (!c.name) { alert('Add a company name in Setup first.'); return; }
+  btn.disabled = true; spin.style.display = 'inline-block';
+  const subjectCtx = c.specificProduct ? `${c.specificProduct} (by ${c.name})` : c.name;
+  try {
+    const raw = await callClaude([{ role:'user', content:`Generate 3 realistic and distinct buyer personas for ${c.name}, a ${c.industry||'company'} offering ${subjectCtx}. Competitors: ${c.competitors||'other solutions in the space'}.\nReturn ONLY a JSON array of 3 objects:\n[{"name":"first and last name","title":"job title","company":"company type and size","goal":"primary professional goal in 1 sentence","pain":"2-3 comma-separated pain points","motivation":"key purchase motivation in 1 sentence","buyerType":"B2B or B2C","conversionGoal":"lead or call or ecommerce"}]` }], null, 1200);
+    const personas = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    c.personas = [...c.personas, ...personas];
+    saveDB(); renderPersonaGrid(id);
+  } catch(e) { alert('Persona generation failed. Try again.'); }
+  btn.disabled = false; spin.style.display = 'none';
+}
+
+function addPersona(id, data) {
+  const c = getClient(id);
+  c.personas.push({ name:'New Persona', title:'', company:'', goal:'', pain:'', motivation:'', buyerType:'B2B', conversionGoal:'lead', ...data });
+  saveDB(); renderPersonaGrid(id);
+}
+
+function removePersona(id, i) {
+  const c = getClient(id);
+  c.personas.splice(i, 1); saveDB(); renderPersonaGrid(id);
+}
+
+function editPersona(id, i, key, val) {
+  const c = getClient(id);
+  if (c.personas[i]) { c.personas[i][key] = val; saveDB(); }
+}
+
+// ── File upload / persona extraction ─────────────────────────────────────────
+const PERSONA_PROMPT = `Extract or infer buyer personas from the content below. Each persona should represent a realistic buyer profile.\n\nReturn ONLY a JSON array. Each item:\n{"name":"first and last name","title":"job title","company":"company type and size","goal":"primary professional goal in 1 sentence","pain":"2-3 comma-separated pain points","motivation":"key purchase motivation in 1 sentence","buyerType":"B2B or B2C","conversionGoal":"lead or call or ecommerce"}\n\nIf the document doesn't contain explicit personas, infer them from the context (role descriptions, use cases, customer stories, etc). Return at least 1 and no more than 6 personas.`;
+
+async function handlePersonaFile(id, file) {
+  if (!file) return;
+  const statusEl = document.getElementById(`fs-${id}`);
+  statusEl.textContent = `Processing ${file.name}…`;
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  try {
+    let personas = [];
+
+    if (ext === 'csv') {
+      const text = await file.text();
+      personas = parseCSVPersonas(text);
+      if (!personas.length) {
+        // If CSV doesn't have expected columns, send to Claude to interpret
+        const raw = await callClaude([{ role:'user', content: PERSONA_PROMPT + '\n\nContent:\n' + text }], null, 1500);
+        personas = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      }
+    } else if (ext === 'txt') {
+      const text = await file.text();
+      const raw = await callClaude([{ role:'user', content: PERSONA_PROMPT + '\n\nContent:\n' + text.slice(0, 8000) }], null, 1500);
+      personas = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    } else if (ext === 'docx') {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      const raw = await callClaude([{ role:'user', content: PERSONA_PROMPT + '\n\nContent:\n' + result.value.slice(0, 8000) }], null, 1500);
+      personas = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    } else if (ext === 'pdf') {
+      const base64 = await fileToBase64(file);
+      const content = [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
+        { type: 'text', text: PERSONA_PROMPT }
+      ];
+      const raw = await callClaudeWithContent(content, null, 1500);
+      personas = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    } else if (['png','jpg','jpeg','gif','webp'].includes(ext)) {
+      const base64 = await fileToBase64(file);
+      const mediaType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+      const content = [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+        { type: 'text', text: PERSONA_PROMPT }
+      ];
+      const raw = await callClaudeWithContent(content, null, 1500);
+      personas = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    } else {
+      statusEl.textContent = 'Unsupported file type.'; return;
+    }
+
+    const c = getClient(id);
+    c.personas = [...c.personas, ...personas];
+    saveDB(); renderPersonaGrid(id);
+    statusEl.textContent = `✓ Added ${personas.length} persona${personas.length !== 1 ? 's' : ''} from ${file.name}`;
+  } catch(e) {
+    console.error(e);
+    statusEl.textContent = 'Could not extract personas from this file. Try a different format.';
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function parseCSVPersonas(text) {
+  const lines = text.trim().split('\n').filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const required = ['label','title','companytype','concern'];
+  const hasExpected = required.some(r => headers.includes(r));
+  if (!hasExpected) return [];
+  return lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g,''));
+    const row = {};
+    headers.forEach((h, i) => row[h] = vals[i] || '');
+    return { name: row.label||row.name||'Persona', title: row.title||'', company: row.companytype||row.company||'', goal: row.concern||row.goal||'', pain: row.pain||'', motivation: row.motivation||'', buyerType: row.buyertype||'B2B', conversionGoal: row.conversiongoal||'lead' };
+  }).filter(p => p.name || p.title);
+}
+
+// QUERIES
+function renderQueries(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`panel-${id}-queries`);
+  el.innerHTML = `
+    <div class="sec-head">Queries <span class="ct">${c.queries.filter(q=>q.checked).length} selected</span></div>
+    <div class="q-list" id="ql-${id}"></div>
+    <div class="btn-row" style="margin-bottom:16px">
+      <button class="btn pri" id="gen-q-btn-${id}" onclick="genQueries('${id}')">
+        <span class="spin dark" id="gen-q-spin-${id}" style="display:none"></span> Generate with AI
+      </button>
+    </div>
+    <hr class="divider"/>
+    <div class="sec-head" style="margin-bottom:10px">Custom query</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input id="cq-text-${id}" placeholder="Type a buyer query…" style="flex:1;padding:8px 10px;border:1px solid var(--border-2);border-radius:7px;font-size:12px;font-family:var(--sans);outline:none"/>
+      <select id="cq-plat-${id}" style="padding:8px 10px;border:1px solid var(--border-2);border-radius:7px;font-size:12px;font-family:var(--sans);outline:none;background:var(--surface)">
+        <option>ChatGPT</option><option>Perplexity</option><option>Google Gemini</option>
+        <option>Claude</option><option>Microsoft Copilot</option>
+      </select>
+      <button class="btn sec" onclick="addCustomQuery('${id}')">Add</button>
+    </div>
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn pri" onclick="switchTab('${id}','run')">Continue to run →</button>
+    </div>`;
+  renderQueryList(id);
+}
+
+function renderQueryList(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`ql-${id}`);
+  if (!el) return;
+  if (!c.queries.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0">No queries yet — generate or add manually</div>'; return; }
+  el.innerHTML = c.queries.map((q, i) => `
+    <div class="q-item">
+      <input type="checkbox" class="q-check" ${q.checked?'checked':''} onchange="toggleQuery('${id}',${i},this.checked)"/>
+      <span class="q-text" contenteditable="true" spellcheck="false" onblur="editQuery('${id}',${i},this)">${esc(q.text)}</span>
+      ${q.brand_specific ? '<span class="q-brand">brand</span>' : ''}
+      <span class="q-platform">${esc(q.platform)}</span>
+      <span class="q-del" onclick="removeQuery('${id}',${i})">✕</span>
+    </div>`).join('');
+  // Update count in header
+  const head = document.querySelector(`#panel-${id}-queries .sec-head .ct`);
+  if (head) head.textContent = c.queries.filter(q=>q.checked).length + ' selected';
+}
+
+async function genQueries(id) {
+  const c = getClient(id);
+  const btn = document.getElementById(`gen-q-btn-${id}`);
+  const spin = document.getElementById(`gen-q-spin-${id}`);
+  if (!c.name) { alert('Add a company name in Setup first.'); return; }
+  btn.disabled = true; spin.style.display = 'inline-block';
+  const ps = c.personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ') || 'B2B decision makers';
+  const subjectCtx = c.specificProduct ? `${c.specificProduct} (by ${c.name})` : c.name;
+  const currentYear = new Date().getFullYear();
+  const analystCtx = c.analystNotes ? `\nAnalyst instructions: ${c.analystNotes}` : '';
+  try {
+    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an AI visibility audit.\n\nBrand: ${c.name}\nProduct/solution: ${subjectCtx}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}${analystCtx}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Mix: 2 broad category, 2 buyer-persona-specific, 1 comparison, 1 pain-driven, 1 adjacent/broader, 1 brand-specific.\n- Platform assignment (assign exactly): 3 to Perplexity, 2 to ChatGPT, remaining 3 across Google Gemini, Claude, Microsoft Copilot.\n\nReturn ONLY a JSON array: [{"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot","brand_specific":true|false}]` }], null, 800);
+    const newQ = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    c.queries = [...c.queries, ...newQ.map(q => ({...q, checked:true}))];
+    saveDB(); renderQueryList(id);
+  } catch(e) { alert('Query generation failed.'); }
+  btn.disabled = false; spin.style.display = 'none';
+}
+
+function toggleQuery(id, i, checked) { const c = getClient(id); if (c.queries[i]) { c.queries[i].checked = checked; saveDB(); renderQueryList(id); } }
+function editQuery(id, i, el) { const c = getClient(id); if (c.queries[i]) { c.queries[i].text = el.textContent.trim(); saveDB(); } }
+function removeQuery(id, i) { const c = getClient(id); c.queries.splice(i,1); saveDB(); renderQueryList(id); }
+function addCustomQuery(id) {
+  const c = getClient(id);
+  const text = document.getElementById(`cq-text-${id}`).value.trim();
+  const platform = document.getElementById(`cq-plat-${id}`).value;
+  if (!text) return;
+  c.queries.push({ text, platform, checked:true, brand_specific:false });
+  document.getElementById(`cq-text-${id}`).value = '';
+  saveDB(); renderQueryList(id);
+}
+
+// RUN
+function renderRun(id) {
+  const c = getClient(id);
+  const active = c.queries.filter(q=>q.checked).length;
+  const el = document.getElementById(`panel-${id}-run`);
+  el.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div class="sec-head">${active} quer${active===1?'y':'ies'} selected</div>
+      <p style="font-size:12px;color:var(--muted)">Perplexity and ChatGPT queries call the live API. Others use simulation.</p>
+    </div>
+    <button class="btn pri" id="run-btn-${id}" onclick="runAudit('${id}')" ${!active?'disabled':''}>
+      Run audit →
+    </button>
+    <div style="margin-top:16px;display:none" id="run-log-wrap-${id}">
+      <div class="sec-head" style="margin-bottom:8px">Running queries</div>
+      <div class="run-log" id="run-log-${id}"></div>
+    </div>`;
+}
+
+async function runAudit(id) {
+  const c = getClient(id);
+  const active = c.queries.filter(q=>q.checked);
+  if (!active.length) return;
+  const btn = document.getElementById(`run-btn-${id}`);
+  const logWrap = document.getElementById(`run-log-wrap-${id}`);
+  const log = document.getElementById(`run-log-${id}`);
+  btn.disabled = true; btn.textContent = 'Running…';
+  logWrap.style.display = 'block';
+
+  // Build alias normalization map
+  const aliasMap = {};
+  (c.competitors||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(entry => {
+    const m = entry.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+    if (m) { aliasMap[m[2].trim().toLowerCase()] = m[1].trim(); aliasMap[entry.toLowerCase()] = m[1].trim(); }
+  });
+  function normalizeComp(name) { return aliasMap[name.toLowerCase()] || name; }
+  const aliasCtx = Object.keys(aliasMap).length ? `\nIMPORTANT: normalize competitor names: ${Object.entries(aliasMap).map(([k,v]) => `"${k}" -> "${v}"`).join(', ')}.` : '';
+
+  log.innerHTML = active.map((q,i) => `<div class="log-line" id="ll-${id}-${i}"><div class="log-dot pending" id="ld-${id}-${i}"></div><span class="log-plat">${esc(q.platform)}</span><span>${esc(q.text.slice(0,55))}…</span></div>`).join('');
+
+  const subjectCtx = c.specificProduct ? `${c.specificProduct} (by ${c.name})` : c.name;
+  const LIVE_PLATFORMS = ['Perplexity','ChatGPT'];
+
+  const results = await Promise.all(active.map(async (q, i) => {
+    const dot = document.getElementById(`ld-${id}-${i}`);
+    if (dot) dot.className = 'log-dot running';
+    const persona = c.personas[i % Math.max(c.personas.length, 1)];
+    const convLabel = {'lead':'your goal is to find a vendor and submit a lead form','call':'your goal is to find the right vendor and call their sales team','ecommerce':'your goal is to find the right product and purchase it online'}[persona?.conversionGoal] || 'your goal is to find a solution';
+    const pCtx = persona ? `You are ${persona.name||'a buyer'}, ${persona.title||'decision maker'} at ${persona.company||'a company'} (${persona.buyerType||'B2B'} buyer). Goal: ${persona.goal}. Pain: ${persona.pain}. When searching, ${convLabel}.` : 'You are a buyer looking for a solution.';
+    const simNotes = c.analystNotes ? `\n\nAnalyst instructions: ${c.analystNotes}` : '';
+    try {
+      // Get platform response
+      let platformResponse = '';
+      if (LIVE_PLATFORMS.includes(q.platform)) {
+        try { platformResponse = await callLiveQuery(q.text, q.platform) || ''; } catch(e) {}
+      }
+      if (!platformResponse) {
+        const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}${simNotes}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
+        platformResponse = await callClaude([{ role:'user', content:`Query: "${q.text}"` }], simSys, 600);
+      }
+      // Evaluate
+      const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${platformResponse}"\n\nEvaluate for the brand "${subjectCtx}". Find the brand and count its exact rank (1 = first named). Set mention_rank to that number or null.\n\nVisibility rules:\n- "high": rank 1 or 2 AND substantive coverage. Rank 1-2 with only a name-drop = "medium".\n- "medium": rank 3-4 regardless. OR rank 1-2 with only a name-drop.\n- "low": rank 5+. OR appears incidentally.\n- "none": not mentioned.\n\nCRITICAL: rank 3+ cannot be "high". Rank 5+ cannot be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this means for ${c.name}'s visibility"}`;
+      const evalRaw = await callClaude([{ role:'user', content:evalPrompt }], null, 400);
+      const evaluated = JSON.parse(evalRaw.replace(/```json|```/g,'').trim());
+      if (evaluated.mention_rank != null) {
+        if (evaluated.mention_rank > 2 && evaluated.visibility === 'high') evaluated.visibility = 'medium';
+        if (evaluated.mention_rank > 4 && evaluated.visibility === 'medium') evaluated.visibility = 'low';
+      }
+      if (evaluated.competitors_mentioned) evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))];
+      if (dot) dot.className = 'log-dot done';
+      return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: platformResponse, ...evaluated };
+    } catch(e) {
+      if (dot) dot.className = 'log-dot fail';
+      return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, visibility:'none', mentions_client:false, insight:'Error', response:'', competitors_mentioned:[] };
+    }
+  }));
+
+  c.results = results; c.report = null;
+  saveDB(); renderSidebar();
+  btn.disabled = false; btn.textContent = 'Run audit →';
+
+  // Auto-generate report then switch to results
+  try {
+    btn.textContent = 'Generating report…'; btn.disabled = true;
+    c.report = await genReport(id, results);
+    saveDB();
+  } catch(e) {}
+  btn.disabled = false; btn.textContent = 'Run audit →';
+  switchTab(id, 'results');
+}
+
+async function genReport(id, results) {
+  const c = getClient(id);
+  const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
+  const organic = results.filter(x=>!x.brand_specific);
+  const score = organic.length ? Math.round(organic.reduce((s,x)=>s+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+  const allComp = results.flatMap(x=>x.competitors_mentioned||[]);
+  const compFreq = {}; allComp.forEach(n=>compFreq[n]=(compFreq[n]||0)+1);
+  const comps = [...new Set(allComp)].sort((a,b)=>compFreq[b]-compFreq[a]);
+  const subjectCtx = c.specificProduct ? `${c.specificProduct} (by ${c.name})` : c.name;
+  const queries = results.map(x=>`[${x.platform}] "${x.query}" -> ${x.visibility}. ${x.insight||''}`).join('\n');
+  const visCtx = score===0 ? `The brand has 0% AI visibility.` : `Weighted AI visibility score: ${score}% across ${organic.length} advisory queries.`;
+  const gaps = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
+  const gapCtx = gaps.length ? gaps.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
+  const raw = await callClaude([{ role:'user', content:`Write a professional AI visibility audit report for ${c.name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON:\n{\n  "executive_summary": "3-4 sentences",\n  "key_finding": "single most important finding",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1-2 sentences"},\n  "technical_recommendations": "2-3 sentences",\n  "content_gaps": "2-3 sentences",\n  "competitive_analysis": "2-3 sentences",\n  "competitor_insights": [{"competitor": "name", "insight": "2-3 sentences"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["...","...","..."]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["...","...","..."]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["...","...","..."]}]\n}` }],
+    'You are a senior GTM strategist at RootACE specializing in AI-native go-to-market. Write with authority. Be specific and data-driven. Reference real implementation details.', 4000);
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+  return JSON.parse(cleaned.slice(cleaned.indexOf('{'), cleaned.lastIndexOf('}')+1));
+}
+
+// RESULTS
+function renderResults(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`panel-${id}-results`);
+  if (!c.results?.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--muted)">No results yet. Run the audit first.</p>'; return;
+  }
+  const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
+  const organic = c.results.filter(x=>!x.brand_specific);
+  const score = organic.length ? Math.round(organic.reduce((s,x)=>s+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+  const high = organic.filter(x=>x.visibility==='high').length;
+  const ranks = c.results.filter(x=>x.mention_rank).map(x=>x.mention_rank);
+  const avgRank = ranks.length ? Math.round(ranks.reduce((a,b)=>a+b,0)/ranks.length*10)/10 : null;
+  const sc = scoreClass(score);
+  el.innerHTML = `
+    <div class="score-hero">
+      <div class="score-big ${sc}">${score}%</div>
+      <div>
+        <div style="font-size:15px;font-weight:700">AI Visibility Score</div>
+        <div class="score-meta">${organic.length} organic queries · ${c.results.length} total</div>
+        <div class="score-meta" style="margin-top:4px">${score<40?'Low visibility — below competitive threshold':score<65?'Moderate — improvement opportunity':'Strong AI visibility'}</div>
+      </div>
+    </div>
+    <div class="metrics-row">
+      <div class="metric-card"><div class="metric-val">${high}</div><div class="metric-lbl">High visibility<br><span style="font-size:10px">of ${organic.length} organic queries</span></div></div>
+      <div class="metric-card"><div class="metric-val">${avgRank||'—'}</div><div class="metric-lbl">Avg rank when mentioned<br><span style="font-size:10px">${ranks.length} total mentions</span></div></div>
+      <div class="metric-card"><div class="metric-val">${[...new Set(c.results.map(x=>x.platform))].length}</div><div class="metric-lbl">Platforms tested</div></div>
+    </div>
+    <div class="sec-head" style="margin-bottom:10px">Query breakdown</div>
+    <div class="qb-list">
+      ${c.results.map(q=>`
+        <div class="qb-item">
+          <div class="qb-top">
+            <span class="qb-plat">${esc(q.platform)}</span>
+            <span class="qb-query">${esc(q.query)}</span>
+            <span class="vis-pill ${q.visibility}">${q.visibility}</span>
+          </div>
+          <div class="qb-insight">${esc(q.insight||'')}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+// REPORT
+function renderReport(id) {
+  const c = getClient(id);
+  const el = document.getElementById(`panel-${id}-report`);
+  if (!c.report) {
+    el.innerHTML = `<p style="font-size:13px;color:var(--muted)">${c.results?.length ? 'Report is generating…' : 'Run the audit first.'}</p>`; return;
+  }
+  const r = c.report;
+  const renderRecs = (recs) => (recs||[]).map((rec,i) => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:18px;font-weight:800;color:var(--border-2);width:20px;flex-shrink:0">${i+1}</div><div><div style="font-size:12px;font-weight:600">${esc(rec.action)}</div><div style="display:flex;gap:6px;margin-top:4px"><span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${rec.impact==='high'?'#DCFCE7':'#F1F5F9'};color:${rec.impact==='high'?'#15803D':'#64748B'}">${rec.impact} impact</span><span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#F1F5F9;color:#64748B">${rec.effort} effort</span><span style="font-size:10px;padding:1px 6px;border-radius:8px;background:#F1F5F9;color:#64748B">${rec.category}</span></div></div></div>`).join('');
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="sec-head" style="margin-bottom:0">Audit Report — ${esc(c.name)}</div>
+      <button class="btn sec" onclick="copyReport('${id}')">Copy as text</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${r.key_finding ? `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 16px;font-size:13px;font-weight:500;color:#1E40AF">${esc(r.key_finding)}</div>` : ''}
+      ${r.executive_summary ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Executive Summary</div><div style="font-size:13px;line-height:1.7">${esc(r.executive_summary)}</div></div>` : ''}
+      ${r.competitive_analysis ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Competitive Analysis</div><div style="font-size:13px;line-height:1.7">${esc(r.competitive_analysis)}</div>${r.competitor_insights?.length ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:10px">${r.competitor_insights.map(ci=>`<div style="background:var(--bg);border-radius:8px;padding:10px 12px"><div style="font-size:12px;font-weight:700;margin-bottom:4px">${esc(ci.competitor)}</div><div style="font-size:11px;color:var(--muted);line-height:1.5">${esc(ci.insight)}</div></div>`).join('')}</div>` : ''}</div>` : ''}
+      ${r.recommendations?.length ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Recommendations</div>${renderRecs(r.recommendations)}</div>` : ''}
+      ${r.roadmap_phases?.length ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px">90-Day Roadmap</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">${r.roadmap_phases.map(p=>`<div style="background:var(--bg);border-radius:8px;padding:12px"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:2px">${esc(p.days)}</div><div style="font-size:12px;font-weight:600;margin-bottom:8px">${esc(p.theme)}</div>${(p.actions||[]).map(a=>`<div style="font-size:11px;color:var(--muted);padding:3px 0;border-top:1px solid var(--border)">→ ${esc(a)}</div>`).join('')}</div>`).join('')}</div></div>` : ''}
+    </div>`;
+}
+
+function copyReport(id) {
+  const c = getClient(id);
+  if (!c.report) return;
+  const r = c.report;
+  const text = [
+    `AI VISIBILITY AUDIT — ${c.name.toUpperCase()}`,
+    `\nKEY FINDING\n${r.key_finding}`,
+    `\nEXECUTIVE SUMMARY\n${r.executive_summary}`,
+    `\nCOMPETITIVE ANALYSIS\n${r.competitive_analysis}`,
+    r.competitor_insights?.length ? `\nCOMPETITOR INSIGHTS\n${r.competitor_insights.map(ci=>`${ci.competitor}: ${ci.insight}`).join('\n')}` : '',
+    r.recommendations?.length ? `\nRECOMMENDATIONS\n${r.recommendations.map((rec,i)=>`${i+1}. ${rec.action} [${rec.impact} impact, ${rec.effort} effort]`).join('\n')}` : '',
+    r.roadmap_phases?.length ? `\n90-DAY ROADMAP\n${r.roadmap_phases.map(p=>`${p.days} — ${p.theme}\n${(p.actions||[]).map(a=>`  → ${a}`).join('\n')}`).join('\n\n')}` : '',
+  ].filter(Boolean).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('Report copied to clipboard.')).catch(() => alert('Could not copy — try selecting text manually.'));
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderSidebar();
+if (DB.activeId) renderClient(DB.activeId);
+</script>
+</body>
+</html>
