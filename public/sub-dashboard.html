@@ -107,6 +107,47 @@
     .billing-link { font-size: 14px; color: var(--accent); text-decoration: none; font-weight: 500; }
     .billing-link:hover { text-decoration: underline; }
 
+    /* ── BUYER PERSONAS SECTION ── */
+    .personas-section { margin: 40px 0; }
+    .personas-section-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
+    .personas-section-desc { font-size: 13px; color: var(--muted); margin-top: 5px; max-width: 540px; line-height: 1.6; }
+    .persona-hdr-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; margin-top: 2px; }
+    .btn-ghost { font-family: var(--sans); font-size: 13px; font-weight: 500; background: none; border: 1px solid var(--border); border-radius: 7px; padding: 8px 16px; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .btn-ghost:hover { border-color: var(--muted); color: var(--dark); }
+    .btn-outline-accent { font-family: var(--sans); font-size: 13px; font-weight: 600; background: none; border: 1px solid rgba(37,99,235,0.3); border-radius: 7px; padding: 8px 16px; cursor: pointer; color: var(--accent); transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+    .btn-outline-accent:hover { background: rgba(37,99,235,0.05); border-color: var(--accent); }
+    .btn-solid { font-family: var(--sans); font-size: 13px; font-weight: 600; background: var(--accent); border: none; border-radius: 7px; padding: 8px 20px; cursor: pointer; color: white; transition: background 0.15s; }
+    .btn-solid:hover:not(:disabled) { background: var(--accent-light); }
+    .btn-solid:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .personas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    /* View mode card */
+    .pvc { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 24px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .pvc:hover { border-color: rgba(37,99,235,0.2); box-shadow: 0 2px 14px rgba(37,99,235,0.06); }
+    .pvc-head { display: flex; align-items: flex-start; gap: 12px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid #F1F5F9; }
+    .pvc-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--mono); margin-top: 1px; }
+    .pvc-name { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 3px; line-height: 1.3; }
+    .pvc-role { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .pvc-fields { display: flex; flex-direction: column; gap: 12px; }
+    .pvc-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-family: var(--mono); margin-bottom: 3px; }
+    .pvc-val { font-size: 13px; color: var(--dark-3); line-height: 1.55; }
+
+    /* Edit mode card */
+    .pvc.editing { border-color: rgba(37,99,235,0.3); box-shadow: 0 0 0 3px rgba(37,99,235,0.05); }
+    .pvc-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pvc-fg { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .pvc-fg:last-child { margin-bottom: 0; }
+    .pvc-fl { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-family: var(--mono); }
+    .pvc-fi, .pvc-fs { font-family: var(--sans); font-size: 13px; color: var(--dark); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--bg); outline: none; transition: border-color 0.15s; width: 100%; }
+    .pvc-fi:focus, .pvc-fs:focus { border-color: var(--accent); background: #fff; }
+    .pvc-fta { font-family: var(--sans); font-size: 13px; color: var(--dark); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; background: var(--bg); outline: none; transition: border-color 0.15s; width: 100%; resize: vertical; min-height: 58px; }
+    .pvc-fta:focus { border-color: var(--accent); background: #fff; }
+
+    .persona-feedback { font-size: 13px; font-weight: 500; padding: 12px 18px; border-radius: 8px; margin-top: 16px; display: none; }
+    .persona-feedback.ok { background: #DCFCE7; color: #166534; border: 1px solid #A7F3D0; }
+    .persona-feedback.err { background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5; }
+
     @media (max-width: 700px) {
       .page { padding: 32px 16px; }
       nav { padding: 0 20px; }
@@ -114,6 +155,8 @@
       .runs-header { grid-template-columns: 1fr 90px 80px; }
       .run-row { grid-template-columns: 1fr 90px 80px; }
       .runs-header span:last-child, .run-row > *:last-child { display: none; }
+      .personas-grid { grid-template-columns: 1fr; }
+      .personas-section-hdr { flex-direction: column; }
     }
   </style>
 </head>
@@ -178,6 +221,19 @@
       </div>
     </div>
 
+    <!-- BUYER PERSONAS SECTION — shown after first run -->
+    <div id="personasSection" class="personas-section" style="display:none">
+      <div class="personas-section-hdr">
+        <div>
+          <div class="section-label">Buyer personas</div>
+          <div class="personas-section-desc">These 3 buyers drive every query and simulation in your audit. Refine them any time — changes take effect on your next run.</div>
+        </div>
+        <div class="persona-hdr-actions" id="personaHdrActions"></div>
+      </div>
+      <div class="personas-grid" id="personasGrid"></div>
+      <div class="persona-feedback" id="personaFeedback"></div>
+    </div>
+
     <div class="billing-row">
       <span class="billing-text">Manage your subscription, update payment method, or cancel.</span>
       <a href="#" class="billing-link" id="billingPortalLink">Billing portal →</a>
@@ -214,6 +270,145 @@
       alert('Could not open billing portal. Please contact support@rootpartners.co');
     }
   });
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ── Buyer Personas ────────────────────────────────────────────────────────
+  let _personas = [];
+
+  function initPersonasSection(personas) {
+    if (!personas || personas.length === 0) return;
+    _personas = personas;
+    document.getElementById('personasSection').style.display = 'block';
+    renderPersonasView();
+  }
+
+  function renderPersonasView() {
+    document.getElementById('personaHdrActions').innerHTML =
+      `<button class="btn-outline-accent" onclick="startPersonasEdit()">✏&nbsp; Edit personas</button>`;
+
+    document.getElementById('personasGrid').innerHTML = _personas.map((p, i) => `
+      <div class="pvc">
+        <div class="pvc-head">
+          <div class="pvc-num">${i + 1}</div>
+          <div>
+            <div class="pvc-name">${esc(p.name || 'Persona ' + (i + 1))}</div>
+            <div class="pvc-role">${esc(p.title || '')}${p.company ? '<br>' + esc(p.company) : ''}</div>
+          </div>
+        </div>
+        <div class="pvc-fields">
+          <div>
+            <div class="pvc-lbl">Goal</div>
+            <div class="pvc-val">${esc(p.goal || '—')}</div>
+          </div>
+          <div>
+            <div class="pvc-lbl">Pain points</div>
+            <div class="pvc-val">${esc(p.pain || '—')}</div>
+          </div>
+          <div>
+            <div class="pvc-lbl">Motivation</div>
+            <div class="pvc-val">${esc(p.motivation || '—')}</div>
+          </div>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('personaFeedback').style.display = 'none';
+  }
+
+  function startPersonasEdit() {
+    document.getElementById('personaHdrActions').innerHTML = `
+      <button class="btn-ghost" onclick="cancelPersonasEdit()">Cancel</button>
+      <button class="btn-solid" id="personaSaveBtn" onclick="savePersonas()">Save personas</button>`;
+
+    document.getElementById('personasGrid').innerHTML = _personas.map((p, i) => `
+      <div class="pvc editing">
+        <div class="pvc-head">
+          <div class="pvc-num">${i + 1}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="pvc-fg" style="margin-bottom:8px">
+              <label class="pvc-fl">Name</label>
+              <input class="pvc-fi" data-i="${i}" data-f="name" value="${esc(p.name || '')}" />
+            </div>
+            <div class="pvc-fg" style="margin-bottom:0">
+              <label class="pvc-fl">Job title</label>
+              <input class="pvc-fi" data-i="${i}" data-f="title" value="${esc(p.title || '')}" />
+            </div>
+          </div>
+        </div>
+        <div class="pvc-fg">
+          <label class="pvc-fl">Company type &amp; size</label>
+          <input class="pvc-fi" data-i="${i}" data-f="company" value="${esc(p.company || '')}" />
+        </div>
+        <div class="pvc-form-row" style="margin-bottom:10px">
+          <div class="pvc-fg" style="margin-bottom:0">
+            <label class="pvc-fl">Buyer type</label>
+            <select class="pvc-fs" data-i="${i}" data-f="buyerType">
+              <option value="B2B" ${(p.buyerType||'B2B')==='B2B'?'selected':''}>B2B</option>
+              <option value="B2C" ${p.buyerType==='B2C'?'selected':''}>B2C</option>
+            </select>
+          </div>
+          <div class="pvc-fg" style="margin-bottom:0">
+            <label class="pvc-fl">Conversion goal</label>
+            <select class="pvc-fs" data-i="${i}" data-f="conversionGoal">
+              <option value="lead" ${(p.conversionGoal||'lead')==='lead'?'selected':''}>Lead form</option>
+              <option value="call" ${p.conversionGoal==='call'?'selected':''}>Sales call</option>
+              <option value="ecommerce" ${p.conversionGoal==='ecommerce'?'selected':''}>Purchase</option>
+            </select>
+          </div>
+        </div>
+        <div class="pvc-fg">
+          <label class="pvc-fl">Primary goal</label>
+          <textarea class="pvc-fta" data-i="${i}" data-f="goal">${esc(p.goal || '')}</textarea>
+        </div>
+        <div class="pvc-fg">
+          <label class="pvc-fl">Pain points</label>
+          <input class="pvc-fi" data-i="${i}" data-f="pain" value="${esc(p.pain || '')}" />
+        </div>
+        <div class="pvc-fg">
+          <label class="pvc-fl">Purchase motivation</label>
+          <input class="pvc-fi" data-i="${i}" data-f="motivation" value="${esc(p.motivation || '')}" />
+        </div>
+      </div>`).join('');
+  }
+
+  function cancelPersonasEdit() {
+    renderPersonasView();
+  }
+
+  function getPersonasFromDashForm() {
+    return Array.from(document.querySelectorAll('#personasGrid .pvc.editing')).map((card, i) => {
+      const v = f => { const el = card.querySelector(`[data-f="${f}"]`); return el ? el.value.trim() : (_personas[i]?.[f] || ''); };
+      return { name: v('name'), title: v('title'), company: v('company'), buyerType: v('buyerType'), conversionGoal: v('conversionGoal'), goal: v('goal'), pain: v('pain'), motivation: v('motivation') };
+    });
+  }
+
+  async function savePersonas() {
+    const btn = document.getElementById('personaSaveBtn');
+    const fb = document.getElementById('personaFeedback');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    const updated = getPersonasFromDashForm();
+    try {
+      const resp = await fetch('/api/sub-update-personas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ personas: updated }),
+      });
+      if (!resp.ok) throw new Error('Save failed');
+      _personas = updated;
+      renderPersonasView();
+      fb.className = 'persona-feedback ok';
+      fb.textContent = '✓ Personas saved. They\'ll be used in your next audit run.';
+      fb.style.display = 'block';
+      setTimeout(() => { fb.style.display = 'none'; }, 5000);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Save personas';
+      fb.className = 'persona-feedback err';
+      fb.textContent = '⚠ Could not save. Please try again or contact support@rootpartners.co.';
+      fb.style.display = 'block';
+    }
+  }
 
   function scoreClass(s) {
     if (s === null || s === undefined) return 'none';
@@ -313,6 +508,9 @@
           table.appendChild(row);
         });
       }
+
+      // Buyer personas section
+      initPersonasSection(data.profile?.personas);
 
     } catch (err) {
       console.error('Dashboard load error:', err);
