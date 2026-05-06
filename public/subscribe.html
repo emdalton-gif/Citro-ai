@@ -143,14 +143,14 @@
       <span class="plan-price-period"> / month</span>
     </div>
     <p class="plan-desc">
-      Your AI visibility changes as competitors move, platforms update, and your own content evolves. Active Optimization gives you unlimited audit runs so you can track what's changing, validate fixes, and stay ahead — month after month.
+      Your AI visibility changes as competitors move, platforms update, and your own content evolves. Active Optimization lets you run audits on demand so you can track what's changing, validate fixes, and stay ahead.
     </p>
 
     <div class="included-label">What's included</div>
     <ul class="included-list">
       <li>
         <span class="check">✓</span>
-        <span><strong>Unlimited audit runs</strong> — run as often as you want, whenever something changes</span>
+        <span><strong>On-demand audit runs</strong> — run whenever something changes, as often as you need</span>
       </li>
       <li>
         <span class="check">✓</span>
@@ -220,6 +220,11 @@
 </footer>
 
 <script>
+  // Pre-fill email if passed from dashboard upgrade link
+  const _params = new URLSearchParams(location.search);
+  const _emailParam = _params.get('email');
+  if (_emailParam) document.getElementById('email').value = _emailParam;
+
   const form = document.getElementById('subscribeForm');
   const submitBtn = document.getElementById('submitBtn');
   const btnText = document.getElementById('btnText');
