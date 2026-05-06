@@ -781,6 +781,7 @@
     }
 
     // Run mode: load profile, show setup form (or auto-run on first visit)
+    let p = {}; // hoisted so startRunBtn click handler can access it
     try {
       const resp = await fetch('/api/sub-dashboard', {
         headers: { 'Authorization': `Bearer ${SUB_TOKEN}` },
@@ -800,7 +801,7 @@
       const apiProfile = data.profile || {};
       let localProfile = null;
       try { localProfile = JSON.parse(localStorage.getItem('rp_sub_profile') || 'null'); } catch(e) {}
-      const p = (localProfile?.company_name) ? localProfile : apiProfile;
+      p = (localProfile?.company_name) ? localProfile : apiProfile;
 
       const isFirstRun = !data.runs || data.runs.length === 0;
 
