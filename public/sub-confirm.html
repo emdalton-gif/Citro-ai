@@ -263,6 +263,12 @@
         <p>Building your buyer personas…</p>
       </div>
 
+      <div id="personaGenError" style="display:none;text-align:center;padding:32px 0;">
+        <p style="font-size:15px;color:#64748B;margin-bottom:16px;">Persona generation failed. You can retry or fill them in manually.</p>
+        <button onclick="generatePersonas()" style="background:#2563EB;color:white;border:none;padding:10px 24px;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;margin-right:10px;">Try again</button>
+        <button onclick="renderPersonas([{},{},{}]);document.getElementById('personaGenError').style.display='none';document.getElementById('personaContent').style.display='block';" style="background:transparent;color:#64748B;border:1px solid #E2E8F0;padding:10px 24px;border-radius:7px;font-size:14px;cursor:pointer;">Fill in manually</button>
+      </div>
+
       <div id="personaContent" style="display:none;">
         <h1>Verify your buyer personas.</h1>
         <p class="sub">We've built three personas based on your company profile. Edit any details, add more, or upload your own — these drive how we simulate buyer searches across AI platforms.</p>
@@ -451,13 +457,15 @@
   // Step 3: generate personas
   async function generatePersonas() {
     document.getElementById('personaGenLoading').style.display = 'block';
+    document.getElementById('personaGenError').style.display = 'none';
     document.getElementById('personaContent').style.display = 'none';
 
     try {
       const profile = savedProfile || { company_name: sessionData.profile?.company_name, website: sessionData.profile?.website };
+      const token = subToken || localStorage.getItem('sub_token');
       const resp = await fetch('/api/claude', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 1200,
@@ -468,20 +476,19 @@
           }]
         })
       });
+      if (!resp.ok) throw new Error(`API ${resp.status}`);
       const data = await resp.json();
       const text = data.content?.[0]?.text || (typeof data.content === 'string' ? data.content : '') || '';
       const match = text.match(/\[[\s\S]*\]/);
-      if (match) {
-        renderPersonas(JSON.parse(match[0]));
-      } else {
-        renderPersonas([{}, {}, {}]);
-      }
+      if (!match) throw new Error('No JSON array in response');
+      renderPersonas(JSON.parse(match[0]));
+      document.getElementById('personaGenLoading').style.display = 'none';
+      document.getElementById('personaContent').style.display = 'block';
     } catch (err) {
-      renderPersonas([{}, {}, {}]);
+      console.error('Persona generation failed:', err);
+      document.getElementById('personaGenLoading').style.display = 'none';
+      document.getElementById('personaGenError').style.display = 'block';
     }
-
-    document.getElementById('personaGenLoading').style.display = 'none';
-    document.getElementById('personaContent').style.display = 'block';
   }
 
   function renderPersonas(personas) {
