@@ -670,11 +670,18 @@
         flex('screen-error'); return;
       }
 
-      const p = data.profile || {};
+      // Merge API profile with localStorage (localStorage wins for freshness on first run)
+      const apiProfile = data.profile || {};
+      let localProfile = null;
+      try { localProfile = JSON.parse(localStorage.getItem('rp_sub_profile') || 'null'); } catch(e) {}
+      const p = (localProfile?.company_name) ? localProfile : apiProfile;
+
       const isFirstRun = !data.runs || data.runs.length === 0;
 
-      // First run + profile already captured during onboarding → skip the form
+      // First run + profile already captured during onboarding → skip the form and go
       if (isFirstRun && p.company_name && p.website) {
+        // Clear localStorage profile so repeat runs show the form
+        try { localStorage.removeItem('rp_sub_profile'); } catch(e) {}
         const profile = {
           company_name: p.company_name,
           website: p.website,
