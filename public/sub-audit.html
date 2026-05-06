@@ -55,6 +55,10 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); background: #fff; }
     .form-group textarea { resize: vertical; min-height: 80px; }
+    .field-locked input { background: #F1F5F9 !important; color: var(--muted) !important; cursor: not-allowed; border-color: #E2E8F0 !important; }
+    .lock-note { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+    .lock-note a { color: var(--accent); text-decoration: none; }
+    .lock-note a:hover { text-decoration: underline; }
     .run-btn {
       margin-top: 24px; width: 100%; background: var(--accent); color: #fff;
       font-family: var(--sans); font-size: 15px; font-weight: 600;
@@ -235,11 +239,11 @@
     <div class="setup-form">
       <h3>Company profile</h3>
       <div class="form-grid">
-        <div class="form-group">
+        <div class="form-group" id="fg-name">
           <label>Company name *</label>
           <input type="text" id="f-name" placeholder="Acme Corp" required />
         </div>
-        <div class="form-group">
+        <div class="form-group" id="fg-website">
           <label>Website *</label>
           <input type="text" id="f-website" placeholder="https://yourcompany.com" required />
         </div>
@@ -825,14 +829,30 @@
       if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
       if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
 
+      // Lock company name and website after first run to prevent agency abuse
+      if (p.profileLocked) {
+        const nameGroup = document.getElementById('fg-name');
+        const websiteGroup = document.getElementById('fg-website');
+        nameGroup.classList.add('field-locked');
+        websiteGroup.classList.add('field-locked');
+        document.getElementById('f-name').readOnly = true;
+        document.getElementById('f-website').readOnly = true;
+        const supportLink = 'mailto:support@rootpartners.co?subject=Profile%20change%20request';
+        nameGroup.insertAdjacentHTML('beforeend', `<span class="lock-note">🔒 Locked to this subscription. <a href="${supportLink}">Contact support to change.</a></span>`);
+        websiteGroup.insertAdjacentHTML('beforeend', `<span class="lock-note">🔒 Locked to this subscription. <a href="${supportLink}">Contact support to change.</a></span>`);
+      }
+
     } catch(e) { /* show form anyway */ }
 
     block('screen-setup');
 
     document.getElementById('startRunBtn').addEventListener('click', () => {
+      // If profile is locked, use the server-side locked values — not whatever's in the field
+      const lockedName = p.profileLocked ? (p.lockedCompanyName || p.company_name || '') : null;
+      const lockedWebsite = p.profileLocked ? (p.lockedWebsite || p.website || '') : null;
       const profile = {
-        company_name: document.getElementById('f-name').value.trim(),
-        website: document.getElementById('f-website').value.trim(),
+        company_name: lockedName ?? document.getElementById('f-name').value.trim(),
+        website: lockedWebsite ?? document.getElementById('f-website').value.trim(),
         industry: document.getElementById('f-industry').value.trim(),
         geo: document.getElementById('f-geo').value.trim(),
         specific_product: document.getElementById('f-product').value.trim(),
