@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
   const email = verifySubscriberToken(token);
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { results, profile } = req.body;
+  const { results, profile, personas } = req.body;
   if (!results) return res.status(400).json({ error: 'Missing results' });
 
   try {
@@ -118,12 +118,13 @@ module.exports = async function handler(req, res) {
     const runId = crypto.randomBytes(12).toString('hex');
     const now = Date.now();
 
-    // Save full results
+    // Save full results (including personas for reproducibility)
     await upstashSet(`subscriber-run:${runId}`, {
       runId,
       email,
       results,
       profile,
+      personas: personas || [],
       createdAt: now,
     });
 
@@ -143,6 +144,13 @@ module.exports = async function handler(req, res) {
         profileToSave.profileLocked = true;
         profileToSave.lockedCompanyName = existingProfile.lockedCompanyName || existingProfile.company_name || '';
         profileToSave.lockedWebsite = existingProfile.lockedWebsite || existingProfile.website || '';
+      }
+      // Persist personas so future runs reload the same buyer personas (apples-to-apples comparison)
+      if (personas && personas.length > 0) {
+        profileToSave.personas = personas;
+      } else if (existingProfile?.personas) {
+        // Don't clobber saved personas if none were sent (shouldn't happen, but be safe)
+        profileToSave.personas = existingProfile.personas;
       }
       await upstashSet(`subscriber-profile:${email}`, profileToSave);
     }
