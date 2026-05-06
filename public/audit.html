@@ -755,7 +755,7 @@
   async function main() {
     const params = new URLSearchParams(location.search);
     const sessionId = params.get('session_id');
-    const resultId = params.get('result_id');
+    const resultId = params.get('id') || params.get('result_id');
 
     // If returning to view saved results — load by ID and render
     if (resultId && !sessionId) {
