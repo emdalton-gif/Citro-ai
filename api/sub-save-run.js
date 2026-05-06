@@ -128,8 +128,23 @@ module.exports = async function handler(req, res) {
     });
 
     // Update company profile if provided
+    // After the first run, lock company_name and website to prevent agency abuse
+    const existingProfile = await upstashGet(`subscriber-profile:${email}`);
+    const isFirstRun = !existingProfile?.profileLocked;
     if (profile) {
-      await upstashSet(`subscriber-profile:${email}`, { ...profile, updatedAt: now });
+      const profileToSave = { ...profile, updatedAt: now };
+      if (isFirstRun) {
+        // Lock the company identity after first run
+        profileToSave.profileLocked = true;
+        profileToSave.lockedCompanyName = profile.company_name || '';
+        profileToSave.lockedWebsite = profile.website || '';
+      } else {
+        // Preserve the lock and locked values on all subsequent saves
+        profileToSave.profileLocked = true;
+        profileToSave.lockedCompanyName = existingProfile.lockedCompanyName || existingProfile.company_name || '';
+        profileToSave.lockedWebsite = existingProfile.lockedWebsite || existingProfile.website || '';
+      }
+      await upstashSet(`subscriber-profile:${email}`, profileToSave);
     }
 
     // Prepend to run history list (keep last 50)
