@@ -185,6 +185,26 @@
     #screen-error h2 { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
     #screen-error p { font-size: 15px; color: var(--muted); max-width: 480px; line-height: 1.7; }
 
+    /* ── CHARTS ── */
+    .chart-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .chart-label { font-size: 13px; font-weight: 500; color: var(--dark); width: 160px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chart-bar-wrap { flex: 1; background: #F1F5F9; border-radius: 4px; height: 20px; overflow: hidden; }
+    .chart-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; background: var(--accent); }
+    .chart-bar.green { background: var(--green); }
+    .chart-bar.amber { background: var(--amber); }
+    .chart-bar.red { background: var(--red); }
+    .chart-count { font-size: 12px; font-weight: 700; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0; }
+
+    /* ── PRINT ── */
+    @media print {
+      nav, .back-btn, .run-btn, button, #save-status, .nav-back { display: none !important; }
+      #screen-results { display: block !important; }
+      .wrap { max-width: 100%; padding: 0 16px; }
+      .score-strip { background: #0B0F1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .result-section { break-inside: avoid; }
+      body { background: white; }
+    }
+
     @media (max-width: 700px) {
       nav { padding: 0 16px; }
       .wrap { padding: 0 16px; }
@@ -357,10 +377,32 @@
       <div class="query-breakdown" id="query-breakdown"></div>
     </div>
 
+    <!-- Competitor frequency chart (injected by renderResults) -->
+    <div class="result-section" id="section-comp-chart">
+      <div class="rs-label">Competitor Frequency</div>
+      <div class="rs-title">Who AI recommends instead of you</div>
+      <div id="comp-chart"></div>
+    </div>
+
+    <!-- Platform breakdown chart (injected by renderResults) -->
+    <div class="result-section" id="section-platform-chart">
+      <div class="rs-label">Platform Breakdown</div>
+      <div class="rs-title">Your visibility by AI platform</div>
+      <div id="platform-chart"></div>
+    </div>
+
+    <!-- Save status indicator -->
+    <div id="save-status" style="display:none;margin-top:16px;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;"></div>
+
     <div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <a href="/sub-dashboard.html" class="back-btn">← Back to dashboard</a>
-      <button class="run-btn" onclick="window.location.href='/sub-audit.html'" style="width:auto;padding:12px 24px;">Run another audit →</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button onclick="window.print()" style="background:#fff;color:var(--dark);border:1px solid var(--border);padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans);">⬇ Print / Save PDF</button>
+        <button class="run-btn" onclick="window.location.href='/sub-audit.html'" style="width:auto;padding:12px 24px;">Run another audit →</button>
+      </div>
     </div>
+  </div>
+</div>
   </div>
 </div>
 
@@ -573,6 +615,45 @@
     document.getElementById('query-breakdown').innerHTML = simResults.map(q=>`<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span><span class="vis-pill ${q.visibility}">${q.visibility}</span></div><div class="qb-insight">${esc(q.insight||'')}</div></div>`).join('');
     block('section-queries');
 
+    // ── Competitor frequency chart ──────────────────────────────────────────
+    const allMentions = simResults.flatMap(r => r.competitors_mentioned || []);
+    const compFreq = {};
+    allMentions.forEach(n => compFreq[n] = (compFreq[n] || 0) + 1);
+    const sortedComps = Object.entries(compFreq).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    if (sortedComps.length > 0) {
+      const maxFreq = sortedComps[0][1];
+      document.getElementById('comp-chart').innerHTML = sortedComps.map(([name, count]) => `
+        <div class="chart-row">
+          <div class="chart-label" title="${esc(name)}">${esc(name)}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar" style="width:${Math.round(count/maxFreq*100)}%"></div></div>
+          <div class="chart-count">${count}</div>
+        </div>`).join('');
+      block('section-comp-chart');
+    }
+
+    // ── Platform visibility chart ───────────────────────────────────────────
+    const platformData = {};
+    const visWeightsChart = { high: 1.0, medium: 0.5, low: 0.25, none: 0 };
+    simResults.filter(r => !r.brand_specific).forEach(r => {
+      if (!platformData[r.platform]) platformData[r.platform] = { total: 0, count: 0 };
+      platformData[r.platform].total += visWeightsChart[r.visibility] || 0;
+      platformData[r.platform].count += 1;
+    });
+    const platformRows = Object.entries(platformData)
+      .map(([p, d]) => [p, Math.round(d.total / d.count * 100)])
+      .sort((a, b) => b[1] - a[1]);
+    if (platformRows.length > 0) {
+      document.getElementById('platform-chart').innerHTML = platformRows.map(([platform, pct]) => {
+        const barClass = pct >= 65 ? 'green' : pct >= 35 ? 'amber' : 'red';
+        return `<div class="chart-row">
+          <div class="chart-label">${esc(platform)}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar ${barClass}" style="width:${pct || 2}%"></div></div>
+          <div class="chart-count">${pct}%</div>
+        </div>`;
+      }).join('');
+      block('section-platform-chart');
+    }
+
     hide('screen-loading');
     block('screen-results');
     window.scrollTo(0,0);
@@ -603,14 +684,33 @@
       const organic = simResults.filter(x=>!x.brand_specific);
       const overallScore = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
 
-      // Save to history (non-blocking)
-      fetch(SAVE_API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
-        body: JSON.stringify({ results: { ...report, overallScore, simResults }, profile }),
-      }).catch(() => {});
-
       renderResults(simResults, report, profile);
+
+      // Save to dashboard (after render so results show immediately)
+      const saveStatus = document.getElementById('save-status');
+      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile };
+      try {
+        const saveResp = await fetch(SAVE_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+          body: JSON.stringify(_lastSavePayload),
+        });
+        if (saveResp.ok) {
+          saveStatus.style.display = 'block';
+          saveStatus.style.background = '#DCFCE7';
+          saveStatus.style.color = '#166534';
+          saveStatus.innerHTML = '✓ Saved to your dashboard.';
+          setTimeout(() => { saveStatus.style.display = 'none'; }, 4000);
+        } else {
+          throw new Error(`Save failed: ${saveResp.status}`);
+        }
+      } catch(saveErr) {
+        console.error('Save error:', saveErr);
+        saveStatus.style.display = 'block';
+        saveStatus.style.background = '#FEF2F2';
+        saveStatus.style.color = '#991B1B';
+        saveStatus.innerHTML = '⚠ Could not save to dashboard. <button onclick="retrySave()" style="margin-left:8px;background:#DC2626;color:white;border:none;padding:4px 12px;border-radius:4px;font-size:12px;cursor:pointer;font-family:inherit;">Retry</button>';
+      }
 
     } catch (err) {
       console.error('Audit error:', err);
@@ -641,6 +741,28 @@
   }
 
   let subscriberEmail = '';
+  let _lastSavePayload = null;
+
+  async function retrySave() {
+    if (!_lastSavePayload) return;
+    const saveStatus = document.getElementById('save-status');
+    saveStatus.innerHTML = 'Retrying…';
+    try {
+      const saveResp = await fetch(SAVE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+        body: JSON.stringify(_lastSavePayload),
+      });
+      if (saveResp.ok) {
+        saveStatus.style.background = '#DCFCE7';
+        saveStatus.style.color = '#166534';
+        saveStatus.innerHTML = '✓ Saved to your dashboard.';
+        setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
+      } else throw new Error();
+    } catch {
+      saveStatus.innerHTML = '⚠ Still failing. Please contact support@rootpartners.co.';
+    }
+  }
 
   // ── Start ─────────────────────────────────────────────────────────────────
   async function init() {
