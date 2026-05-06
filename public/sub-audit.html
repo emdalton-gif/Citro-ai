@@ -209,8 +209,8 @@
 <div id="screen-setup">
   <div class="wrap">
     <div class="setup-label">New audit run</div>
-    <h1 class="setup-title">Confirm your company details.</h1>
-    <p class="setup-sub">Your last-used settings are pre-filled. Update anything that's changed, then run.</p>
+    <h1 class="setup-title">Update your profile before running.</h1>
+    <p class="setup-sub">Your settings from last time are pre-filled. Update anything that's changed — new product focus, added competitors — then run.</p>
 
     <div class="setup-form">
       <h3>Company profile</h3>
@@ -654,7 +654,7 @@
       return;
     }
 
-    // Run mode: load profile, show setup form
+    // Run mode: load profile, show setup form (or auto-run on first visit)
     try {
       const resp = await fetch('/api/sub-dashboard', {
         headers: { 'Authorization': `Bearer ${SUB_TOKEN}` },
@@ -670,8 +670,25 @@
         flex('screen-error'); return;
       }
 
-      // Pre-fill form from saved profile
       const p = data.profile || {};
+      const isFirstRun = !data.runs || data.runs.length === 0;
+
+      // First run + profile already captured during onboarding → skip the form
+      if (isFirstRun && p.company_name && p.website) {
+        const profile = {
+          company_name: p.company_name,
+          website: p.website,
+          industry: p.industry || '',
+          geo: p.geo || '',
+          specific_product: p.specific_product || '',
+          competitors: p.competitors || '',
+        };
+        flex('screen-loading');
+        runAudit(profile);
+        return;
+      }
+
+      // Returning subscriber — pre-fill and show the form
       if (p.company_name) document.getElementById('f-name').value = p.company_name;
       if (p.website) document.getElementById('f-website').value = p.website;
       if (p.industry) document.getElementById('f-industry').value = p.industry;
