@@ -594,7 +594,7 @@
     document.getElementById('metrics-grid').innerHTML = `
       <div class="metric-card"><div class="metric-val">${high}</div><div class="metric-lbl">High visibility queries<br><span style="font-size:12px;color:var(--muted);">of ${organic.length} organic</span></div></div>
       <div class="metric-card"><div class="metric-val">${avgRank||'—'}</div><div class="metric-lbl">Avg. rank when mentioned<br><span style="font-size:12px;color:var(--muted);">${ranks.length} mentions total</span></div></div>
-      <div class="metric-card"><div class="metric-val">${platforms}</div><div class="metric-lbl">Platforms tested<br><span style="font-size:12px;color:var(--muted);">across 7 AI platforms</span></div></div>`;
+      <div class="metric-card"><div class="metric-val">${platforms}</div><div class="metric-lbl">Platforms tested<br><span style="font-size:12px;color:var(--muted);">of ${simResults.length} queries run</span></div></div>`;
 
     if (report.key_finding) { document.getElementById('finding-text').textContent = report.key_finding; block('finding-card'); }
     if (report.executive_summary) { document.getElementById('summary-body').textContent = report.executive_summary; block('section-summary'); }
