@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — RootACE</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F8FAFC; --dark: #0B0F1A; --accent: #2563EB; --accent-light: #3B82F6;
+      --muted: #64748B; --border: #E2E8F0; --sans: 'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+
+    nav {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 48px; height: 60px; background: var(--dark);
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 700; color: #fff; }
+    .nav-logo-ace { font-size: 18px; font-weight: 800; color: #2563EB; }
+
+    .page-center {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 48px 20px;
+    }
+
+    .heading { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; text-align: center; }
+    .sub { font-size: 15px; color: var(--muted); text-align: center; margin-bottom: 40px; }
+
+    .cards { display: flex; gap: 20px; width: 100%; max-width: 600px; }
+
+    .card {
+      flex: 1; background: #fff; border: 1px solid var(--border); border-radius: 14px;
+      padding: 32px 28px; text-decoration: none; color: var(--dark);
+      transition: border-color 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; gap: 10px;
+    }
+    .card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(37,99,235,0.1); }
+
+    .card-tag {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 4px;
+    }
+    .card-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .card-desc { font-size: 14px; color: var(--muted); line-height: 1.6; flex: 1; }
+    .card-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 8px;
+    }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 36px 0 0; width: 100%; max-width: 600px; }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { font-size: 13px; color: var(--muted); }
+
+    .new-link { font-size: 14px; color: var(--muted); margin-top: 16px; text-align: center; }
+    .new-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+    .new-link a:hover { text-decoration: underline; }
+
+    @media (max-width: 520px) {
+      .cards { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span>
+  </a>
+</nav>
+
+<div class="page-center">
+  <h1 class="heading">Sign in to RootACE.</h1>
+  <p class="sub">Choose the account type you signed up with.</p>
+
+  <div class="cards">
+    <a href="/sub-login.html" class="card">
+      <div class="card-tag">Active Optimization</div>
+      <div class="card-title">Subscriber</div>
+      <div class="card-desc">You have a monthly subscription and run audits on demand from your dashboard.</div>
+      <span class="card-cta">Sign in →</span>
+    </a>
+
+    <a href="/login-customer.html" class="card">
+      <div class="card-tag">Snapshot</div>
+      <div class="card-title">One-time buyer</div>
+      <div class="card-desc">You purchased a single AI visibility audit and want to view your report.</div>
+      <span class="card-cta">Sign in →</span>
+    </a>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <span class="divider-text">new here?</span>
+    <div class="divider-line"></div>
+  </div>
+  <p class="new-link">
+    Get an AI visibility audit at <a href="/order.html">rootace.ai/order.html</a>
+    or <a href="/subscribe.html">subscribe to Active Optimization</a>.
+  </p>
+</div>
+
+</body>
+</html>
