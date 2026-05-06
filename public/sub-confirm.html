@@ -568,7 +568,20 @@
     btn.disabled = true; btn.textContent = 'Saving…';
 
     const personas = getPersonasFromDOM();
-    const profileWithPersonas = { ...(savedProfile || {}), personas };
+
+    // Build profile from savedProfile (step 2 form) or fall back to session data
+    const baseProfile = savedProfile || {
+      company_name: sessionData.profile?.company_name || '',
+      website: sessionData.profile?.website || '',
+      industry: document.getElementById('p-industry')?.value?.trim() || '',
+      specific_product: document.getElementById('p-product')?.value?.trim() || '',
+      geo: document.getElementById('p-geo')?.value?.trim() || '',
+      competitors: document.getElementById('p-competitors')?.value?.trim() || '',
+    };
+    const profileWithPersonas = { ...baseProfile, personas };
+
+    // Write to localStorage so sub-audit.html can read it immediately (API-independent)
+    try { localStorage.setItem('rp_sub_profile', JSON.stringify(baseProfile)); } catch(e) {}
 
     try {
       await fetch('/api/sub-register', {
