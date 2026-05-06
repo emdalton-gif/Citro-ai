@@ -760,7 +760,7 @@
     // If returning to view saved results — load by ID and render
     if (resultId && !sessionId) {
       try {
-        const r = await fetch(`/api/get-result?id=${encodeURIComponent(resultId)}`);
+        const r = await fetch(`/api/get-results?id=${encodeURIComponent(resultId)}`);
         if (!r.ok) throw new Error('Result not found');
         const data = await r.json();
         hide('screen-loading');
