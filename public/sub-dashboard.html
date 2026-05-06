@@ -7,6 +7,7 @@
   <meta name="robots" content="noindex" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -148,6 +149,23 @@
     .persona-feedback.ok { background: #DCFCE7; color: #166534; border: 1px solid #A7F3D0; }
     .persona-feedback.err { background: #FEF2F2; color: #991B1B; border: 1px solid #FCA5A5; }
 
+    /* ── FILE UPLOAD ZONE ── */
+    .upload-zone {
+      position: relative; border: 2px dashed var(--border); border-radius: 10px;
+      padding: 26px 24px; text-align: center; cursor: pointer; margin-bottom: 4px;
+      background: var(--bg); transition: border-color 0.2s, background 0.2s;
+      grid-column: 1 / -1;
+    }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: rgba(37,99,235,0.02); }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-zone-icon { font-size: 22px; margin-bottom: 8px; }
+    .upload-zone-title { font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+    .upload-zone-hint { font-size: 12px; color: var(--muted); }
+    .upload-zone-status { font-size: 13px; font-weight: 500; margin-top: 10px; min-height: 18px; }
+    .upload-zone-status.loading { color: var(--accent); }
+    .upload-zone-status.ok { color: var(--green); }
+    .upload-zone-status.err { color: var(--red); }
+
     @media (max-width: 700px) {
       .page { padding: 32px 16px; }
       nav { padding: 0 20px; }
@@ -189,7 +207,7 @@
     </div>
 
     <div class="top-row">
-      <h1>Your audits</h1>
+      <h1>Your dashboard</h1>
       <a href="/sub-audit.html" class="run-btn" id="runBtn">+ Run new audit</a>
     </div>
 
@@ -273,6 +291,72 @@
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+  // ── Claude API (used for persona file parsing) ────────────────────────────
+  async function callClaude(messages, system, maxTokens = 2000) {
+    const body = { model: 'claude-sonnet-4-6', max_tokens: maxTokens, messages };
+    if (system) body.system = system;
+    const res = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const data = await res.json();
+    return data.content?.[0]?.text || '';
+  }
+
+  // ── Persona file parsing ──────────────────────────────────────────────────
+  const PERSONA_EXTRACT_PROMPT = `This document contains buyer persona information. Extract up to 3 buyer personas.\n\nFor each persona return a JSON object with these exact keys:\n{"name":"full name or a descriptive label if unnamed","title":"job title","company":"company type and size","goal":"primary professional goal in 1 sentence","pain":"2-3 comma-separated pain points","motivation":"key purchase motivation in 1 sentence","buyerType":"B2B or B2C","conversionGoal":"lead or call or ecommerce"}\n\nIf a field isn't clearly stated, infer it from context. If you truly cannot infer it, use an empty string. Return ONLY a valid JSON array — no markdown, no explanation.`;
+
+  async function fileToBase64(file) {
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(file); });
+  }
+  async function fileToText(file) {
+    return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(file); });
+  }
+  async function extractOfficeText(file) {
+    if (typeof JSZip === 'undefined') throw new Error('Could not load parser — try uploading a PDF instead.');
+    const ext = file.name.split('.').pop().toLowerCase();
+    const zip = await JSZip.loadAsync(file);
+    const texts = [];
+    for (const [path, entry] of Object.entries(zip.files)) {
+      const keep = (ext === 'pptx' && /^ppt\/slides\/slide\d+\.xml$/.test(path))
+                || (ext === 'docx' && path === 'word/document.xml');
+      if (keep) { const xml = await entry.async('text'); const t = xml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); if (t) texts.push(t); }
+    }
+    if (!texts.length) throw new Error('No readable text found. Try exporting as PDF.');
+    return texts.join('\n\n').slice(0, 40000);
+  }
+  function parsePersonasFromRaw(raw) {
+    const c = raw.replace(/```json|```/g,'').trim();
+    const s = c.indexOf('['), e = c.lastIndexOf(']');
+    if (s === -1 || e === -1) throw new Error('No persona data found in this document.');
+    const arr = JSON.parse(c.slice(s, e + 1));
+    if (!Array.isArray(arr) || arr.length === 0) throw new Error('No personas found. Check the file has persona content.');
+    return arr.slice(0, 3);
+  }
+  async function parsePersonaFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+      const b64 = await fileToBase64(file);
+      const raw = await callClaude([{ role:'user', content:[
+        { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
+        { type:'text', text:PERSONA_EXTRACT_PROMPT }
+      ]}], null, 2000);
+      return parsePersonasFromRaw(raw);
+    } else if (ext === 'csv' || ext === 'txt') {
+      const text = await fileToText(file);
+      const raw = await callClaude([{ role:'user', content: PERSONA_EXTRACT_PROMPT + '\n\nDocument:\n' + text }], null, 2000);
+      return parsePersonasFromRaw(raw);
+    } else if (ext === 'pptx' || ext === 'docx') {
+      const text = await extractOfficeText(file);
+      const raw = await callClaude([{ role:'user', content: PERSONA_EXTRACT_PROMPT + '\n\nDocument text:\n' + text }], null, 2000);
+      return parsePersonasFromRaw(raw);
+    } else {
+      throw new Error('Unsupported file type. Please upload a PDF, PPTX, DOCX, CSV, or TXT.');
+    }
+  }
+
   // ── Buyer Personas ────────────────────────────────────────────────────────
   let _personas = [];
 
@@ -320,7 +404,23 @@
       <button class="btn-ghost" onclick="cancelPersonasEdit()">Cancel</button>
       <button class="btn-solid" id="personaSaveBtn" onclick="savePersonas()">Save personas</button>`;
 
-    document.getElementById('personasGrid').innerHTML = _personas.map((p, i) => `
+    // Inject upload zone above the editable cards
+    const uploadZoneHTML = `
+      <div class="upload-zone" id="dashUploadZone">
+        <input type="file" id="dashPersonaFile" accept=".pdf,.pptx,.docx,.csv,.txt" />
+        <div class="upload-zone-icon">📄</div>
+        <div class="upload-zone-title">Upload your persona document</div>
+        <div class="upload-zone-hint">PDF, PPTX, DOCX, or CSV — we'll extract and populate the fields below</div>
+        <div class="upload-zone-status" id="dashUploadStatus"></div>
+      </div>`;
+
+    const grid = document.getElementById('personasGrid');
+    grid.innerHTML = uploadZoneHTML + renderPersonaEditCards(_personas);
+    setupDashUpload();
+  }
+
+  function renderPersonaEditCards(personas) {
+    return personas.map((p, i) => `
       <div class="pvc editing">
         <div class="pvc-head">
           <div class="pvc-num">${i + 1}</div>
@@ -369,6 +469,43 @@
           <input class="pvc-fi" data-i="${i}" data-f="motivation" value="${esc(p.motivation || '')}" />
         </div>
       </div>`).join('');
+  }
+
+  function setupDashUpload() {
+    const input  = document.getElementById('dashPersonaFile');
+    const zone   = document.getElementById('dashUploadZone');
+    const status = document.getElementById('dashUploadStatus');
+    if (!input || !zone) return;
+
+    async function handleFile(file) {
+      if (!file) return;
+      status.className = 'upload-zone-status loading';
+      status.textContent = `Extracting personas from ${file.name}…`;
+      input.value = '';
+      try {
+        const personas = await parsePersonaFile(file);
+        // Re-render editable cards with extracted data, keeping upload zone in place
+        const grid = document.getElementById('personasGrid');
+        const zoneEl = document.getElementById('dashUploadZone');
+        const zoneHTML = zoneEl ? zoneEl.outerHTML : '';
+        grid.innerHTML = zoneHTML + renderPersonaEditCards(personas);
+        setupDashUpload(); // re-bind events after DOM replacement
+        document.getElementById('dashUploadStatus').className = 'upload-zone-status ok';
+        document.getElementById('dashUploadStatus').textContent = `✓ Extracted ${personas.length} persona${personas.length !== 1 ? 's' : ''} — review and edit, then save.`;
+      } catch(err) {
+        status.className = 'upload-zone-status err';
+        status.textContent = '⚠ ' + (err.message || 'Could not extract personas. Try a different file.');
+      }
+    }
+
+    input.addEventListener('change', e => handleFile(e.target.files[0]));
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      handleFile(e.dataTransfer.files[0]);
+    });
   }
 
   function cancelPersonasEdit() {
