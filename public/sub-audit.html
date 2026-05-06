@@ -68,6 +68,36 @@
     .run-btn:hover:not(:disabled) { background: var(--accent-light); }
     .run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    /* ── PERSONA SCREEN ── */
+    #screen-personas { display: none; padding: 48px 0; }
+    .personas-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    .personas-title { font-size: 32px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 10px; }
+    .personas-sub { font-size: 16px; color: var(--muted); line-height: 1.65; margin-bottom: 32px; }
+
+    .persona-cards { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
+    .persona-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+    .persona-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .persona-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--mono); }
+    .persona-card-name { font-size: 15px; font-weight: 700; color: var(--dark); }
+    .persona-card-title-sub { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 6px; }
+    .persona-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .persona-field { display: flex; flex-direction: column; gap: 5px; }
+    .persona-field.full { grid-column: 1 / -1; }
+    .persona-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .persona-field input, .persona-field textarea, .persona-field select {
+      font-family: var(--sans); font-size: 13px; color: var(--dark);
+      border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px;
+      background: var(--bg); outline: none; transition: border-color 0.2s;
+    }
+    .persona-field input:focus, .persona-field textarea:focus, .persona-field select:focus { border-color: var(--accent); background: #fff; }
+
+    .personas-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .regen-btn { font-family: var(--sans); font-size: 14px; font-weight: 500; color: var(--muted); background: none; border: 1px solid var(--border); border-radius: 8px; padding: 10px 18px; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+    .regen-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .regen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .back-to-profile { font-size: 13px; color: var(--muted); text-decoration: none; display: block; margin-top: 16px; }
+    .back-to-profile:hover { color: var(--accent); }
+
     /* ── LOADING SCREEN ── */
     #screen-loading {
       display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -267,8 +297,27 @@
           <span style="font-size:11px;color:var(--muted);">Edit the list — add anyone we missed or remove ones that don't apply</span>
         </div>
       </div>
-      <button class="run-btn" id="startRunBtn">Run audit →</button>
+      <button class="run-btn" id="startRunBtn">Continue →</button>
     </div>
+  </div>
+</div>
+
+<!-- PERSONA REVIEW SCREEN -->
+<div id="screen-personas">
+  <div class="wrap">
+    <div class="personas-label">Step 2 of 2 — Review before running</div>
+    <h1 class="personas-title">Review your buyer personas.</h1>
+    <p class="personas-sub">We built these buyers from your profile. They drive every query and simulation in your audit — edit anything that doesn't match your actual customer, then run.</p>
+
+    <div class="persona-cards" id="persona-cards">
+      <!-- Populated by renderPersonas() -->
+    </div>
+
+    <div class="personas-footer">
+      <button class="regen-btn" id="regenBtn">↻ Regenerate personas</button>
+      <button class="run-btn" id="runAuditBtn" style="width:auto;padding:14px 32px;">Run audit →</button>
+    </div>
+    <a href="#" class="back-to-profile" id="backToProfileBtn">← Back to profile</a>
   </div>
 </div>
 
@@ -472,7 +521,7 @@
     const ps = personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const currentYear = new Date().getFullYear();
-    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an AI visibility audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query.\n- Platform assignment (IMPORTANT — assign exactly): 3 queries to Perplexity, 2 queries to ChatGPT, and the remaining 3 distributed across Google Gemini, Claude, and Microsoft Copilot.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot","brand_specific":true|false}` }]);
+    const raw = await callClaude([{ role:'user', content:`Generate 9 realistic search queries for an AI visibility audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query, 1 additional buyer-intent query.\n- Platform assignment (IMPORTANT — assign exactly one query to each platform): ChatGPT (2 queries), Perplexity (2 queries), Google Gemini (1 query), Claude (1 query), Microsoft Copilot (1 query), Grok (1 query), Meta AI (1 query). Every platform must appear exactly as listed.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot|Grok|Meta AI","brand_specific":true|false}` }]);
     return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(q => ({...q, checked: true}));
   }
 
@@ -664,15 +713,23 @@
   }
 
   // ── Run audit ─────────────────────────────────────────────────────────────
-  async function runAudit(profile) {
+  async function runAudit(profile, prebuiltPersonas = null) {
     hide('screen-setup');
+    hide('screen-personas');
     flex('screen-loading');
 
     let simResults, report;
     try {
-      setPhase(0, 'active');
-      const personas = await genPersonas(profile);
-      setPhase(0, 'done'); setPhase(1, 'active');
+      let personas;
+      if (prebuiltPersonas) {
+        setPhase(0, 'done'); // Personas already reviewed
+        personas = prebuiltPersonas;
+        setPhase(1, 'active');
+      } else {
+        setPhase(0, 'active');
+        personas = await genPersonas(profile);
+        setPhase(0, 'done'); setPhase(1, 'active');
+      }
 
       const queries = await genQueries(profile, personas);
       setPhase(1, 'done'); setPhase(2, 'active');
@@ -692,7 +749,7 @@
 
       // Save to dashboard (after render so results show immediately)
       const saveStatus = document.getElementById('save-status');
-      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile };
+      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas };
       try {
         const saveResp = await fetch(SAVE_API, {
           method: 'POST',
@@ -746,6 +803,69 @@
 
   let subscriberEmail = '';
   let _lastSavePayload = null;
+  let _currentProfile = null;
+
+  // ── Persona review helpers ────────────────────────────────────────────────
+  function renderPersonas(personas) {
+    const container = document.getElementById('persona-cards');
+    container.innerHTML = personas.map((p, i) => `
+      <div class="persona-card" data-index="${i}">
+        <div class="persona-card-header">
+          <div class="persona-num">${i + 1}</div>
+          <div>
+            <span class="persona-card-name">${esc(p.name || 'Buyer ' + (i + 1))}</span>
+            <span class="persona-card-title-sub">${esc(p.title ? '— ' + p.title : '')}</span>
+          </div>
+        </div>
+        <div class="persona-fields">
+          <div class="persona-field">
+            <label>Name</label>
+            <input type="text" name="name" value="${esc(p.name || '')}" placeholder="Full name" />
+          </div>
+          <div class="persona-field">
+            <label>Job title</label>
+            <input type="text" name="title" value="${esc(p.title || '')}" placeholder="e.g. VP of Marketing" />
+          </div>
+          <div class="persona-field">
+            <label>Company type & size</label>
+            <input type="text" name="company" value="${esc(p.company || '')}" placeholder="e.g. Mid-market SaaS, 200 employees" />
+          </div>
+          <div class="persona-field">
+            <label>Buyer type & goal</label>
+            <select name="buyerType">
+              <option value="B2B" ${p.buyerType === 'B2B' ? 'selected' : ''}>B2B</option>
+              <option value="B2C" ${p.buyerType === 'B2C' ? 'selected' : ''}>B2C</option>
+            </select>
+          </div>
+          <div class="persona-field full">
+            <label>Primary goal</label>
+            <input type="text" name="goal" value="${esc(p.goal || '')}" placeholder="What are they trying to accomplish?" />
+          </div>
+          <div class="persona-field full">
+            <label>Pain points</label>
+            <input type="text" name="pain" value="${esc(p.pain || '')}" placeholder="e.g. budget constraints, lack of visibility, slow onboarding" />
+          </div>
+          <div class="persona-field full">
+            <label>Purchase motivation</label>
+            <input type="text" name="motivation" value="${esc(p.motivation || '')}" placeholder="What drives them to buy?" />
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function getPersonasFromForm() {
+    return Array.from(document.querySelectorAll('#persona-cards .persona-card')).map(card => ({
+      name:           card.querySelector('[name="name"]').value.trim(),
+      title:          card.querySelector('[name="title"]').value.trim(),
+      company:        card.querySelector('[name="company"]').value.trim(),
+      buyerType:      card.querySelector('[name="buyerType"]').value,
+      goal:           card.querySelector('[name="goal"]').value.trim(),
+      pain:           card.querySelector('[name="pain"]').value.trim(),
+      motivation:     card.querySelector('[name="motivation"]').value.trim(),
+      conversionGoal: 'lead',
+    }));
+  }
 
   async function retrySave() {
     if (!_lastSavePayload) return;
@@ -847,7 +967,7 @@
 
     block('screen-setup');
 
-    document.getElementById('startRunBtn').addEventListener('click', () => {
+    document.getElementById('startRunBtn').addEventListener('click', async () => {
       // If profile is locked, use the server-side locked values — not whatever's in the field
       const lockedName = p.profileLocked ? (p.lockedCompanyName || p.company_name || '') : null;
       const lockedWebsite = p.profileLocked ? (p.lockedWebsite || p.website || '') : null;
@@ -871,7 +991,57 @@
           body: JSON.stringify({ email: subscriberEmail, password: '_noop_update_', profile }),
         }).catch(() => {});
       }
-      runAudit(profile);
+
+      // Load saved personas or generate new ones on first run
+      _currentProfile = profile;
+      const btn = document.getElementById('startRunBtn');
+      btn.disabled = true;
+      try {
+        let personas;
+        if (p.personas && p.personas.length > 0) {
+          // Reuse personas from last run — preserves apples-to-apples comparison
+          btn.textContent = 'Loading personas…';
+          personas = p.personas;
+        } else {
+          btn.textContent = 'Generating personas…';
+          personas = await genPersonas(profile);
+        }
+        renderPersonas(personas);
+        hide('screen-setup');
+        block('screen-personas');
+      } catch(e) {
+        alert('Could not load personas. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Continue →';
+      }
+    });
+
+    document.getElementById('runAuditBtn').addEventListener('click', () => {
+      const personas = getPersonasFromForm();
+      runAudit(_currentProfile, personas);
+    });
+
+    document.getElementById('regenBtn').addEventListener('click', async () => {
+      if (!_currentProfile) return;
+      const btn = document.getElementById('regenBtn');
+      btn.disabled = true;
+      btn.textContent = '↻ Regenerating…';
+      try {
+        const personas = await genPersonas(_currentProfile);
+        renderPersonas(personas);
+      } catch(e) {
+        alert('Could not regenerate personas. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '↻ Regenerate personas';
+      }
+    });
+
+    document.getElementById('backToProfileBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      hide('screen-personas');
+      block('screen-setup');
     });
   }
 
