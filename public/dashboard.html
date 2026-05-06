@@ -408,7 +408,7 @@
         <div class="upgrade-sub">Unlimited audit runs, score history, and competitor shift alerts — all in one dashboard. $199/month, cancel anytime.</div>
       </div>
       <div class="upgrade-actions">
-        <a class="btn-upgrade-primary" href="/subscribe.html">Upgrade to Active Optimization →</a>
+        <a class="btn-upgrade-primary" id="upgradeBtn" href="/subscribe.html">Upgrade to Active Optimization →</a>
         <button class="btn-upgrade-ghost" onclick="openBillingPortal()">Manage billing</button>
       </div>
     </div>
@@ -435,6 +435,12 @@
   if (!token) location.href = '/login-customer.html';
 
   document.getElementById('nav-email').textContent = email || '';
+
+  // Pre-fill email on upgrade link
+  if (email) {
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    if (upgradeBtn) upgradeBtn.href = '/subscribe.html?email=' + encodeURIComponent(email);
+  }
 
   function signOut() {
     localStorage.removeItem('rp_customer_token');
