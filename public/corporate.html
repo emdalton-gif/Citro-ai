@@ -258,6 +258,37 @@
     .footer-links a:hover { color: rgba(248,250,252,0.65); }
     .footer-copy { font-size: 13px; color: rgba(248,250,252,0.2); }
 
+    /* PRICING */
+    .pricing-section { background: var(--bg); padding: 96px 56px; border-top: 1px solid var(--border); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px; }
+    .pricing-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 36px 32px; position: relative; display: flex; flex-direction: column; }
+    .pricing-card.featured { background: var(--dark); border-color: transparent; }
+    .pricing-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 14px; border-radius: 100px; white-space: nowrap; }
+    .pricing-plan { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); margin-bottom: 16px; font-weight: 500; }
+    .pricing-card.featured .pricing-plan { color: rgba(248,250,252,0.35); }
+    .pricing-price { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); line-height: 1; margin-bottom: 6px; }
+    .pricing-price span { font-size: 15px; color: var(--mid); font-weight: 400; letter-spacing: 0; }
+    .pricing-card.featured .pricing-price { color: #F8FAFC; }
+    .pricing-card.featured .pricing-price span { color: rgba(248,250,252,0.35); }
+    .pricing-desc { font-size: 14px; color: var(--mid); line-height: 1.65; margin: 16px 0 28px; }
+    .pricing-card.featured .pricing-desc { color: rgba(248,250,252,0.5); }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; flex: 1; }
+    .pricing-features li { font-size: 14px; color: var(--ink-2); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+    .pricing-features li::before { content: ''; width: 16px; height: 16px; border-radius: 50%; background: var(--green-bg); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; flex-shrink: 0; margin-top: 1px; }
+    .pricing-card.featured .pricing-features li { color: rgba(248,250,252,0.65); }
+    .pricing-card.featured .pricing-features li::before { background-color: rgba(52,211,153,0.15); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2334D399' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E"); }
+    .pricing-cta { display: block; text-align: center; padding: 13px; border-radius: 8px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.15s; letter-spacing: -0.1px; margin-top: auto; }
+    .pricing-cta.dark { background: var(--ink); color: #fff; }
+    .pricing-cta.dark:hover { background: var(--ink-2); }
+    .pricing-cta.blue { background: var(--accent); color: #fff; }
+    .pricing-cta.blue:hover { background: var(--accent-d); }
+    .pricing-cta.outline { border: 1px solid var(--border); color: var(--ink); }
+    .pricing-cta.outline:hover { border-color: var(--ink); background: var(--surface-2); }
+    .pricing-example { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: var(--mid); text-decoration: none; transition: color 0.15s; }
+    .pricing-example:hover { color: var(--accent); }
+    .pricing-managed-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.2); border-radius: 100px; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #34D399; letter-spacing: 0.02em; margin-bottom: 16px; }
+    .pricing-note { font-size: 13px; color: var(--quiet); text-align: center; margin-top: 24px; }
+
     /* RESPONSIVE */
     @media (max-width: 960px) {
       nav { padding: 0 24px; }
@@ -279,6 +310,8 @@
       .steps-grid { grid-template-columns: 1fr; gap: 14px; }
       .deliverables-section { padding: 64px 24px; }
       .deliverables-grid { grid-template-columns: 1fr; }
+      .pricing-section { padding: 64px 24px; }
+      .pricing-grid { grid-template-columns: 1fr; }
       .cta-section { padding: 64px 24px; }
       .cta-title { font-size: 34px; }
       footer { padding: 32px 24px; }
@@ -295,7 +328,7 @@
   </a>
   <div class="nav-links">
     <a href="/#how-it-works" class="nav-link">How it works</a>
-    <a href="/#pricing" class="nav-link">Pricing</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
     <a href="/sample-audit.html" class="nav-link">Sample audit</a>
     <a href="/corporate.html" class="nav-link active">Corporate Clients</a>
   </div>
@@ -569,6 +602,76 @@
         <p class="del-desc">For RootPartners consulting clients, a quarterly working session with the principals to review audit findings, assess roadmap progress, adapt to changes in the AI landscape, and pressure-test positioning strategy for the next cycle.</p>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<div class="pricing-section" id="pricing">
+  <div class="section-inner">
+    <div class="section-label">Plans &amp; Pricing</div>
+    <h2 class="section-title">Start where you are.<br>Scale when you're ready.</h2>
+    <p class="section-sub">Some teams want to run their own audits. Others want us to handle everything. We built plans for both — and a fully-managed option for teams that have enough on their plate already.</p>
+    <div class="pricing-grid">
+
+      <!-- SNAPSHOT -->
+      <div class="pricing-card">
+        <div class="pricing-plan">Snapshot</div>
+        <div class="pricing-price">$299 <span>one-time</span></div>
+        <div class="pricing-desc">A complete AI presence audit for teams that want to understand where they stand before committing to ongoing measurement.</div>
+        <ul class="pricing-features">
+          <li>AI Visibility Score across 7 platforms</li>
+          <li>Synthetic buyer personas simulating your actual buyer</li>
+          <li>9 queries tested across all major AI platforms</li>
+          <li>Competitive intelligence matrix</li>
+          <li>Root cause analysis</li>
+          <li>90-day action roadmap</li>
+          <li>Shareable results link</li>
+        </ul>
+        <a href="/order.html?plan=snapshot" class="pricing-cta dark">Run a Snapshot — $299</a>
+        <a href="/sample-audit.html" class="pricing-example">See an example audit →</a>
+      </div>
+
+      <!-- ENTERPRISE — featured -->
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Recommended for corporate</div>
+        <div class="pricing-managed-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Fully managed — we do it for you
+        </div>
+        <div class="pricing-plan">Enterprise Custom</div>
+        <div class="pricing-price" style="font-size:34px;padding-top:6px">Custom</div>
+        <div class="pricing-desc">We run everything. You get the intelligence, the roadmap, and a dedicated strategic partner — without adding anything to your team's workload.</div>
+        <ul class="pricing-features">
+          <li>We build and maintain your buyer persona library</li>
+          <li>We run audits on your cadence — monthly or quarterly</li>
+          <li>We write the competitive analysis and trend reports</li>
+          <li>We deliver the 90-day roadmap and update it each cycle</li>
+          <li>Quarterly strategy sessions with RootPartners principals</li>
+          <li>Custom reporting formatted for leadership and board presentations</li>
+          <li>Priority access and dedicated point of contact</li>
+        </ul>
+        <a href="https://calendly.com/rootace" target="_blank" class="pricing-cta blue">Request a demo →</a>
+      </div>
+
+      <!-- ACTIVE OPTIMIZATION -->
+      <div class="pricing-card">
+        <div class="pricing-plan">Active Optimization</div>
+        <div class="pricing-price">$199 <span>/month</span></div>
+        <div class="pricing-desc">For teams that want continuous, self-serve monitoring with unlimited re-runs to track progress as their AI presence evolves.</div>
+        <ul class="pricing-features">
+          <li>Everything in Snapshot</li>
+          <li>Unlimited audit runs</li>
+          <li>Score trend tracking over time</li>
+          <li>Full run history dashboard</li>
+          <li>Saved buyer persona library</li>
+          <li>Email delivery every run</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="/subscribe.html" class="pricing-cta outline">Get started →</a>
+      </div>
+
+    </div>
+    <div class="pricing-note">All plans include a secure customer dashboard. Payment processed by Stripe. Enterprise plans invoiced directly.</div>
   </div>
 </div>
 
