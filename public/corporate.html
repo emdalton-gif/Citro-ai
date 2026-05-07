@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Corporate Clients — RootACE</title>
+  <meta name="description" content="RootACE and RootPartners help corporate B2B teams measure, understand, and improve how AI platforms represent their brand to buyers — with continuous auditing, custom persona libraries, and strategic consulting." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #F8FAFC;
+      --surface:      #FFFFFF;
+      --surface-2:    #F1F5F9;
+      --dark:         #0B0F1A;
+      --dark-2:       #111827;
+      --ink:          #0F172A;
+      --ink-2:        #1E293B;
+      --mid:          #64748B;
+      --quiet:        #94A3B8;
+      --border:       rgba(15,23,42,0.08);
+      --border-dark:  rgba(255,255,255,0.08);
+      --accent:       #2563EB;
+      --accent-d:     #1D4ED8;
+      --accent-light: rgba(37,99,235,0.1);
+      --green:        #059669;
+      --green-bg:     rgba(5,150,105,0.1);
+      --sans:         'Inter', system-ui, sans-serif;
+      --mono:         'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(248,250,252,0.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 56px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .nav-logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-link { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .nav-link:hover { color: var(--ink); }
+    .nav-link.active { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-signin { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; }
+    .nav-signin:hover { color: var(--ink); }
+    .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
+    .nav-cta:hover { background: var(--ink-2); }
+
+    /* HERO */
+    .hero {
+      background: var(--dark);
+      padding: 100px 56px 96px;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 800px 500px at 75% 40%, rgba(37,99,235,0.14) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 400px at 15% 85%, rgba(37,99,235,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 420px; gap: 80px; align-items: center;
+      position: relative; z-index: 1;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(37,99,235,0.12); border: 1px solid rgba(37,99,235,0.2);
+      border-radius: 100px; padding: 5px 12px;
+      font-size: 12px; font-weight: 500; color: #93C5FD; letter-spacing: 0.02em;
+      margin-bottom: 28px;
+    }
+    .hero-eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #3B82F6; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+    .hero-title {
+      font-size: 56px; font-weight: 800; line-height: 1.06;
+      letter-spacing: -0.03em; color: #F8FAFC;
+      margin-bottom: 20px;
+    }
+    .hero-title .accent { color: #60A5FA; }
+    .hero-sub {
+      font-size: 18px; color: rgba(248,250,252,0.55);
+      line-height: 1.75; margin-bottom: 36px; max-width: 500px; font-weight: 400;
+    }
+    .hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
+    .btn-hero { background: var(--accent); color: #fff; padding: 14px 28px; border-radius: 8px; font-size: 15px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
+    .btn-hero:hover { background: var(--accent-d); }
+    .btn-hero-ghost { color: rgba(248,250,252,0.5); font-size: 14px; text-decoration: none; font-weight: 500; transition: color 0.15s; display: flex; align-items: center; gap: 6px; }
+    .btn-hero-ghost:hover { color: rgba(248,250,252,0.85); }
+    .hero-trust-inline { display: flex; gap: 24px; flex-wrap: wrap; }
+    .hti-item { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500; color: rgba(248,250,252,0.4); }
+
+    /* SCENARIO CARD */
+    .scenario-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px; padding: 28px;
+      backdrop-filter: blur(12px);
+    }
+    .sc-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px; padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sc-label {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(248,250,252,0.28);
+    }
+    .sc-badge {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 4px;
+      background: rgba(239,68,68,0.15); color: #FCA5A5; border: 1px solid rgba(239,68,68,0.2);
+    }
+    .sc-query {
+      background: rgba(255,255,255,0.05); border-radius: 8px; padding: 14px 16px;
+      font-size: 13px; color: rgba(248,250,252,0.65); line-height: 1.6; margin-bottom: 16px;
+      border-left: 2px solid rgba(96,165,250,0.4);
+      font-style: italic;
+    }
+    .sc-result { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .sc-result-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 8px; }
+    .sc-result-row.mentioned { background: rgba(5,150,105,0.1); border: 1px solid rgba(5,150,105,0.2); }
+    .sc-result-row.not-mentioned { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); }
+    .sc-co { font-size: 13px; font-weight: 600; }
+    .sc-co.mentioned { color: #34D399; }
+    .sc-co.not-mentioned { color: rgba(248,250,252,0.3); }
+    .sc-status { font-size: 11px; font-family: var(--mono); letter-spacing: 0.05em; }
+    .sc-status.mentioned { color: #34D399; }
+    .sc-status.not-mentioned { color: rgba(239,68,68,0.6); }
+    .sc-footer {
+      background: rgba(37,99,235,0.1); border: 1px solid rgba(37,99,235,0.18);
+      border-radius: 8px; padding: 12px 16px;
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #93C5FD;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    /* TRUST BAR */
+    .trust-bar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 18px 56px;
+    }
+    .trust-bar-inner {
+      max-width: 1120px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap;
+    }
+    .trust-item { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--mid); font-weight: 500; }
+    .trust-check { width: 16px; height: 16px; border-radius: 50%; background: var(--green-bg); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* SECTIONS */
+    .section { padding: 96px 56px; }
+    .section-inner { max-width: 1120px; margin: 0 auto; }
+    .section-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; font-weight: 500; }
+    .section-title { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); line-height: 1.1; margin-bottom: 16px; }
+    .section-sub { font-size: 17px; color: var(--mid); line-height: 1.75; max-width: 560px; }
+
+    /* PROBLEM SECTION */
+    .problem-section { background: var(--surface-2); padding: 96px 56px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; margin-top: 0; }
+    .problem-body { font-size: 16px; color: var(--mid); line-height: 1.85; }
+    .problem-body p { margin-bottom: 18px; }
+    .problem-body strong { color: var(--ink); font-weight: 600; }
+    .problem-stats { display: flex; flex-direction: column; gap: 16px; }
+    .pstat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; }
+    .pstat-num { font-size: 44px; font-weight: 800; letter-spacing: -0.04em; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+    .pstat-desc { font-size: 14px; color: var(--mid); line-height: 1.6; }
+    .pstat-desc strong { color: var(--ink); font-weight: 600; }
+
+    /* TWO TRACKS */
+    .tracks-section { background: var(--dark); padding: 96px 56px; }
+    .tracks-hd { max-width: 680px; margin: 0 auto 64px; text-align: center; }
+    .tracks-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(248,250,252,0.3); margin-bottom: 16px; font-weight: 500; }
+    .tracks-title { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; color: #F8FAFC; line-height: 1.1; margin-bottom: 18px; }
+    .tracks-sub { font-size: 17px; color: rgba(248,250,252,0.5); line-height: 1.75; }
+    .tracks-grid { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .track-card {
+      border-radius: 16px; padding: 40px;
+      border: 1px solid rgba(255,255,255,0.09);
+    }
+    .track-card.platform { background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.25); }
+    .track-card.consulting { background: rgba(255,255,255,0.04); }
+    .track-flag {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 20px; display: inline-block;
+      padding: 4px 10px; border-radius: 4px;
+    }
+    .track-card.platform .track-flag { color: #93C5FD; background: rgba(37,99,235,0.15); border: 1px solid rgba(37,99,235,0.25); }
+    .track-card.consulting .track-flag { color: rgba(248,250,252,0.45); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+    .track-name { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: #F8FAFC; margin-bottom: 12px; line-height: 1.15; }
+    .track-desc { font-size: 15px; color: rgba(248,250,252,0.5); line-height: 1.8; margin-bottom: 28px; }
+    .track-features { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .track-features li {
+      font-size: 14px; color: rgba(248,250,252,0.65); line-height: 1.55;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .track-features li::before {
+      content: ''; width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px;
+      border-radius: 50%;
+      background-color: rgba(52,211,153,0.15);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2334D399' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: center;
+    }
+
+    /* WHO THIS IS FOR */
+    .for-section { background: var(--surface-2); padding: 96px 56px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .personas-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 56px; }
+    .persona-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: border-color 0.15s, box-shadow 0.15s; }
+    .persona-card:hover { border-color: rgba(37,99,235,0.3); box-shadow: 0 0 0 4px rgba(37,99,235,0.06); }
+    .persona-title { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px; letter-spacing: -0.02em; }
+    .persona-role { font-size: 12px; font-family: var(--mono); color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; font-weight: 500; }
+    .persona-problem { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+    /* HOW IT WORKS */
+    .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
+    .step { padding: 32px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); }
+    .step-num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 20px; font-weight: 500; }
+    .step-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--ink); letter-spacing: -0.02em; }
+    .step-desc { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+    /* DELIVERABLES */
+    .deliverables-section { background: var(--surface-2); padding: 96px 56px; border-top: 1px solid var(--border); }
+    .deliverables-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 56px; }
+    .deliverable { padding: 32px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); transition: border-color 0.15s, box-shadow 0.15s; }
+    .deliverable:hover { border-color: rgba(37,99,235,0.3); box-shadow: 0 0 0 4px rgba(37,99,235,0.06); }
+    .del-icon { font-size: 22px; margin-bottom: 16px; }
+    .del-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--ink); letter-spacing: -0.02em; }
+    .del-desc { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+    /* CTA */
+    .cta-section { background: var(--dark); padding: 96px 56px; }
+    .cta-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+    .cta-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(248,250,252,0.3); margin-bottom: 20px; font-weight: 500; }
+    .cta-title { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; color: #F8FAFC; line-height: 1.1; margin-bottom: 18px; }
+    .cta-sub { font-size: 17px; color: rgba(248,250,252,0.5); line-height: 1.75; margin-bottom: 40px; }
+    .cta-btn { display: inline-block; background: var(--accent); color: #fff; padding: 16px 36px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
+    .cta-btn:hover { background: var(--accent-d); }
+    .cta-note { margin-top: 16px; font-size: 13px; color: rgba(248,250,252,0.3); font-style: italic; }
+
+    /* FOOTER */
+    footer { background: var(--dark); border-top: 1px solid rgba(255,255,255,0.06); padding: 36px 56px; }
+    .footer-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
+    .footer-logo { text-decoration: none; display: flex; align-items: center; }
+    .footer-logo-root { font-size: 16px; font-weight: 600; color: rgba(248,250,252,0.5); }
+    .footer-logo-ace  { font-size: 16px; font-weight: 800; color: rgba(37,99,235,0.7); }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { font-size: 13px; color: rgba(248,250,252,0.3); text-decoration: none; transition: color 0.15s; }
+    .footer-links a:hover { color: rgba(248,250,252,0.65); }
+    .footer-copy { font-size: 13px; color: rgba(248,250,252,0.2); }
+
+    /* RESPONSIVE */
+    @media (max-width: 960px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .hero { padding: 64px 24px 56px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      .hero-title { font-size: 38px; }
+      .trust-bar { padding: 16px 24px; }
+      .trust-bar-inner { gap: 20px; }
+      .section { padding: 64px 24px; }
+      .section-title { font-size: 32px; }
+      .problem-section { padding: 64px 24px; }
+      .problem-grid { grid-template-columns: 1fr; gap: 40px; }
+      .tracks-section { padding: 64px 24px; }
+      .tracks-grid { grid-template-columns: 1fr; }
+      .tracks-title { font-size: 32px; }
+      .for-section { padding: 64px 24px; }
+      .personas-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; gap: 14px; }
+      .deliverables-section { padding: 64px 24px; }
+      .deliverables-grid { grid-template-columns: 1fr; }
+      .cta-section { padding: 64px 24px; }
+      .cta-title { font-size: 34px; }
+      footer { padding: 32px 24px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="/">
+    <span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span>
+  </a>
+  <div class="nav-links">
+    <a href="/#how-it-works" class="nav-link">How it works</a>
+    <a href="/#pricing" class="nav-link">Pricing</a>
+    <a href="/sample-audit.html" class="nav-link">Sample audit</a>
+    <a href="/corporate.html" class="nav-link active">Corporate Clients</a>
+  </div>
+  <div class="nav-right">
+    <a href="/signin.html" class="nav-signin">Sign in</a>
+    <a href="https://calendly.com/rootace" target="_blank" class="nav-cta">Request a demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        Enterprise &amp; Corporate Clients
+      </div>
+      <h1 class="hero-title">Your buyers use<br>AI to build<br>their <span class="accent">shortlist.<br>Before they call anyone.</span></h1>
+      <p class="hero-sub">In B2B, the buying process now starts long before a vendor conversation. AI platforms are shaping vendor awareness, building evaluation frameworks, and influencing procurement decisions — and most companies have no idea how they're being represented.</p>
+      <div class="hero-actions">
+        <a href="https://calendly.com/rootace" target="_blank" class="btn-hero">Request a demo</a>
+        <a href="/sample-audit.html" class="btn-hero-ghost">
+          See a sample report
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="hero-trust-inline">
+        <div class="hti-item"><span>🏢</span> Built for B2B teams</div>
+        <div class="hti-item"><span>🔁</span> Continuous measurement</div>
+        <div class="hti-item"><span>🎯</span> Custom persona libraries</div>
+      </div>
+    </div>
+
+    <!-- SCENARIO CARD -->
+    <div class="scenario-card">
+      <div class="sc-header">
+        <div class="sc-label">Buyer Simulation · ChatGPT</div>
+        <div class="sc-badge">Not found</div>
+      </div>
+      <div class="sc-query">
+        "What are the leading B2B GTM consulting firms for mid-market SaaS companies going upmarket?"
+      </div>
+      <div class="sc-result">
+        <div class="sc-result-row mentioned">
+          <span class="sc-co mentioned">McKinsey Digital</span>
+          <span class="sc-status mentioned">Recommended</span>
+        </div>
+        <div class="sc-result-row mentioned">
+          <span class="sc-co mentioned">Gartner Advisory</span>
+          <span class="sc-status mentioned">Recommended</span>
+        </div>
+        <div class="sc-result-row mentioned">
+          <span class="sc-co mentioned">Forrester Consulting</span>
+          <span class="sc-status mentioned">Recommended</span>
+        </div>
+        <div class="sc-result-row not-mentioned">
+          <span class="sc-co not-mentioned">Your Company</span>
+          <span class="sc-status not-mentioned">Not mentioned</span>
+        </div>
+      </div>
+      <div class="sc-footer">
+        <span>9 of 9 queries · 7 platforms · 3 buyer personas</span>
+        <span>→</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item">
+      <div class="trust-check">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      ChatGPT, Perplexity, Gemini + 4 more
+    </div>
+    <div class="trust-item">
+      <div class="trust-check">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      Custom B2B buyer personas
+    </div>
+    <div class="trust-item">
+      <div class="trust-check">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      Competitive benchmarking included
+    </div>
+    <div class="trust-item">
+      <div class="trust-check">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      Strategic consulting available
+    </div>
+  </div>
+</div>
+
+<!-- THE PROBLEM -->
+<div class="problem-section">
+  <div class="section-inner">
+    <div class="problem-grid">
+      <div>
+        <div class="section-label">The B2B AI problem</div>
+        <h2 class="section-title">The buying committee is consulting AI before they consult you.</h2>
+        <div class="problem-body">
+          <p>The B2B buying cycle has always been complex. Multiple stakeholders, long evaluation periods, heavy research phases. What's changed is where that research begins.</p>
+          <p>A VP of Marketing evaluating GTM platforms doesn't open a browser and search Google. They open ChatGPT or Perplexity and ask a question they'd previously have asked a trusted colleague. The AI builds a shortlist. Sometimes it adds context. Sometimes it compares vendors.</p>
+          <p><strong>If your brand isn't appearing in those answers — or appearing unfavorably — you're losing deals before the first call happens.</strong> And you won't see it in your pipeline data until months later.</p>
+          <p>RootACE makes the invisible visible. It runs your actual buyers' actual questions through every major AI platform and shows you exactly where you stand, why, and what to do about it.</p>
+        </div>
+      </div>
+      <div class="problem-stats">
+        <div class="pstat">
+          <div class="pstat-num">73%</div>
+          <div class="pstat-desc"><strong>of B2B buyers</strong> use AI tools during the vendor research phase, before engaging a sales rep.</div>
+        </div>
+        <div class="pstat">
+          <div class="pstat-num">4.2x</div>
+          <div class="pstat-desc"><strong>more likely to progress</strong> to a demo when a vendor appears in AI-generated shortlists vs. search results alone.</div>
+        </div>
+        <div class="pstat">
+          <div class="pstat-num">0</div>
+          <div class="pstat-desc"><strong>companies in your category</strong> have this fully mapped. The opportunity window is open — but it won't stay that way.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TWO TRACKS -->
+<div class="tracks-section">
+  <div class="tracks-hd">
+    <div class="tracks-label">Two ways to work with us</div>
+    <h2 class="tracks-title">Continuous measurement. Strategic execution.</h2>
+    <p class="tracks-sub">Corporate clients can engage through the RootACE platform, through RootPartners consulting, or both. Most high-performing teams run them in parallel.</p>
+  </div>
+  <div class="tracks-grid">
+    <div class="track-card platform">
+      <div class="track-flag">Platform</div>
+      <h3 class="track-name">RootACE Active Optimization</h3>
+      <p class="track-desc">A continuous AI presence measurement platform built for B2B teams. Run structured audits on a recurring cadence against your own buyer personas, track movement across platforms, and catch competitive shifts in real time.</p>
+      <ul class="track-features">
+        <li>Monthly or quarterly audit cadence with full historical tracking</li>
+        <li>Custom buyer persona library built from your ICP and buying committee roles</li>
+        <li>Competitive benchmarking — see exactly where rivals outperform you and why</li>
+        <li>Trend analysis across 7 AI platforms over time</li>
+        <li>Exportable reports for board and leadership presentations</li>
+        <li>Team access — collaborate across marketing, demand gen, and content</li>
+      </ul>
+    </div>
+    <div class="track-card consulting">
+      <div class="track-flag">Consulting</div>
+      <h3 class="track-name">RootPartners Strategic Advisory</h3>
+      <p class="track-desc">Hands-on strategic work for B2B companies that want more than measurement. RootPartners builds the 90-day roadmap, identifies the content and positioning gaps driving AI invisibility, and works alongside your team to close them.</p>
+      <ul class="track-features">
+        <li>GTM Readiness Audit — structured diagnostic of your AI-era go-to-market posture</li>
+        <li>90-day optimization roadmap with prioritized, sequenced actions</li>
+        <li>Buyer journey mapping for AI-native discovery paths</li>
+        <li>Content architecture recommendations to improve AI recall and attribution</li>
+        <li>Competitive positioning review against top-ranked AI alternatives</li>
+        <li>Quarterly strategy sessions with direct access to the principals</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- WHO THIS IS FOR -->
+<div class="for-section">
+  <div class="section-inner">
+    <div class="section-label">Who we work with</div>
+    <h2 class="section-title">Built for the teams responsible for how the market sees you.</h2>
+    <p class="section-sub" style="margin-bottom: 56px;">AI presence isn't owned by one department — it lives at the intersection of brand, content, demand gen, and product marketing. RootACE brings them all onto the same scorecard.</p>
+    <div class="personas-grid">
+      <div class="persona-card">
+        <div class="persona-title">VP of Marketing</div>
+        <div class="persona-role">Brand &amp; Demand</div>
+        <p class="persona-problem">Accountable for pipeline generation in a world where the top of funnel is increasingly invisible. Needs to know whether AI is sending buyers to us or to competitors — and why.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-title">CMO</div>
+        <div class="persona-role">Executive Leadership</div>
+        <p class="persona-problem">Responsible for market positioning at the board level. Needs a defensible, quantified view of brand presence in AI-native discovery environments, and a roadmap to strengthen it.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-title">Head of Content Strategy</div>
+        <div class="persona-role">Content &amp; SEO</div>
+        <p class="persona-problem">Watching organic traffic flatten as AI search takes share. Needs to understand what content signals AI platforms reward and which existing assets can be repositioned to improve recall.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-title">Director of Demand Generation</div>
+        <div class="persona-role">Growth</div>
+        <p class="persona-problem">Running programs against a pipeline model that doesn't account for AI-influenced consideration. Needs a way to measure and improve brand presence at the top of the AI-native funnel.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-title">Product Marketing Leader</div>
+        <div class="persona-role">Positioning &amp; Messaging</div>
+        <p class="persona-problem">Owns category narrative and competitive positioning. Needs to know if the claims being made on behalf of the brand in AI systems match the positioning strategy — and where the gaps are.</p>
+      </div>
+      <div class="persona-card">
+        <div class="persona-title">CRO / Head of Sales</div>
+        <div class="persona-role">Revenue</div>
+        <p class="persona-problem">Seeing longer deal cycles and lower inbound quality. Wants to understand how much of the consideration phase is happening in AI environments before prospects ever enter the funnel.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section" style="background: var(--surface);">
+  <div class="section-inner">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">From onboarding to ongoing intelligence in three steps.</h2>
+    <p class="section-sub">No long implementation timelines. No new tooling to deploy. The platform runs on your business context and surfaces findings immediately.</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">01 — Profile</div>
+        <h3 class="step-title">Build your buyer persona library</h3>
+        <p class="step-desc">We work with your team to define the three to five buyer personas that represent your actual buying committee — the titles, goals, pain points, and search behaviors of the people who evaluate solutions like yours. These become the foundation for every audit.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02 — Simulate</div>
+        <h3 class="step-title">Run structured buyer simulations</h3>
+        <p class="step-desc">RootACE sends each persona's queries — the real questions B2B buyers ask AI platforms during vendor research — across ChatGPT, Perplexity, Google Gemini, Claude, Microsoft Copilot, Grok, and Meta AI. Every response is captured, analyzed, and scored.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03 — Act</div>
+        <h3 class="step-title">Receive a scored report with a concrete roadmap</h3>
+        <p class="step-desc">Each audit produces a presence score, a competitive benchmark, and a prioritized action plan. RootPartners clients additionally receive a quarterly strategy session to review trend movement and refine the execution roadmap with the consulting team.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELIVERABLES -->
+<div class="deliverables-section">
+  <div class="section-inner">
+    <div class="section-label">What you receive</div>
+    <h2 class="section-title">Measurement you can act on. Insights you can present.</h2>
+    <p class="section-sub">Every corporate engagement is designed to produce outputs that are useful inside the business, not just on a dashboard.</p>
+    <div class="deliverables-grid">
+      <div class="deliverable">
+        <div class="del-icon">📊</div>
+        <h3 class="del-title">AI Presence Score</h3>
+        <p class="del-desc">A composite score tracking how frequently and favorably your brand appears across all 7 platforms, segmented by persona and query type. Benchmarked against your top competitors. Tracked over time so you can see whether changes are working.</p>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">🎯</div>
+        <h3 class="del-title">Custom Buyer Persona Library</h3>
+        <p class="del-desc">Your buying committee, built into the platform. Upload existing persona decks or build from scratch — the system runs every audit through the specific lens of your actual buyers, not generic archetypes.</p>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">⚔️</div>
+        <h3 class="del-title">Competitive Intelligence Report</h3>
+        <p class="del-desc">Side-by-side analysis of how AI platforms represent your brand versus your three to five primary competitors. Identifies where they hold signal advantages, what content or positioning drives it, and where you have a realistic path to close the gap.</p>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">🗺️</div>
+        <h3 class="del-title">90-Day Action Roadmap</h3>
+        <p class="del-desc">A prioritized, sequenced set of actions mapped to the specific findings from your audit — content changes, positioning refinements, distribution strategy, partnership and citation opportunities. Built for execution by your existing team.</p>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">📈</div>
+        <h3 class="del-title">Trend Analysis Over Time</h3>
+        <p class="del-desc">Month-over-month and quarter-over-quarter tracking of AI presence across all platforms and personas. Separates signal from noise and surfaces the changes that actually moved your score — in either direction.</p>
+      </div>
+      <div class="deliverable">
+        <div class="del-icon">🤝</div>
+        <h3 class="del-title">Quarterly Strategy Sessions</h3>
+        <p class="del-desc">For RootPartners consulting clients, a quarterly working session with the principals to review audit findings, assess roadmap progress, adapt to changes in the AI landscape, and pressure-test positioning strategy for the next cycle.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-label">Ready to get started?</div>
+    <h2 class="cta-title">See exactly where you stand — before your next deal does.</h2>
+    <p class="cta-sub">A 30-minute demo walk-through shows you what RootACE finds in your category, how corporate engagements are structured, and what a typical first 90 days looks like.</p>
+    <a href="https://calendly.com/rootace" target="_blank" class="cta-btn">Request a demo</a>
+    <p class="cta-note">No commitment. We'll come with findings from your category already in hand.</p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <a class="footer-logo" href="/">
+      <span class="footer-logo-root">Root</span><span class="footer-logo-ace">ACE</span>
+    </a>
+    <div class="footer-links">
+      <a href="/#how-it-works">How it works</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/sample-audit.html">Sample audit</a>
+      <a href="/corporate.html">Corporate Clients</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+    </div>
+    <span class="footer-copy">© 2026 RootACE</span>
+  </div>
+</footer>
+
+</body>
+</html>
