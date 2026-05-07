@@ -316,7 +316,101 @@
       .cta-title { font-size: 34px; }
       footer { padding: 32px 24px; }
       .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .diff-section { padding: 64px 24px; }
+      .diff-cols { grid-template-columns: 1fr; gap: 24px; }
     }
+
+    /* DIFFERENTIATION SECTION */
+    .diff-section {
+      background: var(--dark);
+      padding: 88px 56px;
+    }
+    .diff-section-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .diff-section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #60A5FA;
+      margin-bottom: 16px;
+    }
+    .diff-section-title {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #F8FAFC;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    .diff-section-intro {
+      font-size: 17px;
+      color: rgba(248,250,252,0.6);
+      line-height: 1.75;
+      max-width: 620px;
+      margin-bottom: 56px;
+    }
+    .diff-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+    .diff-col {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 32px;
+    }
+    .diff-col.them { border-color: rgba(255,255,255,0.06); }
+    .diff-col.us { border-color: rgba(37,99,235,0.35); background: rgba(37,99,235,0.06); }
+    .diff-col-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 20px;
+    }
+    .diff-col.them .diff-col-label { color: rgba(248,250,252,0.35); }
+    .diff-col.us .diff-col-label { color: #60A5FA; }
+    .diff-col-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      line-height: 1.3;
+    }
+    .diff-col.them .diff-col-title { color: rgba(248,250,252,0.6); }
+    .diff-col.us .diff-col-title { color: #F8FAFC; }
+    .diff-col-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .diff-col-list li {
+      font-size: 14px;
+      line-height: 1.5;
+      padding-left: 20px;
+      position: relative;
+    }
+    .diff-col.them .diff-col-list li { color: rgba(248,250,252,0.45); }
+    .diff-col.them .diff-col-list li::before { content: '—'; position: absolute; left: 0; color: rgba(248,250,252,0.2); }
+    .diff-col.us .diff-col-list li { color: rgba(248,250,252,0.8); }
+    .diff-col.us .diff-col-list li::before { content: '✓'; position: absolute; left: 0; color: #34D399; font-size: 12px; top: 1px; }
+    .diff-callout {
+      background: rgba(37,99,235,0.08);
+      border: 1px solid rgba(37,99,235,0.2);
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-size: 15px;
+      color: rgba(248,250,252,0.7);
+      line-height: 1.7;
+    }
+    .diff-callout strong { color: #F8FAFC; }
   </style>
 </head>
 <body>
@@ -334,7 +428,7 @@
   </div>
   <div class="nav-right">
     <a href="/signin.html" class="nav-signin">Sign in</a>
-    <a href="https://calendly.com/rootace" target="_blank" class="nav-cta">Request a demo</a>
+    <a href="https://calendly.com/eric-rootpartners/30min" target="_blank" class="nav-cta">Request a demo</a>
   </div>
 </nav>
 
@@ -349,7 +443,7 @@
       <h1 class="hero-title">Your buyers use<br>AI to build<br>their <span class="accent">shortlist.<br>Before they call anyone.</span></h1>
       <p class="hero-sub">In B2B, the buying process now starts long before a vendor conversation. AI platforms are shaping vendor awareness, building evaluation frameworks, and influencing procurement decisions — and most companies have no idea how they're being represented.</p>
       <div class="hero-actions">
-        <a href="https://calendly.com/rootace" target="_blank" class="btn-hero">Request a demo</a>
+        <a href="https://calendly.com/eric-rootpartners/30min" target="_blank" class="btn-hero">Request a demo</a>
         <a href="/sample-audit.html" class="btn-hero-ghost">
           See a sample report
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -456,6 +550,42 @@
           <div class="pstat-desc"><strong>companies in your category</strong> have this fully mapped. The opportunity window is open — but it won't stay that way.</div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- DIFFERENTIATION -->
+<div class="diff-section">
+  <div class="diff-section-inner">
+    <div class="diff-section-label">How we're different</div>
+    <h2 class="diff-section-title">Not brand monitoring.<br>Buyer simulation.</h2>
+    <p class="diff-section-intro">A growing category of tools tracks whether AI platforms mention your brand. They tell you your share of voice went up, or that ChatGPT referenced you in 14% of category queries. That's a useful data point. It's not the same as understanding what happens when your actual buyer opens Perplexity and starts researching their next procurement decision.</p>
+    <div class="diff-cols">
+      <div class="diff-col them">
+        <div class="diff-col-label">Brand monitoring tools</div>
+        <div class="diff-col-title">Watches whether you get mentioned</div>
+        <ul class="diff-col-list">
+          <li>Tracks mention frequency across AI platforms</li>
+          <li>Scores your share of voice in the category</li>
+          <li>Covers 3–6 platforms — misses Claude, Grok, and Meta AI</li>
+          <li>Shows you what happened</li>
+          <li>No simulation, no action plan, no root cause</li>
+        </ul>
+      </div>
+      <div class="diff-col us">
+        <div class="diff-col-label">RootACE</div>
+        <div class="diff-col-title">Simulates the actual buyer research journey</div>
+        <ul class="diff-col-list">
+          <li>Runs your real buyer personas through vendor research queries</li>
+          <li>Scores your competitive position from the buyer's perspective</li>
+          <li>Covers all 7 platforms your buyers actually use</li>
+          <li>Shows you why it happened and who they chose instead</li>
+          <li>Root cause diagnosis with a concrete 90-day roadmap</li>
+        </ul>
+      </div>
+    </div>
+    <div class="diff-callout">
+      The distinction isn't methodological — it's the difference between watching the scoreboard and watching the game. A monitoring tool tells you whether you showed up. <strong>RootACE tells you whether you won the shortlist.</strong>
     </div>
   </div>
 </div>
@@ -650,7 +780,7 @@
           <li>Custom reporting formatted for leadership and board presentations</li>
           <li>Priority access and dedicated point of contact</li>
         </ul>
-        <a href="https://calendly.com/rootace" target="_blank" class="pricing-cta blue">Request a demo →</a>
+        <a href="https://calendly.com/eric-rootpartners/30min" target="_blank" class="pricing-cta blue">Request a demo →</a>
       </div>
 
       <!-- ACTIVE OPTIMIZATION -->
@@ -681,7 +811,7 @@
     <div class="cta-label">Ready to get started?</div>
     <h2 class="cta-title">See exactly where you stand — before your next deal does.</h2>
     <p class="cta-sub">A 30-minute demo walk-through shows you what RootACE finds in your category, how corporate engagements are structured, and what a typical first 90 days looks like.</p>
-    <a href="https://calendly.com/rootace" target="_blank" class="cta-btn">Request a demo</a>
+    <a href="https://calendly.com/eric-rootpartners/30min" target="_blank" class="cta-btn">Request a demo</a>
     <p class="cta-note">No commitment. We'll come with findings from your category already in hand.</p>
   </div>
 </div>
