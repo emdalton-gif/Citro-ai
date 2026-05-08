@@ -1184,8 +1184,30 @@ body{font-family:Inter,-apple-system,system-ui,sans-serif;background:#F8FAFC;col
   const cc=document.getElementById('sa-comp');
   if(cc&&topComps.length){new Chart(cc,{type:'bar',data:{labels:topComps.map(([n])=>n),datasets:[{data:topComps.map(([,v])=>v),backgroundColor:'#3B82F6',borderRadius:3,label:'Mentions'}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}}}},animation:false}});}
 })();
-<\/script><!-- LinkedIn Insight Tag -->
+<\/script>
+</body></html>`;
+}
 
+function copyReport(id) {
+  const c = getClient(id);
+  if (!c.report) return;
+  const r = c.report;
+  const text = [
+    `AI VISIBILITY AUDIT — ${c.name.toUpperCase()}`,
+    r.key_finding ? `\nKEY FINDING\n${r.key_finding}` : '',
+    r.executive_summary ? `\nEXECUTIVE SUMMARY\n${r.executive_summary}` : '',
+    r.competitive_analysis ? `\nCOMPETITIVE ANALYSIS\n${r.competitive_analysis}` : '',
+    r.competitor_insights?.length ? `\nCOMPETITOR INSIGHTS\n${r.competitor_insights.map(ci=>`${ci.competitor}: ${ci.insight}`).join('\n')}` : '',
+    r.recommendations?.length ? `\nRECOMMENDATIONS\n${r.recommendations.map((rec,i)=>`${i+1}. ${rec.action} [${rec.impact} impact, ${rec.effort} effort]`).join('\n')}` : '',
+    r.roadmap_phases?.length ? `\n90-DAY ROADMAP\n${r.roadmap_phases.map(p=>`${p.days} — ${p.theme}\n${(p.actions||[]).map(a=>`  → ${a}`).join('\n')}`).join('\n\n')}` : '',
+  ].filter(Boolean).join('\n');
+  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard.')).catch(() => alert('Could not copy — try selecting text manually.'));
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+renderSidebar();
+if (DB.activeId) renderClient(DB.activeId);
+</script>
 <!-- LinkedIn Insight Tag (consent-gated) -->
 <script>
 window._ra_li = function() {
@@ -1420,29 +1442,6 @@ window._ra_li = function() {
     });
   });
 })();
-</script>
-</body></html>`;
-}
-
-function copyReport(id) {
-  const c = getClient(id);
-  if (!c.report) return;
-  const r = c.report;
-  const text = [
-    `AI VISIBILITY AUDIT — ${c.name.toUpperCase()}`,
-    r.key_finding ? `\nKEY FINDING\n${r.key_finding}` : '',
-    r.executive_summary ? `\nEXECUTIVE SUMMARY\n${r.executive_summary}` : '',
-    r.competitive_analysis ? `\nCOMPETITIVE ANALYSIS\n${r.competitive_analysis}` : '',
-    r.competitor_insights?.length ? `\nCOMPETITOR INSIGHTS\n${r.competitor_insights.map(ci=>`${ci.competitor}: ${ci.insight}`).join('\n')}` : '',
-    r.recommendations?.length ? `\nRECOMMENDATIONS\n${r.recommendations.map((rec,i)=>`${i+1}. ${rec.action} [${rec.impact} impact, ${rec.effort} effort]`).join('\n')}` : '',
-    r.roadmap_phases?.length ? `\n90-DAY ROADMAP\n${r.roadmap_phases.map(p=>`${p.days} — ${p.theme}\n${(p.actions||[]).map(a=>`  → ${a}`).join('\n')}`).join('\n\n')}` : '',
-  ].filter(Boolean).join('\n');
-  navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard.')).catch(() => alert('Could not copy — try selecting text manually.'));
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────────
-renderSidebar();
-if (DB.activeId) renderClient(DB.activeId);
 </script>
 </body>
 </html>
