@@ -893,7 +893,10 @@ function gtag(){dataLayer.push(arguments);}
       }
 
     } catch(e) {
-      document.getElementById('error-msg').textContent = `An error occurred while running your audit: ${e.message}. Please contact support@rootpartners.co.`;
+      const isTimeout = e.message && (e.message.toLowerCase().includes('load failed') || e.message.toLowerCase().includes('failed to fetch') || e.message.toLowerCase().includes('networkerror') || e.message.toLowerCase().includes('timeout'));
+      document.getElementById('error-msg').textContent = isTimeout
+        ? 'The audit is taking longer than expected on this connection. Please try again — most audits complete within 60 seconds. If this keeps happening, contact support@rootpartners.co.'
+        : `An error occurred while running your audit: ${e.message}. Please contact support@rootpartners.co.`;
       hide('screen-run');
       flex('screen-error');
     }
