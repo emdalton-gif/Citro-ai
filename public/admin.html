@@ -801,10 +801,13 @@ async function genReport(id, results) {
   const visCtx = score===0 ? `The brand has 0% AI visibility.` : `Weighted AI visibility score: ${score}% across ${organic.length} advisory queries.`;
   const gaps = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
   const gapCtx = gaps.length ? gaps.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
-  const raw = await callClaude([{ role:'user', content:`Write a professional AI visibility audit report for ${c.name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON:\n{\n  "executive_summary": "3-4 sentences",\n  "key_finding": "single most important finding",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1-2 sentences"},\n  "technical_recommendations": "2-3 sentences",\n  "content_gaps": "2-3 sentences",\n  "competitive_analysis": "2-3 sentences",\n  "competitor_insights": [{"competitor": "name", "insight": "2-3 sentences"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["...","...","..."]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["...","...","..."]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["...","...","..."]}]\n}` }],
-    'You are a senior GTM strategist at RootACE specializing in AI-native go-to-market. Write with authority. Be specific and data-driven. Be concise — quality over length. Reference real implementation details.', 2500);
+  const raw = await callClaude([{ role:'user', content:`Write a professional AI visibility audit report for ${c.name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON. Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences max",\n  "key_finding": "one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence"},\n  "technical_recommendations": "2 sentences covering schema, llms.txt, knowledge graph gaps",\n  "content_gaps": "2 sentences on missing content types",\n  "competitive_analysis": "2 sentences on competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences on why they win"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["action 1","action 2","action 3"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["action 1","action 2","action 3"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["action 1","action 2","action 3"]}]\n}` }],
+    'You are a senior GTM strategist at RootACE. Be concise and specific. Quality over length. Return valid complete JSON only.', 2000);
   const cleaned = raw.replace(/```json|```/g,'').trim();
-  return JSON.parse(cleaned.slice(cleaned.indexOf('{'), cleaned.lastIndexOf('}')+1));
+  const start = cleaned.indexOf('{');
+  const end = cleaned.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('Invalid JSON response from API');
+  return JSON.parse(cleaned.slice(start, end + 1));
 }
 
 async function regenReport(id) {
@@ -816,7 +819,7 @@ async function regenReport(id) {
     saveDB();
     renderReport(id);
   } catch(e) {
-    el.innerHTML = `<p style="font-size:13px;color:#DC2626;">Generation failed: ${e.message}. <button onclick="regenReport('${id}')" style="margin-left:8px;padding:4px 12px;background:var(--blue);color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer;">Try again</button></p>`;
+    el.innerHTML = `<p style="font-size:13px;color:#DC2626;">Generation failed: ${e.message}. <button onclick="regenReport('${id}')" style="margin-left:8px;padding:4px 12px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer;">Try again</button></p>`;
   }
 }
 
@@ -871,7 +874,7 @@ function renderReport(id) {
       el.innerHTML = '<p style="font-size:13px;color:var(--muted)">Run the audit first.</p>'; return;
     }
     el.innerHTML = `<p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Report generation did not complete — results are saved and ready.</p>
-      <button onclick="regenReport('${id}')" style="padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Generate Report</button>`;
+      <button onclick="regenReport('${id}')" style="padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Generate Report</button>`;
     return;
   }
   const r = c.report;
