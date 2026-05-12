@@ -399,24 +399,24 @@ function gtag(){dataLayer.push(arguments);}
         <polyline points="20 6 9 17 4 12"/>
       </svg>
     </div>
-    <h1 class="confirm-title">Your report is on its way.</h1>
+    <h1 class="confirm-title">Payment confirmed.</h1>
     <p class="confirm-sub">
-      Payment confirmed. We've started building your buyer personas and generating your query set.<br>
-      Your AI Visibility Audit will arrive at <strong id="confirm-email">your inbox</strong> within 5–7 business days — and you can always access it from your dashboard.
+      Your audit is ready to run. We'll start building your buyer personas and running simulations across all 7 AI platforms now.<br>
+      A confirmation has been sent to <strong id="confirm-email">your email</strong>.
     </p>
-    <a href="/dashboard.html" class="dashboard-btn">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    <a id="start-audit-btn" href="/audit.html" class="dashboard-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
       </svg>
-      Go to your dashboard
+      Start Your Audit
     </a>
-    <div class="dashboard-note">Your report will appear here when it's ready.</div>
+    <div class="dashboard-note" id="redirect-note">Redirecting automatically in <span id="redirect-count">5</span> seconds…</div>
   </div>
 
   <!-- TIMELINE -->
   <div class="timeline">
     <div class="timeline-card">
-      <div class="timeline-title">What happens next</div>
+      <div class="timeline-title">What happens now</div>
 
       <div class="tl-item">
         <div class="tl-left">
@@ -426,8 +426,8 @@ function gtag(){dataLayer.push(arguments);}
           <div class="tl-line"></div>
         </div>
         <div class="tl-content">
-          <div class="tl-label">Order received</div>
-          <div class="tl-desc">Your business details are confirmed and your report is queued.</div>
+          <div class="tl-label">Payment confirmed</div>
+          <div class="tl-desc">Your business details are locked in and your audit is ready to run.</div>
           <span class="tl-tag done">Complete</span>
         </div>
       </div>
@@ -442,25 +442,9 @@ function gtag(){dataLayer.push(arguments);}
           <div class="tl-line"></div>
         </div>
         <div class="tl-content">
-          <div class="tl-label">Buyer personas constructed</div>
-          <div class="tl-desc">We build 3–4 realistic buyer personas for your industry, each with distinct search intent and query language.</div>
-          <span class="tl-tag active">In progress</span>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-left">
-          <div class="tl-dot">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-            </svg>
-          </div>
-          <div class="tl-line"></div>
-        </div>
-        <div class="tl-content">
-          <div class="tl-label">Blind simulations run</div>
-          <div class="tl-desc">Your buyer queries run across ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok — with no prior knowledge of the results.</div>
-          <span class="tl-tag upcoming">Upcoming</span>
+          <div class="tl-label">Audit running — takes 2–4 minutes</div>
+          <div class="tl-desc">Buyer personas are built, queries generated, and simulations run across ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok.</div>
+          <span class="tl-tag active">Starting now</span>
         </div>
       </div>
 
@@ -471,27 +455,11 @@ function gtag(){dataLayer.push(arguments);}
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
             </svg>
           </div>
-          <div class="tl-line"></div>
         </div>
         <div class="tl-content">
-          <div class="tl-label">Report compiled</div>
-          <div class="tl-desc">Your visibility score, competitive matrix, and priority recommendations are compiled into your report.</div>
-          <span class="tl-tag upcoming">Upcoming</span>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-left">
-          <div class="tl-dot">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-            </svg>
-          </div>
-        </div>
-        <div class="tl-content">
-          <div class="tl-label">Delivered to your inbox and dashboard</div>
-          <div class="tl-desc">Your report arrives within 5–7 business days and is saved to your dashboard for ongoing access.</div>
-          <span class="tl-tag upcoming">5–7 business days</span>
+          <div class="tl-label">Report ready</div>
+          <div class="tl-desc">Your visibility score, competitive matrix, and 90-day roadmap are ready to view — and saved to your dashboard.</div>
+          <span class="tl-tag upcoming">In ~4 minutes</span>
         </div>
       </div>
 
@@ -549,14 +517,14 @@ function gtag(){dataLayer.push(arguments);}
 
   <!-- NEXT STEPS -->
   <div class="whats-next" id="whats-next">
-    <div class="next-title">In the meantime</div>
+    <div class="next-title">While your audit runs</div>
     <div class="next-items">
       <a href="/dashboard.html" class="next-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
         </svg>
         <strong>Your dashboard</strong>
-        <span>Bookmark this — your report will appear here the moment it's ready.</span>
+        <span>Your results will be saved here automatically once the audit completes.</span>
       </a>
       <a href="/subscribe.html" class="next-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -577,10 +545,38 @@ function gtag(){dataLayer.push(arguments);}
 
   <script>
     (function() {
+      // Read session_id from URL
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+
+      // Wire up the audit button with session_id
+      const btn = document.getElementById('start-audit-btn');
+      if (sessionId && btn) {
+        btn.href = '/audit.html?session_id=' + encodeURIComponent(sessionId);
+      }
+
+      // Auto-redirect countdown
+      if (sessionId) {
+        let count = 5;
+        const countEl = document.getElementById('redirect-count');
+        const timer = setInterval(function() {
+          count--;
+          if (countEl) countEl.textContent = count;
+          if (count <= 0) {
+            clearInterval(timer);
+            window.location.href = '/audit.html?session_id=' + encodeURIComponent(sessionId);
+          }
+        }, 1000);
+      } else {
+        // No session_id — hide the redirect note
+        const note = document.getElementById('redirect-note');
+        if (note) note.style.display = 'none';
+      }
+
+      // Read email from sessionStorage if available
       try {
         const data = JSON.parse(sessionStorage.getItem('root_order') || '{}');
         if (data.email) document.getElementById('confirm-email').textContent = data.email;
-        // Hide upsell if they already purchased Active Optimization
         if (data.plan === 'active') {
           const block = document.getElementById('upsell-block');
           if (block) block.style.display = 'none';
