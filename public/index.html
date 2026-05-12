@@ -187,6 +187,28 @@ function gtag(){dataLayer.push(arguments);}
     .fc-footer-arrow { font-size: 14px; color: #60A5FA; }
 
     /* ── TRUST BAR ── */
+
+    .aaiml-recognition {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 18px 0 22px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 0;
+    }
+    .aaiml-recognition-label {
+      font-size: 11px;
+      color: var(--quiet);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: right;
+      line-height: 1.5;
+    }
+    .aaiml-badge-svg { width: 90px; height: 90px; flex-shrink: 0; }
+    .aaiml-recognition-text { font-size: 12px; color: var(--silver); line-height: 1.5; max-width: 220px; }
+    .aaiml-recognition-text strong { color: var(--fg); display: block; margin-bottom: 2px; }
     .trust-bar {
       background: var(--surface); border-bottom: 1px solid var(--border);
       padding: 18px 56px;
@@ -739,6 +761,30 @@ function gtag(){dataLayer.push(arguments);}
   </div>
 </div>
 
+<!-- AAIML RECOGNITION -->
+<div class="aaiml-recognition">
+  <p class="aaiml-recognition-label">Recognized<br>by</p>
+  <svg class="aaiml-badge-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Approved by the Association of AI Marketing Leaders">
+  <defs>
+    <path id="aaiml-top" d="M 31,60 A 80,80 0 0,0 169,60"/>
+    <path id="aaiml-bot" d="M 31,60 A 80,80 0 1,1 169,60"/>
+  </defs>
+  <circle cx="100" cy="100" r="98" fill="#0B0F1A"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#C9A84C" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="61" fill="none" stroke="white" stroke-width="1.5"/>
+  <text font-family="Georgia,'Times New Roman',serif" font-size="13" fill="white" letter-spacing="2">
+    <textPath href="#aaiml-top" startOffset="50%" text-anchor="middle">Approved By</textPath>
+  </text>
+  <text font-family="Georgia,'Times New Roman',serif" font-size="10" fill="white" letter-spacing="1">
+    <textPath href="#aaiml-bot" startOffset="50%" text-anchor="middle">Association of AI Marketing Leaders</textPath>
+  </text>
+  <text x="100" y="108" font-family="Georgia,'Times New Roman',serif" font-size="26" font-weight="bold" fill="white" text-anchor="middle">AAIML</text>
+</svg>
+  <div class="aaiml-recognition-text">
+    <strong>Association of AI Marketing Leaders</strong>
+    Reviewed and approved for methodology, accuracy, and market relevance.
+  </div>
+</div>
 
 <!-- WHY NOW -->
 <div class="why-now">
