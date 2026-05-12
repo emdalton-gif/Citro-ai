@@ -84,6 +84,18 @@ function gtag(){dataLayer.push(arguments);}
     }
     .logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
     .logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+
+    .aaiml-order-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+    .aaiml-order-badge svg.aaiml-badge-svg { width: 64px; height: 64px; flex-shrink: 0; }
+    .aaiml-order-badge-text { font-size: 11px; color: var(--quiet); line-height: 1.5; }
+    .aaiml-order-badge-text strong { color: var(--silver); display: block; }
     .secure-badge {
       display: flex;
       align-items: center;
@@ -815,6 +827,30 @@ function gtag(){dataLayer.push(arguments);}
             <span class="stb-stripe">stripe</span>
             <span class="stb-sep">·</span>
             <span class="stb-ssl">256-bit SSL encryption</span>
+          </div>
+
+
+          <div class="aaiml-order-badge">
+            <svg class="aaiml-badge-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Approved by the Association of AI Marketing Leaders">
+  <defs>
+    <path id="aaiml-top" d="M 31,60 A 80,80 0 0,0 169,60"/>
+    <path id="aaiml-bot" d="M 31,60 A 80,80 0 1,1 169,60"/>
+  </defs>
+  <circle cx="100" cy="100" r="98" fill="#0B0F1A"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#C9A84C" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="61" fill="none" stroke="white" stroke-width="1.5"/>
+  <text font-family="Georgia,'Times New Roman',serif" font-size="13" fill="white" letter-spacing="2">
+    <textPath href="#aaiml-top" startOffset="50%" text-anchor="middle">Approved By</textPath>
+  </text>
+  <text font-family="Georgia,'Times New Roman',serif" font-size="10" fill="white" letter-spacing="1">
+    <textPath href="#aaiml-bot" startOffset="50%" text-anchor="middle">Association of AI Marketing Leaders</textPath>
+  </text>
+  <text x="100" y="108" font-family="Georgia,'Times New Roman',serif" font-size="26" font-weight="bold" fill="white" text-anchor="middle">AAIML</text>
+</svg>
+            <div class="aaiml-order-badge-text">
+              <strong>AAIML Approved</strong>
+              Association of AI Marketing Leaders — reviewed for methodology and accuracy.
+            </div>
           </div>
 
           <button class="btn-back" onclick="goStep(2)">
