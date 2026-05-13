@@ -198,6 +198,45 @@ function gtag(){dataLayer.push(arguments);}
     .tag-note { font-size: 11px; color: var(--muted); font-style: italic; }
     .file-status { font-size: 12px; color: var(--muted); margin-top: 8px; }
     .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* ── Subscriber overview ── */
+    .sb-section-hdr { padding: 12px 14px 6px; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .sb-section-hdr:hover { color: var(--text); }
+    .sb-section-hdr .ct { font-size: 9px; font-weight: 700; background: var(--accent); color: #fff; padding: 1px 5px; border-radius: 8px; }
+    .sb-subs-item { padding: 7px 10px; margin: 0 6px; border-radius: 7px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .1s; }
+    .sb-subs-item:hover { background: var(--bg); }
+    .sb-subs-item.active { background: #EFF6FF; }
+    .plan-badge { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; flex-shrink: 0; }
+    .plan-badge.enterprise { background: #FEF3C7; color: #92400E; }
+    .plan-badge.professional { background: #DBEAFE; color: #1E40AF; }
+    .sub-overview { padding: 24px; flex: 1; }
+    .sub-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .sub-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+    .sub-stat-val { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+    .sub-stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .sub-cards { display: flex; flex-direction: column; gap: 10px; }
+    .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .sub-card-head { padding: 14px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .sub-card-head:hover { background: #FAFAFA; }
+    .sub-email { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sub-meta { font-size: 11px; color: var(--muted); }
+    .sub-expand-icon { font-size: 12px; color: var(--muted); transition: transform .2s; }
+    .sub-expand-icon.open { transform: rotate(90deg); }
+    .sub-card-body { display: none; border-top: 1px solid var(--border); padding: 14px 16px; background: var(--bg); }
+    .sub-card-body.open { display: block; }
+    .sub-detail-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
+    .sub-detail { font-size: 11px; }
+    .sub-detail-lbl { font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-size: 9px; margin-bottom: 2px; }
+    .sub-detail-val { color: var(--text); }
+    .prop-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 8px; }
+    .prop-table th { text-align: left; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 5px 8px; border-bottom: 1px solid var(--border); }
+    .prop-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+    .prop-table tr:last-child td { border-bottom: none; }
+    .score-pill { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 8px; }
+    .score-pill.high { background: #DCFCE7; color: #15803D; }
+    .score-pill.mid { background: #FEF9C3; color: #854D0E; }
+    .score-pill.low { background: #FEE2E2; color: #991B1B; }
+    .score-pill.none { background: #F1F5F9; color: #64748B; }
   </style>
 </head>
 <body>
@@ -214,6 +253,14 @@ function gtag(){dataLayer.push(arguments);}
     <div class="sb-header">Clients</div>
     <div class="sb-list" id="sb-list"></div>
     <div class="sb-add"><button onclick="newClient()">+ New client</button></div>
+    <div style="border-top:1px solid var(--border);margin-top:6px"></div>
+    <div class="sb-section-hdr" onclick="toggleSubsList()">
+      Subscribers <span class="ct" id="subs-count-badge">…</span>
+    </div>
+    <div id="sb-subs-list" style="display:none"></div>
+    <div style="padding:0 12px 10px" id="sb-subs-view-btn" style="display:none">
+      <button onclick="showSubscriberOverview()" style="width:100%;padding:6px;background:var(--bg);border:1.5px solid var(--border-2);border-radius:7px;font-size:11px;color:var(--accent);font-weight:600;cursor:pointer;font-family:var(--sans)">View all subscribers →</button>
+    </div>
   </aside>
 
   <!-- Main -->
@@ -281,6 +328,220 @@ async function callLiveQuery(query, platform) {
   if (!res.ok) return null;
   const d = await res.json();
   return d.response || null;
+}
+
+// ── Subscribers ───────────────────────────────────────────────────────────────
+let _subsData = null;
+let _subsListOpen = false;
+
+async function loadSubscribers() {
+  try {
+    const res = await fetch('/api/admin-subscribers', {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    });
+    if (res.status === 401) { localStorage.removeItem('admin_token'); window.location.href = '/admin-login.html'; return; }
+    if (!res.ok) throw new Error('Failed');
+    _subsData = await res.json();
+    document.getElementById('subs-count-badge').textContent = _subsData.total || '0';
+    if (_subsListOpen) renderSubsSidebar();
+  } catch(e) {
+    document.getElementById('subs-count-badge').textContent = '!';
+  }
+}
+
+function toggleSubsList() {
+  _subsListOpen = !_subsListOpen;
+  const list = document.getElementById('sb-subs-list');
+  const btn = document.getElementById('sb-subs-view-btn');
+  if (_subsListOpen) {
+    list.style.display = 'block';
+    if (btn) btn.style.display = 'block';
+    renderSubsSidebar();
+    if (!_subsData) loadSubscribers();
+  } else {
+    list.style.display = 'none';
+    if (btn) btn.style.display = 'none';
+  }
+}
+
+function renderSubsSidebar() {
+  const el = document.getElementById('sb-subs-list');
+  if (!_subsData || !_subsData.subscribers.length) {
+    el.innerHTML = '<div style="padding:4px 14px 8px;font-size:11px;color:var(--muted)">' + (_subsData ? 'No subscribers yet' : 'Loading…') + '</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="sb-subs-item" onclick="showSubscriberOverview()" style="margin-bottom:2px">
+      <div style="width:28px;height:28px;border-radius:6px;background:#7C3AED;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div style="overflow:hidden">
+        <div class="sb-name">All subscribers</div>
+        <div class="sb-status">${_subsData.enterprise} enterprise · ${_subsData.professional} professional</div>
+      </div>
+    </div>
+    ${_subsData.subscribers.slice(0, 8).map(s => `
+    <div class="sb-subs-item" onclick="showSubscriberDetail('${esc(s.email)}')">
+      <div style="width:28px;height:28px;border-radius:6px;background:${s.plan==='enterprise'?'#D97706':'#2563EB'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">${ini(s.email)}</div>
+      <div style="overflow:hidden;flex:1">
+        <div class="sb-name">${esc(s.email.split('@')[0])}</div>
+        <div class="sb-status">${s.plan} · ${s.runCount} run${s.runCount!==1?'s':''}</div>
+      </div>
+    </div>`).join('')}
+    ${_subsData.subscribers.length > 8 ? `<div style="padding:4px 14px 8px;font-size:11px;color:var(--muted)">+${_subsData.subscribers.length - 8} more</div>` : ''}
+  `;
+}
+
+function showSubscriberOverview() {
+  DB.activeId = null;
+  saveDB();
+  renderSidebar();
+  if (!_subsData) {
+    document.getElementById('main').innerHTML = `<div class="sub-overview"><p style="font-size:13px;color:var(--muted)">Loading subscribers…</p></div>`;
+    loadSubscribers().then(() => renderSubscriberOverview());
+    return;
+  }
+  renderSubscriberOverview();
+}
+
+function showSubscriberDetail(email) {
+  if (!_subsData) return;
+  const sub = _subsData.subscribers.find(s => s.email === email);
+  if (!sub) return;
+  DB.activeId = null;
+  saveDB();
+  renderSidebar();
+  renderSubscriberOverview(email);
+}
+
+function renderSubscriberOverview(focusEmail) {
+  if (!_subsData) return;
+  const subs = _subsData.subscribers;
+  const main = document.getElementById('main');
+  const totalRuns = subs.reduce((s, x) => s + (x.runCount || 0), 0);
+
+  main.innerHTML = `
+    <div class="sub-overview">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">Subscribers</div>
+        <button class="btn sec" onclick="refreshSubscribers()">↻ Refresh</button>
+      </div>
+      <div class="sub-stats-row">
+        <div class="sub-stat">
+          <div class="sub-stat-val">${_subsData.total}</div>
+          <div class="sub-stat-lbl">Total subscribers</div>
+        </div>
+        <div class="sub-stat">
+          <div class="sub-stat-val" style="color:#D97706">${_subsData.enterprise}</div>
+          <div class="sub-stat-lbl">Enterprise</div>
+        </div>
+        <div class="sub-stat">
+          <div class="sub-stat-val" style="color:var(--accent)">${_subsData.professional}</div>
+          <div class="sub-stat-lbl">Professional</div>
+        </div>
+      </div>
+      <div class="sub-cards" id="sub-cards">
+        ${subs.length === 0 ? '<p style="font-size:13px;color:var(--muted)">No subscribers yet.</p>' :
+          subs.map(s => renderSubCard(s, s.email === focusEmail)).join('')}
+      </div>
+    </div>`;
+}
+
+function renderSubCard(s, startOpen) {
+  const lastRun = s.lastRunAt ? new Date(s.lastRunAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'Never';
+  const joined = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : 'Unknown';
+  const openClass = startOpen ? 'open' : '';
+  const bodyDisplay = startOpen ? 'block' : 'none';
+
+  const propsHtml = s.plan === 'enterprise' && s.properties && s.properties.length ? `
+    <div style="margin-top:12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Monitored Properties (${s.properties.length})</div>
+      <table class="prop-table">
+        <thead><tr><th>Property</th><th>Website</th><th>Runs</th><th>Last Score</th><th>Last Run</th></tr></thead>
+        <tbody>
+          ${s.properties.map(p => {
+            const sc = p.lastScore !== null ? (p.lastScore >= 65 ? 'high' : p.lastScore >= 40 ? 'mid' : 'low') : 'none';
+            const scoreStr = p.lastScore !== null ? p.lastScore + '%' : '—';
+            const runDate = p.lastRunAt ? new Date(p.lastRunAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—';
+            return `<tr>
+              <td style="font-weight:500">${esc(p.name)}</td>
+              <td style="color:var(--muted)">${esc(p.website||'—')}</td>
+              <td>${p.runCount}</td>
+              <td><span class="score-pill ${sc}">${scoreStr}</span></td>
+              <td>${runDate}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>` : (s.plan === 'enterprise' ? '<p style="font-size:11px;color:var(--muted);margin-top:8px">No properties added yet.</p>' : '');
+
+  const companyHtml = (s.company || s.website) ? `
+    <div class="sub-detail">
+      ${s.company ? `<div class="sub-detail-lbl">Company</div><div class="sub-detail-val">${esc(s.company)}</div>` : ''}
+      ${s.website ? `<div class="sub-detail-lbl" style="margin-top:4px">Website</div><div class="sub-detail-val">${esc(s.website)}</div>` : ''}
+    </div>` : '';
+
+  return `
+    <div class="sub-card" id="sub-card-${esc(s.email).replace(/[@.]/g,'_')}">
+      <div class="sub-card-head" onclick="toggleSubCard('${esc(s.email)}')">
+        <div style="width:32px;height:32px;border-radius:8px;background:${s.plan==='enterprise'?'#D97706':'var(--accent)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${ini(s.email)}</div>
+        <div style="flex:1;overflow:hidden">
+          <div class="sub-email">${esc(s.email)}</div>
+          <div class="sub-meta">${s.runCount} run${s.runCount!==1?'s':''} · Last run: ${lastRun}</div>
+        </div>
+        <span class="plan-badge ${s.plan}">${s.plan}</span>
+        <span class="sub-expand-icon ${openClass}" id="sub-exp-icon-${esc(s.email).replace(/[@.]/g,'_')}">▶</span>
+      </div>
+      <div class="sub-card-body ${openClass}" id="sub-card-body-${esc(s.email).replace(/[@.]/g,'_')}" style="display:${bodyDisplay}">
+        <div class="sub-detail-row">
+          <div class="sub-detail">
+            <div class="sub-detail-lbl">Email</div>
+            <div class="sub-detail-val">${esc(s.email)}</div>
+          </div>
+          <div class="sub-detail">
+            <div class="sub-detail-lbl">Plan</div>
+            <div class="sub-detail-val">${s.plan.charAt(0).toUpperCase()+s.plan.slice(1)}</div>
+          </div>
+          <div class="sub-detail">
+            <div class="sub-detail-lbl">Status</div>
+            <div class="sub-detail-val">${s.status || 'active'}</div>
+          </div>
+          <div class="sub-detail">
+            <div class="sub-detail-lbl">Joined</div>
+            <div class="sub-detail-val">${joined}</div>
+          </div>
+          <div class="sub-detail">
+            <div class="sub-detail-lbl">Total Runs</div>
+            <div class="sub-detail-val">${s.runCount}</div>
+          </div>
+          ${s.plan === 'enterprise' ? `
+          <div class="sub-detail">
+            <div class="sub-detail-lbl">Properties</div>
+            <div class="sub-detail-val">${s.propertyCount || 0} / 10</div>
+          </div>` : ''}
+          ${companyHtml}
+        </div>
+        ${propsHtml}
+      </div>
+    </div>`;
+}
+
+function toggleSubCard(email) {
+  const key = email.replace(/[@.]/g, '_');
+  const body = document.getElementById(`sub-card-body-${key}`);
+  const icon = document.getElementById(`sub-exp-icon-${key}`);
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  body.style.display = isOpen ? 'none' : 'block';
+  if (icon) icon.classList.toggle('open', !isOpen);
+}
+
+async function refreshSubscribers() {
+  _subsData = null;
+  document.getElementById('main').innerHTML = `<div class="sub-overview"><p style="font-size:13px;color:var(--muted)">Refreshing…</p></div>`;
+  await loadSubscribers();
+  renderSubscriberOverview();
 }
 
 // ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -1228,6 +1489,8 @@ function copyReport(id) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 renderSidebar();
 if (DB.activeId) renderClient(DB.activeId);
+// Pre-load subscriber count for sidebar badge
+loadSubscribers();
 </script>
 <!-- LinkedIn Insight Tag (consent-gated) -->
 <script>
