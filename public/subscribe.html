@@ -155,21 +155,21 @@ function gtag(){dataLayer.push(arguments);}
 <div class="page-wrap">
   <!-- LEFT -->
   <div class="plan-info">
-    <span class="plan-badge">Active Optimization</span>
-    <h1 class="plan-title">Continuous AI visibility — as often as you need it.</h1>
+    <span class="plan-badge" id="plan-badge">Professional</span>
+    <h1 class="plan-title" id="plan-title">Continuous AI visibility — as often as you need it.</h1>
     <div class="plan-price">
-      <span class="plan-price-num">$199</span>
+      <span class="plan-price-num" id="plan-price-num">$119</span>
       <span class="plan-price-period"> / month</span>
     </div>
-    <p class="plan-desc">
-      Your AI visibility changes as competitors move, platforms update, and your own content evolves. Active Optimization lets you run audits on demand so you can track what's changing, validate fixes, and stay ahead.
+    <p class="plan-desc" id="plan-desc">
+      Your AI visibility changes as competitors move, platforms update, and your own content evolves. Run audits on demand, track what's changing, validate fixes, and stay ahead.
     </p>
 
     <div class="included-label">What's included</div>
-    <ul class="included-list">
+    <ul class="included-list" id="plan-features">
       <li>
         <span class="check">✓</span>
-        <span><strong>On-demand audit runs</strong> — run whenever something changes, as often as you need</span>
+        <span><strong>On-demand audit runs</strong> — one company or product, unlimited runs</span>
       </li>
       <li>
         <span class="check">✓</span>
@@ -185,16 +185,12 @@ function gtag(){dataLayer.push(arguments);}
       </li>
       <li>
         <span class="check">✓</span>
-        <span><strong>Priority support</strong> — direct access to the RootPartners team</span>
-      </li>
-      <li>
-        <span class="check">✓</span>
         <span><strong>Saved company profile</strong> — your details are remembered, re-running takes seconds</span>
       </li>
     </ul>
 
-    <div class="guarantee">
-      <strong>Cancel anytime.</strong> No contracts, no commitments. If Active Optimization isn't delivering value, cancel from your billing portal with one click. We don't make it hard to leave.
+    <div class="guarantee" id="plan-guarantee">
+      <strong>Cancel anytime.</strong> No contracts, no commitments. Cancel from your billing portal with one click.
     </div>
   </div>
 
@@ -239,10 +235,29 @@ function gtag(){dataLayer.push(arguments);}
 </footer>
 
 <script>
-  // Pre-fill email if passed from dashboard upgrade link
+  // Determine plan from URL param
   const _params = new URLSearchParams(location.search);
   const _emailParam = _params.get('email');
   if (_emailParam) document.getElementById('email').value = _emailParam;
+
+  const _planParam = _params.get('plan');
+  const _isEnterprise = _planParam === 'enterprise';
+
+  if (_isEnterprise) {
+    document.getElementById('plan-badge').textContent = 'Enterprise';
+    document.getElementById('plan-title').textContent = 'AI visibility monitoring across all your brands and websites.';
+    document.getElementById('plan-price-num').textContent = '$299';
+    document.getElementById('plan-desc').textContent = 'Monitor up to 10 companies, brands, or websites. Get full AI visibility tracking across your entire portfolio — with a unified dashboard, cross-brand comparisons, and priority support.';
+    document.getElementById('plan-features').innerHTML = `
+      <li><span class="check">✓</span><span><strong>Up to 10 companies or websites</strong> — monitor your full portfolio</span></li>
+      <li><span class="check">✓</span><span><strong>7-platform analysis</strong> — ChatGPT, Perplexity, Claude, Gemini, and more</span></li>
+      <li><span class="check">✓</span><span><strong>Multi-brand dashboard</strong> — all your properties in one place</span></li>
+      <li><span class="check">✓</span><span><strong>Cross-brand competitive comparisons</strong> — see how each property stacks up</span></li>
+      <li><span class="check">✓</span><span><strong>Full run history</strong> — track score movement over time per brand</span></li>
+      <li><span class="check">✓</span><span><strong>Priority support</strong> — direct access to the RootPartners team</span></li>
+    `;
+    document.getElementById('plan-guarantee').innerHTML = '<strong>Cancel anytime.</strong> No contracts, no commitments. Cancel from your billing portal with one click.';
+  }
 
   const form = document.getElementById('subscribeForm');
   const submitBtn = document.getElementById('submitBtn');
@@ -266,7 +281,7 @@ function gtag(){dataLayer.push(arguments);}
     if (website && !/^https?:\/\//i.test(website)) website = 'https://' + website;
 
     const data = {
-      plan: 'active',
+      plan: _isEnterprise ? 'enterprise' : 'professional',
       email: document.getElementById('email').value.trim(),
       name: document.getElementById('name').value.trim(),
       website,
