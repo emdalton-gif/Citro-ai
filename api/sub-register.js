@@ -50,7 +50,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
-  const { email, password, stripeCustomerId, stripeSubscriptionId, profile } = req.body;
+  const { email, password, stripeCustomerId, stripeSubscriptionId, profile, plan } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
   if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
 
@@ -59,7 +59,7 @@ module.exports = async function handler(req, res) {
   try {
     const existing = await upstashGet(`subscriber:${normalized}`);
     if (existing) {
-      // Account exists — just update subscription IDs and return token (re-subscribe case)
+      // Account exists — update subscription IDs and save profile if provided
       const updated = {
         ...existing,
         stripeCustomerId: stripeCustomerId || existing.stripeCustomerId,
@@ -67,7 +67,11 @@ module.exports = async function handler(req, res) {
         subscriptionStatus: 'active',
         updatedAt: Date.now(),
       };
-      await upstashSet(`subscriber:${normalized}`, updated);
+      const saves = [upstashSet(`subscriber:${normalized}`, updated)];
+      if (profile) {
+        saves.push(upstashSet(`subscriber-profile:${normalized}`, { ...profile, updatedAt: Date.now() }));
+      }
+      await Promise.all(saves);
       const token = issueSubscriberToken(normalized);
       return res.json({ token, email: normalized });
     }
@@ -80,6 +84,7 @@ module.exports = async function handler(req, res) {
       email: normalized,
       passwordHash,
       salt,
+      plan: plan || 'professional',
       stripeCustomerId: stripeCustomerId || null,
       stripeSubscriptionId: stripeSubscriptionId || null,
       subscriptionStatus: 'active',
