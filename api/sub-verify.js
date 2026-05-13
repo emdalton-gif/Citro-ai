@@ -56,6 +56,7 @@ module.exports = async function handler(req, res) {
 
     res.json({
       email,
+      plan: meta.plan || 'professional',
       stripeCustomerId: session.customer || null,
       stripeSubscriptionId: session.subscription || null,
       profile: {
