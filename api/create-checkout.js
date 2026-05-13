@@ -66,10 +66,15 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  const isSubscription = plan === 'active';
-  const priceId = isSubscription
-    ? process.env.STRIPE_ACTIVE_PRICE_ID
-    : process.env.STRIPE_SNAPSHOT_PRICE_ID;
+  const isSubscription = plan === 'professional' || plan === 'active' || plan === 'enterprise';
+  let priceId;
+  if (plan === 'enterprise') {
+    priceId = process.env.STRIPE_ENTERPRISE_PRICE_ID;
+  } else if (plan === 'professional' || plan === 'active') {
+    priceId = process.env.STRIPE_PROFESSIONAL_PRICE_ID || process.env.STRIPE_ACTIVE_PRICE_ID;
+  } else {
+    priceId = process.env.STRIPE_SNAPSHOT_PRICE_ID;
+  }
 
   const origin = req.headers.origin || 'https://rootpartners.co';
 
@@ -81,7 +86,7 @@ module.exports = async function handler(req, res) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: isSubscription
         ? `${origin}/sub-confirm.html?session_id={CHECKOUT_SESSION_ID}`
-        : `${origin}/audit.html?session_id={CHECKOUT_SESSION_ID}`,
+        : `${origin}/confirm.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/order.html`,
       metadata: {
         plan: plan || 'snapshot',
