@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
   const email = verifySubscriberToken(token);
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { results, profile, personas } = req.body;
+  const { results, profile, personas, propertyId } = req.body;
   if (!results) return res.status(400).json({ error: 'Missing results' });
 
   try {
@@ -115,57 +115,81 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Subscription canceled' });
     }
 
+    const isEnterprise = account.plan === 'enterprise';
     const runId = crypto.randomBytes(12).toString('hex');
     const now = Date.now();
 
-    // Save full results (including personas for reproducibility)
+    // Save full results
     await upstashSet(`subscriber-run:${runId}`, {
       runId,
       email,
       results,
       profile,
       personas: personas || [],
+      propertyId: propertyId || null,
       createdAt: now,
     });
 
-    // Update company profile if provided
-    // After the first run, lock company_name and website to prevent agency abuse
-    const existingProfile = await upstashGet(`subscriber-profile:${email}`);
-    const isFirstRun = !existingProfile?.profileLocked;
-    if (profile) {
-      const profileToSave = { ...profile, updatedAt: now };
-      if (isFirstRun) {
-        // Lock the company identity after first run
-        profileToSave.profileLocked = true;
-        profileToSave.lockedCompanyName = profile.company_name || '';
-        profileToSave.lockedWebsite = profile.website || '';
-      } else {
-        // Preserve the lock and locked values on all subsequent saves
-        profileToSave.profileLocked = true;
-        profileToSave.lockedCompanyName = existingProfile.lockedCompanyName || existingProfile.company_name || '';
-        profileToSave.lockedWebsite = existingProfile.lockedWebsite || existingProfile.website || '';
-      }
-      // Persist personas so future runs reload the same buyer personas (apples-to-apples comparison)
-      if (personas && personas.length > 0) {
-        profileToSave.personas = personas;
-      } else if (existingProfile?.personas) {
-        // Don't clobber saved personas if none were sent (shouldn't happen, but be safe)
-        profileToSave.personas = existingProfile.personas;
-      }
-      await upstashSet(`subscriber-profile:${email}`, profileToSave);
-    }
-
-    // Prepend to run history list (keep last 50)
-    const runs = await upstashGet(`subscriber-runs:${email}`) || [];
     const summary = {
       runId,
       createdAt: now,
       companyName: profile?.company_name || '',
       overallScore: results?.overallScore ?? null,
     };
-    runs.unshift(summary);
-    if (runs.length > 50) runs.length = 50;
-    await upstashSet(`subscriber-runs:${email}`, runs);
+
+    if (isEnterprise && propertyId) {
+      // ── Enterprise: save per-property run history + update property stats ──
+      const perPropertyKey = `subscriber-runs:${email}:${propertyId}`;
+      const propRuns = await upstashGet(perPropertyKey) || [];
+      propRuns.unshift(summary);
+      if (propRuns.length > 50) propRuns.length = 50;
+
+      // Update property stats in-place
+      const properties = await upstashGet(`subscriber-properties:${email}`) || [];
+      const propIdx = properties.findIndex(p => p.id === propertyId);
+      if (propIdx !== -1) {
+        properties[propIdx].lastScore = results?.overallScore ?? null;
+        properties[propIdx].lastRunAt = now;
+        properties[propIdx].runCount = (properties[propIdx].runCount || 0) + 1;
+        // Persist personas on property for apples-to-apples reruns
+        if (personas && personas.length > 0) {
+          properties[propIdx].personas = personas;
+        }
+      }
+
+      await Promise.all([
+        upstashSet(perPropertyKey, propRuns),
+        upstashSet(`subscriber-properties:${email}`, properties),
+      ]);
+    } else {
+      // ── Professional: existing profile-lock logic ──
+      const existingProfile = await upstashGet(`subscriber-profile:${email}`);
+      const isFirstRun = !existingProfile?.profileLocked;
+      if (profile) {
+        const profileToSave = { ...profile, updatedAt: now };
+        if (isFirstRun) {
+          profileToSave.profileLocked = true;
+          profileToSave.lockedCompanyName = profile.company_name || '';
+          profileToSave.lockedWebsite = profile.website || '';
+        } else {
+          profileToSave.profileLocked = true;
+          profileToSave.lockedCompanyName = existingProfile.lockedCompanyName || existingProfile.company_name || '';
+          profileToSave.lockedWebsite = existingProfile.lockedWebsite || existingProfile.website || '';
+        }
+        if (personas && personas.length > 0) {
+          profileToSave.personas = personas;
+        } else if (existingProfile?.personas) {
+          profileToSave.personas = existingProfile.personas;
+        }
+        await upstashSet(`subscriber-profile:${email}`, profileToSave);
+      }
+
+      // Prepend to Professional run history list (keep last 50)
+      const runs = await upstashGet(`subscriber-runs:${email}`) || [];
+      runs.unshift(summary);
+      if (runs.length > 50) runs.length = 50;
+      await upstashSet(`subscriber-runs:${email}`, runs);
+    }
 
     // Send completion email (non-blocking)
     sendRunCompleteEmail(email, profile?.company_name || '', runId, results?.overallScore).catch(() => {});
