@@ -383,6 +383,7 @@ function gtag(){dataLayer.push(arguments);}
         body: JSON.stringify({
           email: sessionData.email,
           password: pw,
+          plan: sessionData.plan || 'professional',
           stripeCustomerId: sessionData.stripeCustomerId,
           stripeSubscriptionId: sessionData.stripeSubscriptionId,
           profile: { company_name: sessionData.profile?.company_name || '', website: sessionData.profile?.website || '' },
@@ -616,6 +617,24 @@ function gtag(){dataLayer.push(arguments);}
         body: JSON.stringify({ email: sessionData.email, password: '_noop_update_', profile: profileWithPersonas }),
       });
     } catch (err) { /* non-critical */ }
+
+    // Enterprise: create first property and redirect to its audit page
+    if (sessionData.plan === 'enterprise') {
+      try {
+        const propResp = await fetch('/api/sub-add-property', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
+          body: JSON.stringify({ ...baseProfile, personas }),
+        });
+        const propData = await propResp.json();
+        if (propData.property?.id) {
+          window.location.href = `/sub-audit.html?propertyId=${propData.property.id}`;
+          return;
+        }
+      } catch (err) { /* fall through to dashboard */ }
+      window.location.href = '/sub-dashboard.html';
+      return;
+    }
 
     window.location.href = '/sub-audit.html';
   }
