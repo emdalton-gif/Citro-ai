@@ -794,7 +794,7 @@ function gtag(){dataLayer.push(arguments);}
 
       // Save to dashboard (after render so results show immediately)
       const saveStatus = document.getElementById('save-status');
-      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas };
+      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas, propertyId: activePropertyId || undefined };
       try {
         const saveResp = await fetch(SAVE_API, {
           method: 'POST',
@@ -934,9 +934,12 @@ function gtag(){dataLayer.push(arguments);}
   }
 
   // ── Start ─────────────────────────────────────────────────────────────────
+  let activePropertyId = null; // set for Enterprise runs
+
   async function init() {
     const params = new URLSearchParams(window.location.search);
     const runId = params.get('runId');
+    const propertyId = params.get('propertyId');
 
     if (runId) {
       // View mode: load existing run
@@ -955,6 +958,7 @@ function gtag(){dataLayer.push(arguments);}
       const data = await resp.json();
 
       subscriberEmail = data.email || '';
+      const isEnterprise = data.plan === 'enterprise';
 
       if (data.subscriptionStatus === 'canceled') {
         document.getElementById('error-title').textContent = 'Subscription required.';
@@ -962,6 +966,55 @@ function gtag(){dataLayer.push(arguments);}
         flex('screen-error'); return;
       }
 
+      // ── Enterprise mode ───────────────────────────────────────────────────
+      if (isEnterprise) {
+        if (!propertyId) {
+          // No property selected — redirect to dashboard to pick one
+          window.location.href = '/sub-dashboard.html';
+          return;
+        }
+
+        const property = (data.properties || []).find(prop => prop.id === propertyId);
+        if (!property) {
+          document.getElementById('error-title').textContent = 'Property not found.';
+          document.getElementById('error-body').textContent = 'This property no longer exists. Return to your dashboard.';
+          flex('screen-error'); return;
+        }
+
+        activePropertyId = propertyId;
+        p = property;
+
+        const isFirstPropertyRun = property.runCount === 0;
+
+        // First run + profile from onboarding → auto-run
+        if (isFirstPropertyRun && p.name && p.website) {
+          const profile = {
+            company_name: p.name,
+            website: p.website,
+            industry: p.industry || '',
+            geo: p.geo || '',
+            specific_product: p.specific_product || '',
+            offer: p.offer || '',
+            competitors: p.competitors || '',
+          };
+          flex('screen-loading');
+          runAudit(profile, property.personas?.length ? property.personas : null);
+          return;
+        }
+
+        // Returning Enterprise run — pre-fill form (no locks)
+        if (p.name) document.getElementById('f-name').value = p.name;
+        if (p.website) document.getElementById('f-website').value = p.website;
+        if (p.industry) document.getElementById('f-industry').value = p.industry;
+        if (p.geo) document.getElementById('f-geo').value = p.geo;
+        if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
+        if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
+
+        block('screen-setup');
+        return;
+      }
+
+      // ── Professional mode ─────────────────────────────────────────────────
       // Merge API profile with localStorage (localStorage wins for freshness on first run)
       const apiProfile = data.profile || {};
       let localProfile = null;
@@ -972,7 +1025,6 @@ function gtag(){dataLayer.push(arguments);}
 
       // First run + profile already captured during onboarding → skip the form and go
       if (isFirstRun && p.company_name && p.website) {
-        // Clear localStorage profile so repeat runs show the form
         try { localStorage.removeItem('rp_sub_profile'); } catch(e) {}
         const profile = {
           company_name: p.company_name,
@@ -1013,12 +1065,14 @@ function gtag(){dataLayer.push(arguments);}
     block('screen-setup');
 
     document.getElementById('startRunBtn').addEventListener('click', async () => {
-      // If profile is locked, use the server-side locked values — not whatever's in the field
+      // Enterprise: use property name/website (no lock). Professional: use locked values or form.
       const lockedName = p.profileLocked ? (p.lockedCompanyName || p.company_name || '') : null;
       const lockedWebsite = p.profileLocked ? (p.lockedWebsite || p.website || '') : null;
       const profile = {
-        company_name: lockedName ?? document.getElementById('f-name').value.trim(),
-        website: lockedWebsite ?? document.getElementById('f-website').value.trim(),
+        company_name: activePropertyId ? (p.name || document.getElementById('f-name').value.trim())
+                                       : (lockedName ?? document.getElementById('f-name').value.trim()),
+        website: activePropertyId ? (p.website || document.getElementById('f-website').value.trim())
+                                  : (lockedWebsite ?? document.getElementById('f-website').value.trim()),
         industry: document.getElementById('f-industry').value.trim(),
         geo: document.getElementById('f-geo').value.trim(),
         specific_product: document.getElementById('f-product').value.trim(),
