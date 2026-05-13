@@ -48,20 +48,23 @@ module.exports = async function handler(req, res) {
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const [account, profile, runs] = await Promise.all([
+    const [account, profile, runs, properties] = await Promise.all([
       upstashGet(`subscriber:${email}`),
       upstashGet(`subscriber-profile:${email}`),
       upstashGet(`subscriber-runs:${email}`),
+      upstashGet(`subscriber-properties:${email}`),
     ]);
 
     if (!account) return res.status(404).json({ error: 'Account not found' });
 
     res.json({
       email,
+      plan: account.plan || 'professional',
       subscriptionStatus: account.subscriptionStatus || 'active',
       createdAt: account.createdAt,
       profile: profile || null,
-      runs: (runs || []).slice(0, 50), // last 50 runs
+      runs: (runs || []).slice(0, 50),
+      properties: properties || [],
     });
   } catch (err) {
     console.error('sub-dashboard error:', err.message);
