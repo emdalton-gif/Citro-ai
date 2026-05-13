@@ -766,22 +766,29 @@ function gtag(){dataLayer.push(arguments);}
         <!-- STEP 3: Plan selection + order summary -->
         <div class="step-panel" id="step-3">
           <h1 class="step-title">Choose your plan</h1>
-          <p class="step-sub">Start with a Snapshot to see where you stand. Add Active Optimization when you're ready to track improvements over time.</p>
+          <p class="step-sub">Start with a Snapshot, or subscribe to track your AI visibility over time.</p>
 
           <div class="plan-toggle">
             <div class="plan-card selected" id="plan-snapshot" onclick="selectPlan('snapshot')">
               <div class="plan-radio"></div>
               <div class="plan-badge ghost">One-time</div>
-              <div class="plan-name">Snapshot Audit</div>
-              <div class="plan-price">$299 <span>one-time</span></div>
-              <div class="plan-desc">Full simulation, visibility score, competitive matrix, and priority recommendations.</div>
+              <div class="plan-name">Snapshot</div>
+              <div class="plan-price">$49 <span>one-time</span></div>
+              <div class="plan-desc">Full audit, visibility score, competitive matrix, and 90-day action roadmap. Run once, results yours to keep.</div>
             </div>
-            <div class="plan-card" id="plan-active" onclick="selectPlan('active')">
+            <div class="plan-card" id="plan-professional" onclick="selectPlan('professional')">
               <div class="plan-radio"></div>
               <div class="plan-badge">Most popular</div>
-              <div class="plan-name">Active Optimization</div>
-              <div class="plan-price">$199 <span>/ month</span></div>
-              <div class="plan-desc">Monthly re-runs, automated improvement suggestions, and score trend tracking.</div>
+              <div class="plan-name">Professional</div>
+              <div class="plan-price">$119 <span>/ month</span></div>
+              <div class="plan-desc">Unlimited re-runs for one company or product. Score trend tracking, full history, and email delivery every run.</div>
+            </div>
+            <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
+              <div class="plan-radio"></div>
+              <div class="plan-badge ghost">Enterprise</div>
+              <div class="plan-name">Enterprise</div>
+              <div class="plan-price">$299 <span>/ month</span></div>
+              <div class="plan-desc">Monitor up to 10 companies, brands, or websites. Multi-brand dashboard, cross-brand comparisons, and priority support.</div>
             </div>
           </div>
 
@@ -803,8 +810,8 @@ function gtag(){dataLayer.push(arguments);}
               <span>5–7 business days</span>
             </div>
             <div class="summary-row total">
-              <span id="sum-plan-name">Snapshot Audit</span>
-              <span id="sum-price">$299</span>
+              <span id="sum-plan-name">Snapshot</span>
+              <span id="sum-price">$49</span>
             </div>
           </div>
 
@@ -961,8 +968,9 @@ function gtag(){dataLayer.push(arguments);}
     let selectedPlan = 'snapshot';
 
     const PLAN_DATA = {
-      snapshot: { name: 'Snapshot Audit',      price: '$299',     priceDisplay: '$299 one-time' },
-      active:   { name: 'Active Optimization', price: '$199/mo',  priceDisplay: '$199 / month'  }
+      snapshot:     { name: 'Snapshot',     price: '$49',      priceDisplay: '$49 one-time'  },
+      professional: { name: 'Professional', price: '$119/mo',  priceDisplay: '$119 / month'  },
+      enterprise:   { name: 'Enterprise',   price: '$299/mo',  priceDisplay: '$299 / month'  }
     };
 
     const INDUSTRY_LABELS = {
@@ -1052,7 +1060,9 @@ function gtag(){dataLayer.push(arguments);}
       });
       // Pre-select plan from URL param
       const params = new URLSearchParams(window.location.search);
-      if (params.get('plan') === 'active') selectPlan('active');
+      const p = params.get('plan');
+      if (p === 'professional' || p === 'active') selectPlan('professional');
+      else if (p === 'enterprise') selectPlan('enterprise');
     });
 
     // ── STEP 1 → STEP 2 with auto-research ──
@@ -1138,7 +1148,8 @@ function gtag(){dataLayer.push(arguments);}
     function selectPlan(plan) {
       selectedPlan = plan;
       document.getElementById('plan-snapshot').classList.toggle('selected', plan === 'snapshot');
-      document.getElementById('plan-active').classList.toggle('selected', plan === 'active');
+      document.getElementById('plan-professional').classList.toggle('selected', plan === 'professional');
+      document.getElementById('plan-enterprise').classList.toggle('selected', plan === 'enterprise');
       updatePriceDisplay();
     }
 
