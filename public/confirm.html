@@ -471,12 +471,12 @@ function gtag(){dataLayer.push(arguments);}
     <div class="upsell-card">
       <div class="upsell-header">
         <div class="upsell-label">Upgrade available</div>
-        <div class="upsell-price-tag">$199 <span>/ month</span></div>
+        <div class="upsell-price-tag">$119 <span>/ month</span></div>
       </div>
       <div class="upsell-body">
         <div class="upsell-title">Know if it's working. Every month.</div>
         <p class="upsell-copy">
-          Your Snapshot Audit shows where you stand today. Active Optimization runs your simulation monthly, automatically flags what changed, and generates new recommendations based on your score movement. So you always know whether your improvements are working.
+          Your Snapshot Audit shows where you stand today. Professional runs your simulation monthly, automatically flags what changed, and generates new recommendations based on your score movement. So you always know whether your improvements are working.
         </p>
         <div class="upsell-features">
           <div class="uf-item">
@@ -504,8 +504,8 @@ function gtag(){dataLayer.push(arguments);}
             First month credit for Snapshot buyers
           </div>
         </div>
-        <a class="upsell-cta" href="/subscribe.html">
-          Upgrade to Active Optimization — $199/month
+        <a class="upsell-cta" href="/subscribe.html?plan=professional">
+          Upgrade to Professional — $119/month
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
         <div class="upsell-dismiss">
@@ -526,12 +526,12 @@ function gtag(){dataLayer.push(arguments);}
         <strong>Your dashboard</strong>
         <span>Your results will be saved here automatically once the audit completes.</span>
       </a>
-      <a href="/subscribe.html" class="next-item">
+      <a href="/subscribe.html?plan=professional" class="next-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
         </svg>
-        <strong>How Active Optimization works</strong>
-        <span>See what monthly monitoring looks like and what you'd get for $199/month.</span>
+        <strong>How Professional works</strong>
+        <span>See what monthly monitoring looks like and what you'd get for $119/month.</span>
       </a>
       <a href="mailto:support@rootpartners.co" class="next-item">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -548,6 +548,27 @@ function gtag(){dataLayer.push(arguments);}
       // Read session_id from URL
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
+
+      // Fire GA4 purchase event — deduplicated by sessionId so it only fires once
+      if (sessionId) {
+        var fireKey = 'ra_px_' + sessionId;
+        if (!sessionStorage.getItem(fireKey)) {
+          sessionStorage.setItem(fireKey, '1');
+          if (typeof gtag === 'function') {
+            gtag('event', 'purchase', {
+              transaction_id: sessionId,
+              value: 49.00,
+              currency: 'USD',
+              items: [{
+                item_id: 'snapshot',
+                item_name: 'RootACE Snapshot Audit',
+                price: 49.00,
+                quantity: 1
+              }]
+            });
+          }
+        }
+      }
 
       // Wire up the audit button with session_id
       const btn = document.getElementById('start-audit-btn');
@@ -577,7 +598,7 @@ function gtag(){dataLayer.push(arguments);}
       try {
         const data = JSON.parse(sessionStorage.getItem('root_order') || '{}');
         if (data.email) document.getElementById('confirm-email').textContent = data.email;
-        if (data.plan === 'active') {
+        if (data.plan === 'active' || data.plan === 'professional' || data.plan === 'enterprise') {
           const block = document.getElementById('upsell-block');
           if (block) block.style.display = 'none';
         }
