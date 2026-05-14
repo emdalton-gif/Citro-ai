@@ -338,6 +338,32 @@ function gtag(){dataLayer.push(arguments);}
       const data = await resp.json();
       if (!resp.ok) { showFatalError(data.error || 'Could not verify your subscription.'); return; }
       sessionData = data;
+
+      // Fire GA4 purchase event — deduplicated by sessionId so it only fires once
+      (function() {
+        var fireKey = 'ra_px_' + sessionId;
+        if (!sessionStorage.getItem(fireKey)) {
+          sessionStorage.setItem(fireKey, '1');
+          var planPrices = { professional: 119.00, enterprise: 299.00 };
+          var planNames  = { professional: 'RootACE Professional', enterprise: 'RootACE Enterprise' };
+          var plan = data.plan || 'professional';
+          var price = planPrices[plan] || 119.00;
+          if (typeof gtag === 'function') {
+            gtag('event', 'purchase', {
+              transaction_id: sessionId,
+              value: price,
+              currency: 'USD',
+              items: [{
+                item_id: plan,
+                item_name: planNames[plan] || 'RootACE Professional',
+                price: price,
+                quantity: 1
+              }]
+            });
+          }
+        }
+      })();
+
       document.getElementById('emailDisplay').textContent = data.email;
       showState('statePassword');
     } catch (err) {
