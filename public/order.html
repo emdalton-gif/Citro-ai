@@ -640,6 +640,13 @@ function gtag(){dataLayer.push(arguments);}
 
         <!-- STEP 1: Company basics -->
         <div class="step-panel active" id="step-1">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;color:#059669;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              $49 one-time &nbsp;·&nbsp; No subscription
+            </span>
+            <span style="font-size:12px;color:var(--quiet);">⚡ Results in ~15 minutes</span>
+          </div>
           <h1 class="step-title">Tell us about your business</h1>
           <p class="step-sub">We use this to build buyer personas specific to your industry and simulate the queries your actual buyers are running.</p>
 
@@ -715,12 +722,13 @@ function gtag(){dataLayer.push(arguments);}
             Continue
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
+          <p class="btn-note" style="margin-top:8px;">No payment until the final step. We'll pre-fill what we can from your website.</p>
         </div>
 
         <!-- STEP 2: Business context -->
         <div class="step-panel" id="step-2">
           <h1 class="step-title">Who buys from you?</h1>
-          <p class="step-sub">We've pre-filled these based on your company. Edit anything that's off — the more specific you are, the more useful the results.</p>
+          <p class="step-sub">We've pre-filled these from your website. Review, edit anything that's off, and continue — the more specific you are, the more useful the results.</p>
 
           <div id="research-status">
             <span class="spin-dot"></span>
@@ -807,7 +815,7 @@ function gtag(){dataLayer.push(arguments);}
             </div>
             <div class="summary-row">
               <span class="label">Delivery</span>
-              <span>5–7 business days</span>
+              <span>⚡ ~15 minutes (automated)</span>
             </div>
             <div class="summary-row total">
               <span id="sum-plan-name">Snapshot</span>
@@ -1019,13 +1027,8 @@ function gtag(){dataLayer.push(arguments);}
     }
 
     function validateStep2() {
-      let ok = true;
-      const offer = document.getElementById('f-offer').value.trim();
-      const buyer = document.getElementById('f-buyer').value.trim();
-      setError('fg-offer', !offer);
-      setError('fg-buyer', !buyer);
-      if (!offer || !buyer) ok = false;
-      return ok;
+      // Fields are pre-filled by research API — allow empty to avoid trapping users
+      return true;
     }
 
     function setError(id, hasError, msg) {
