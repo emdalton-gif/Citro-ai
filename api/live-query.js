@@ -1,10 +1,13 @@
 // api/live-query.js
-// Sends queries to real AI platform APIs (Perplexity, OpenAI) and returns live responses.
-// Requires a valid subscriber or portal token.
+// Sends queries to real AI platform APIs and returns live responses.
+// Accepts purchase tokens (one-time Snapshot buyers), subscriber tokens, and portal tokens.
 //
 // Required environment variables:
 //   PERPLEXITY_API_KEY  — from https://www.perplexity.ai/settings/api
 //   OPENAI_API_KEY      — from https://platform.openai.com/api-keys
+//   ANTHROPIC_API_KEY   — from https://console.anthropic.com/
+//   GOOGLE_AI_API_KEY   — from https://aistudio.google.com/app/apikey
+//   XAI_API_KEY         — from https://console.x.ai/
 
 const https = require('https');
 const crypto = require('crypto');
@@ -35,6 +38,20 @@ function verifyPortalToken(token) {
     const [username, exp] = payload.split(':');
     if (Date.now() > parseInt(exp, 10)) return null;
     return username;
+  } catch { return null; }
+}
+
+function verifyPurchaseToken(token) {
+  if (!token) return null;
+  try {
+    const { p: payload, s: sig } = JSON.parse(Buffer.from(token, 'base64url').toString());
+    const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
+    const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    if (!crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return null;
+    const parts = payload.split(':');
+    if (parts[0] !== 'purchase') return null;
+    if (Date.now() > parseInt(parts[2], 10)) return null;
+    return parts[1]; // sessionId
   } catch { return null; }
 }
 
@@ -73,7 +90,7 @@ function httpsPost(hostname, path, headers, body) {
 
 async function callPerplexity(query) {
   const apiKey = process.env.PERPLEXITY_API_KEY;
-  if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured in Vercel environment');
+  if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
 
   const result = await httpsPost('api.perplexity.ai', '/chat/completions', {
     'Authorization': `Bearer ${apiKey}`,
@@ -91,7 +108,7 @@ async function callPerplexity(query) {
 
 async function callOpenAI(query) {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error('OPENAI_API_KEY not configured in Vercel environment');
+  if (!apiKey) throw new Error('OPENAI_API_KEY not configured');
 
   const result = await httpsPost('api.openai.com', '/v1/chat/completions', {
     'Authorization': `Bearer ${apiKey}`,
@@ -107,6 +124,81 @@ async function callOpenAI(query) {
   return result.body.choices?.[0]?.message?.content || '';
 }
 
+async function callClaude(query) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 700,
+      messages: [{ role: 'user', content: query }],
+    });
+    const options = {
+      hostname: 'api.anthropic.com',
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      timeout: 30000,
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode !== 200) throw new Error(`Anthropic API ${res.statusCode}: ${JSON.stringify(parsed?.error)}`);
+          resolve(parsed.content?.[0]?.text || '');
+        } catch (e) { reject(e); }
+      });
+    });
+    req.on('error', reject);
+    req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
+    req.write(body);
+    req.end();
+  });
+}
+
+async function callGemini(query) {
+  const apiKey = process.env.GOOGLE_AI_API_KEY;
+  if (!apiKey) throw new Error('GOOGLE_AI_API_KEY not configured');
+
+  const result = await httpsPost(
+    'generativelanguage.googleapis.com',
+    `/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    {},
+    { contents: [{ parts: [{ text: query }] }] }
+  );
+
+  if (result.status !== 200) {
+    throw new Error(`Gemini API ${result.status}: ${JSON.stringify(result.body?.error || result.body)}`);
+  }
+  return result.body.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+async function callGrok(query) {
+  const apiKey = process.env.XAI_API_KEY;
+  if (!apiKey) throw new Error('XAI_API_KEY not configured');
+
+  const result = await httpsPost('api.x.ai', '/v1/chat/completions', {
+    'Authorization': `Bearer ${apiKey}`,
+  }, {
+    model: 'grok-3',
+    messages: [{ role: 'user', content: query }],
+    max_tokens: 700,
+  });
+
+  if (result.status !== 200) {
+    throw new Error(`Grok API ${result.status}: ${JSON.stringify(result.body?.error || result.body)}`);
+  }
+  return result.body.choices?.[0]?.message?.content || '';
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
@@ -118,12 +210,17 @@ module.exports = async function handler(req, res) {
 
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const isAuthed = verifySubscriberToken(token) || verifyPortalToken(token);
+  const isAuthed = verifySubscriberToken(token) || verifyPortalToken(token) || verifyPurchaseToken(token);
   if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
 
   const { query, platform } = req.body;
   if (!query) return res.status(400).json({ error: 'Missing query' });
   if (!platform) return res.status(400).json({ error: 'Missing platform' });
+
+  const LIVE_PLATFORMS = ['ChatGPT', 'Perplexity', 'Claude', 'Google Gemini', 'Grok'];
+  if (!LIVE_PLATFORMS.includes(platform)) {
+    return res.status(400).json({ error: `Live queries not supported for ${platform}` });
+  }
 
   try {
     let response = '';
@@ -131,8 +228,12 @@ module.exports = async function handler(req, res) {
       response = await callPerplexity(query);
     } else if (platform === 'ChatGPT') {
       response = await callOpenAI(query);
-    } else {
-      return res.status(400).json({ error: `Live queries not supported for ${platform}` });
+    } else if (platform === 'Claude') {
+      response = await callClaude(query);
+    } else if (platform === 'Google Gemini') {
+      response = await callGemini(query);
+    } else if (platform === 'Grok') {
+      response = await callGrok(query);
     }
     res.json({ response, is_live: true, platform });
   } catch (err) {
