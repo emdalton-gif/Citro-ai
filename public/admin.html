@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- RootACE Consent Mode v2 -->
+<!-- Citro Consent Mode v2 -->
 <script>
 window.dataLayer=window.dataLayer||[];
 function gtag(){dataLayer.push(arguments);}
@@ -22,7 +22,7 @@ function gtag(){dataLayer.push(arguments);}
 <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-9LYVMPB7R3');</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin — RootACE</title>
+  <title>Admin — Citro</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -242,7 +242,7 @@ function gtag(){dataLayer.push(arguments);}
 <body>
 
 <nav>
-  <span class="logo-root">Root</span><span class="logo-ace">ACE</span>
+  <span class="nav-logo-citro">Citro</span>
   <span class="nav-tag">Admin</span>
   <a class="nav-logout" onclick="logout()">Sign out</a>
 </nav>
@@ -937,7 +937,7 @@ async function genQueries(id) {
   const currentYear = new Date().getFullYear();
   const analystCtx = c.analystNotes ? `\nAnalyst instructions: ${c.analystNotes}` : '';
   try {
-    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an AI visibility audit.\n\nBrand: ${c.name}\nProduct/solution: ${subjectCtx}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}${analystCtx}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Mix: 2 broad category, 2 buyer-persona-specific, 1 comparison, 1 pain-driven, 1 adjacent/broader, 1 brand-specific.\n- Platform assignment (assign exactly): 3 to Perplexity, 2 to ChatGPT, remaining 3 across Google Gemini, Claude, Microsoft Copilot.\n\nReturn ONLY a JSON array: [{"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot","brand_specific":true|false}]` }], null, 800);
+    const raw = await callClaude([{ role:'user', content:`Generate 8 realistic search queries for an Citro audit.\n\nBrand: ${c.name}\nProduct/solution: ${subjectCtx}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}${analystCtx}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Mix: 2 broad category, 2 buyer-persona-specific, 1 comparison, 1 pain-driven, 1 adjacent/broader, 1 brand-specific.\n- Platform assignment (assign exactly): 3 to Perplexity, 2 to ChatGPT, remaining 3 across Google Gemini, Claude, Microsoft Copilot.\n\nReturn ONLY a JSON array: [{"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot","brand_specific":true|false}]` }], null, 800);
     const newQ = JSON.parse(raw.replace(/```json|```/g,'').trim());
     c.queries = [...c.queries, ...newQ.map(q => ({...q, checked:true}))];
     saveDB(); renderQueryList(id);
@@ -1059,11 +1059,11 @@ async function genReport(id, results) {
   const comps = [...new Set(allComp)].sort((a,b)=>compFreq[b]-compFreq[a]);
   const subjectCtx = c.specificProduct ? `${c.specificProduct} (by ${c.name})` : c.name;
   const queries = results.map(x=>`[${x.platform}] "${x.query}" -> ${x.visibility}. ${x.insight||''}`).join('\n');
-  const visCtx = score===0 ? `The brand has 0% AI visibility.` : `Weighted AI visibility score: ${score}% across ${organic.length} advisory queries.`;
+  const visCtx = score===0 ? `The brand has 0% Citro visibility.` : `Weighted Citro Score: ${score}% across ${organic.length} advisory queries.`;
   const gaps = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
   const gapCtx = gaps.length ? gaps.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
-  const raw = await callClaude([{ role:'user', content:`Write a professional AI visibility audit report for ${c.name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON. Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences max",\n  "key_finding": "one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence"},\n  "technical_recommendations": "2 sentences covering schema, llms.txt, knowledge graph gaps",\n  "content_gaps": "2 sentences on missing content types",\n  "competitive_analysis": "2 sentences on competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences on why they win"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["action 1","action 2","action 3"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["action 1","action 2","action 3"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["action 1","action 2","action 3"]}]\n}` }],
-    'You are a senior GTM strategist at RootACE. Be concise and specific. Quality over length. Return valid complete JSON only.', 2000);
+  const raw = await callClaude([{ role:'user', content:`Write a professional Citro audit report for ${c.name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON. Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences max",\n  "key_finding": "one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence"},\n  "technical_recommendations": "2 sentences covering schema, llms.txt, knowledge graph gaps",\n  "content_gaps": "2 sentences on missing content types",\n  "competitive_analysis": "2 sentences on competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences on why they win"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["action 1","action 2","action 3"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["action 1","action 2","action 3"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["action 1","action 2","action 3"]}]\n}` }],
+    'You are a senior GTM strategist at Citro. Be concise and specific. Quality over length. Return valid complete JSON only.', 2000);
   const cleaned = raw.replace(/```json|```/g,'').trim();
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
@@ -1102,9 +1102,9 @@ function renderResults(id) {
     <div class="score-hero">
       <div class="score-big ${sc}">${score}%</div>
       <div>
-        <div style="font-size:15px;font-weight:700">AI Visibility Score</div>
+        <div style="font-size:15px;font-weight:700">Citro Score</div>
         <div class="score-meta">${organic.length} organic queries · ${c.results.length} total</div>
-        <div class="score-meta" style="margin-top:4px">${score<40?'Low visibility — below competitive threshold':score<65?'Moderate — improvement opportunity':'Strong AI visibility'}</div>
+        <div class="score-meta" style="margin-top:4px">${score<40?'Low visibility — below competitive threshold':score<65?'Moderate — improvement opportunity':'Strong Citro visibility'}</div>
       </div>
     </div>
     <div class="metrics-row">
@@ -1176,13 +1176,13 @@ function renderReport(id) {
     <div class="report-doc" id="report-doc-${id}">
       <div class="rdoc-header">
         <div>
-          <div style="margin-bottom:6px"><span style="font-size:17px;font-weight:700;color:var(--dark)">Root</span><span style="font-size:17px;font-weight:800;color:var(--accent)">ACE</span></div>
+          <div style="margin-bottom:6px"><span class="nav-logo-citro" style="font-size:17px;font-weight:800;color:var(--accent)">Citro</span></div>
           <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">${esc(c.name)}</div>
           <div style="font-size:12px;color:var(--muted);margin-top:2px">AI Visibility Audit · ${date}</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:38px;font-weight:800;letter-spacing:-.03em;color:${scoreColor}">${score}%</div>
-          <div style="font-size:11px;color:var(--muted)">AI Visibility Score</div>
+          <div style="font-size:11px;color:var(--muted)">Citro Score</div>
         </div>
       </div>
 
@@ -1424,13 +1424,13 @@ body{font-family:Inter,-apple-system,system-ui,sans-serif;background:#F8FAFC;col
   </div>
   <div class="doc-header">
     <div>
-      <div style="margin-bottom:6px"><span style="font-size:17px;font-weight:700;color:#0B0F1A">Root</span><span style="font-size:17px;font-weight:800;color:#2563EB">ACE</span></div>
+      <div style="margin-bottom:6px"><span style="font-size:17px;font-weight:800;color:#2563EB">Citro</span></div>
       <div style="font-size:20px;font-weight:800;letter-spacing:-.02em">${e(c.name)}</div>
       <div style="font-size:12px;color:#64748B;margin-top:2px">AI Visibility Audit · ${date}</div>
     </div>
     <div style="text-align:right">
       <div style="font-size:38px;font-weight:800;letter-spacing:-.03em;color:${scoreColor}">${score}%</div>
-      <div style="font-size:11px;color:#64748B">AI Visibility Score</div>
+      <div style="font-size:11px;color:#64748B">Citro Score</div>
     </div>
   </div>
   ${r.key_finding ? `<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;margin-bottom:22px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#2563EB;margin-bottom:4px">Key Finding</div><div style="font-size:13px;font-weight:500;color:#1E40AF;line-height:1.65">${e(r.key_finding)}</div></div>` : ''}
@@ -1520,7 +1520,7 @@ window._ra_li = function() {
   } catch(e) {}
 })();
 </script>
-<!-- RootACE Cookie Consent Banner -->
+<!-- Citro Cookie Consent Banner -->
 <style>
 #ra-cb-wrap{position:fixed;bottom:0;left:0;right:0;z-index:99999;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
 #ra-cb-wrap.ra-cb-show{transform:translateY(0);}
