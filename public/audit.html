@@ -322,7 +322,7 @@ function gtag(){dataLayer.push(arguments);}
     <div class="run-header">
       <div class="run-eyebrow">Competitive AI Audit</div>
       <h1 class="run-title">Building your audit<br>for <em id="run-company" style="font-style:italic; color:var(--accent)">your company</em></h1>
-      <p class="run-sub">We're running blind simulations across AI platforms using buyer personas built for your industry. This takes 2–4 minutes.</p>
+      <p class="run-sub">We're querying live AI platforms and running synthetic persona simulations using buyer personas built for your industry. This takes 2–4 minutes.</p>
     </div>
 
     <div class="phases" id="phases">
@@ -567,13 +567,19 @@ function gtag(){dataLayer.push(arguments);}
       : '';
 
     // Show query log
+    const LIVE_PLATFORMS = ['ChatGPT', 'Perplexity', 'Claude', 'Google Gemini', 'Grok'];
     const qlItems = document.getElementById('ql-items');
-    qlItems.innerHTML = active.map((q, i) => `
-      <div class="ql-item">
+    qlItems.innerHTML = active.map((q, i) => {
+      const isLive = LIVE_PLATFORMS.includes(q.platform);
+      const badge = isLive
+        ? `<span style="font-size:10px;color:#16a34a;font-family:var(--mono);margin-left:6px">LIVE</span>`
+        : `<span style="font-size:10px;color:#9ca3af;font-family:var(--mono);margin-left:6px">SYNTHETIC</span>`;
+      return `<div class="ql-item">
         <div class="ql-dot pending" id="qldot-${i}"></div>
-        <span class="ql-platform">${esc(q.platform)}</span>
+        <span class="ql-platform">${esc(q.platform)}</span>${badge}
         <span class="ql-text">${esc(q.text)}</span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     block('query-log');
 
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
@@ -587,9 +593,25 @@ function gtag(){dataLayer.push(arguments);}
       const pCtx = persona ? `You are ${persona.name||'a buyer'}, ${persona.title||'decision maker'} at ${persona.company||'a company'} (${persona.buyerType||'B2C'} buyer). Goal: ${persona.goal}. Pain: ${persona.pain}.${persona.motivation ? ' Motivation: ' + persona.motivation : ''} When searching, ${conversionLabel}.` : 'You are a buyer looking for a solution.';
 
       try {
-        // Phase 1: blind simulation
-        const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
-        const simResponse = await callClaude([{ role: 'user', content: `Query: "${q.text}"` }], simSys, 600);
+        // Phase 1: live API query or synthetic persona simulation
+        let simResponse = '';
+        let queryIsLive = false;
+        if (LIVE_PLATFORMS.includes(q.platform)) {
+          // Live: call the real platform API
+          const liveRes = await fetch('/api/live-query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+            body: JSON.stringify({ query: q.text, platform: q.platform }),
+          });
+          if (!liveRes.ok) throw new Error(`live-query failed: ${liveRes.status}`);
+          const liveData = await liveRes.json();
+          simResponse = liveData.response || '';
+          queryIsLive = true;
+        } else {
+          // Synthetic: Claude simulates Copilot / Meta AI persona
+          const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
+          simResponse = await callClaude([{ role: 'user', content: `Query: "${q.text}"` }], simSys, 600);
+        }
 
         // Phase 2: evaluation
         const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${simResponse}"\n\nEvaluate for the brand "${subjectCtx}". Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named in the response"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
@@ -606,10 +628,10 @@ function gtag(){dataLayer.push(arguments);}
         }
 
         if (dot) dot.className = 'ql-dot done';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, ...evaluated };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, is_live: queryIsLive, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, visibility: 'none', mentions_client: false, insight: 'Simulation error', response: '', competitors_mentioned: [] };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, visibility: 'none', mentions_client: false, insight: 'Query error', response: '', is_live: LIVE_PLATFORMS.includes(q.platform), competitors_mentioned: [] };
       }
     }));
 
@@ -658,7 +680,12 @@ function gtag(){dataLayer.push(arguments);}
 
     // Header
     document.getElementById('res-title').textContent = `Your AI Visibility Results for ${orderData.company_name}`;
-    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})} · ${organic.length} advisory simulations · ${platforms} platforms`;
+    const liveCount = results.filter(r => r.is_live).length;
+    const syntheticCount = results.filter(r => !r.is_live).length;
+    const methodLabel = syntheticCount > 0
+      ? `${liveCount} live queries · ${syntheticCount} synthetic simulations`
+      : `${liveCount} live queries`;
+    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})} · ${methodLabel} · ${platforms} platforms`;
 
     // Share link
     const shareUrl = `${location.origin}/audit.html?id=${resultId}`;
