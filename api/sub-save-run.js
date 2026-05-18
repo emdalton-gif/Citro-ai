@@ -44,7 +44,7 @@ function sendRunCompleteEmail(toEmail, companyName, runId, overallScore) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return Promise.resolve();
 
-  const resultUrl = `https://rootace.ai/sub-dashboard.html`;
+  const resultUrl = `https://getcitro.ai/sub-dashboard.html`;
   const scoreColor = overallScore < 40 ? '#DC2626' : overallScore < 65 ? '#D97706' : '#059669';
 
   const html = `
@@ -59,8 +59,8 @@ function sendRunCompleteEmail(toEmail, companyName, runId, overallScore) {
     </div>
     <div style="padding:36px;">
       <p style="font-size:20px;font-weight:700;color:#0B0F1A;margin:0 0 8px;">Your audit is ready${companyName ? ` — ${companyName}` : ''}.</p>
-      ${overallScore !== undefined ? `<p style="font-size:14px;color:#64748B;margin:0 0 24px;">AI Visibility Score: <strong style="color:${scoreColor};font-size:18px;">${overallScore}%</strong></p>` : '<div style="margin-bottom:24px;"></div>'}
-      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 24px;">Your latest AI visibility report has finished running. Log in to your dashboard to view the full results, compare with previous runs, and see what changed.</p>
+      ${overallScore !== undefined ? `<p style="font-size:14px;color:#64748B;margin:0 0 24px;">Citro Score: <strong style="color:${scoreColor};font-size:18px;">${overallScore}%</strong></p>` : '<div style="margin-bottom:24px;"></div>'}
+      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 24px;">Your latest Citro report has finished running. Log in to your dashboard to view the full results, compare with previous runs, and see what changed.</p>
       <a href="${resultUrl}" style="display:inline-block;background:#2563EB;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">View Results →</a>
       <p style="font-size:13px;color:#94A3B8;line-height:1.7;margin:0;">Questions? Reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#2563EB;">support@rootpartners.co</a></p>
     </div>
@@ -69,9 +69,9 @@ function sendRunCompleteEmail(toEmail, companyName, runId, overallScore) {
 </html>`;
 
   const payload = JSON.stringify({
-    from: 'RootACE <audit@rootace.ai>',
+    from: 'Citro <audit@getcitro.ai>',
     to: [toEmail],
-    subject: `Your RootACE audit is ready${companyName ? ` — ${companyName}` : ''}`,
+    subject: `Your Citro audit is ready${companyName ? ` — ${companyName}` : ''}`,
     html,
   });
 
