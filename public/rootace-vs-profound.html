@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RootACE vs. Profound — AI Visibility Tools Compared</title>
+  <meta name="description" content="Comparing RootACE and Profound for AI visibility auditing. Profound moved upmarket to enterprise. RootACE is the only credible self-serve option for B2B companies." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+  <script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-9LYVMPB7R3');</script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:          #FAFAFA;
+      --ink:         #0F172A;
+      --ink-2:       #1E293B;
+      --mid:         #64748B;
+      --quiet:       #94A3B8;
+      --border:      rgba(15,23,42,0.08);
+      --accent:      #2563EB;
+      --accent-d:    #1D4ED8;
+      --green:       #059669;
+      --green-bg:    rgba(5,150,105,0.08);
+      --sans:        'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(250,250,250,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .nav-logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; letter-spacing: -0.1px; }
+    .nav-cta:hover { background: var(--ink-2); }
+
+    .page { max-width: 860px; margin: 0 auto; padding: 72px 24px 96px; }
+
+    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+    h1 { font-size: 42px; font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 20px; }
+    .intro { font-size: 17px; color: var(--mid); line-height: 1.75; max-width: 640px; margin-bottom: 56px; }
+
+    /* SUMMARY CARDS */
+    .summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 56px; }
+    .summary-card { border: 1px solid var(--border); border-radius: 14px; padding: 28px; background: #fff; }
+    .summary-card.winner { border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.03); }
+    .card-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--quiet); margin-bottom: 10px; }
+    .card-name { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 6px; }
+    .card-tagline { font-size: 14px; color: var(--mid); line-height: 1.55; margin-bottom: 16px; }
+    .card-price { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+    .card-price span { font-size: 14px; font-weight: 400; color: var(--mid); }
+    .winner-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(37,99,235,0.1); color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; margin-bottom: 12px; }
+
+    /* COMPARISON TABLE */
+    h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 24px; }
+    .table-wrap { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 56px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 16px 20px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--quiet); background: #F8FAFC; border-bottom: 1px solid var(--border); }
+    thead th:not(:first-child) { text-align: center; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 14px 20px; font-size: 14px; color: var(--ink); vertical-align: middle; }
+    tbody td:first-child { font-weight: 500; color: var(--mid); }
+    tbody td:not(:first-child) { text-align: center; }
+    .check { color: var(--green); font-size: 18px; font-weight: 700; }
+    .cross { color: #DC2626; font-size: 18px; }
+    .neutral { color: var(--mid); font-size: 13px; }
+    .highlight-col { background: rgba(37,99,235,0.03); }
+
+    /* NARRATIVE SECTIONS */
+    .section { margin-bottom: 56px; }
+    .section h2 { margin-bottom: 16px; }
+    .section p { font-size: 15px; color: var(--mid); line-height: 1.75; margin-bottom: 12px; }
+    .section p strong { color: var(--ink); }
+
+    /* VERDICT */
+    .verdict { background: var(--ink); border-radius: 16px; padding: 40px; margin-bottom: 56px; }
+    .verdict h2 { color: #fff; margin-bottom: 16px; }
+    .verdict p { font-size: 15px; color: rgba(255,255,255,0.65); line-height: 1.75; margin-bottom: 20px; }
+    .verdict-cta { display: inline-block; background: var(--accent); color: #fff; padding: 14px 28px; border-radius: 8px; font-size: 15px; font-weight: 600; text-decoration: none; letter-spacing: -0.1px; }
+    .verdict-cta:hover { background: var(--accent-d); }
+    .verdict-note { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 12px; }
+
+    /* FAQ */
+    .faq-item { border-bottom: 1px solid var(--border); padding: 20px 0; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+    .faq-a { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+    footer { text-align: center; padding: 40px 24px; font-size: 13px; color: var(--quiet); border-top: 1px solid var(--border); }
+    footer a { color: var(--quiet); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 28px; }
+      .summary-row { grid-template-columns: 1fr; }
+      .page { padding: 48px 20px 72px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/"><span class="nav-logo-root">Root</span><span class="nav-logo-ace">ACE</span></a>
+  <a href="/order.html" class="nav-cta">Run your audit — $49</a>
+</nav>
+
+<div class="page">
+
+  <div class="eyebrow">Tool Comparison · 2026</div>
+  <h1>RootACE vs. Profound</h1>
+  <p class="intro">Both tools help companies understand their AI visibility. But Profound moved upmarket in 2026 — custom pricing, sales process, $2,000+/month minimums. If you're a B2B company that needs answers without a procurement cycle, here's what you need to know.</p>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-row">
+    <div class="summary-card winner">
+      <div class="winner-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        Best for self-serve
+      </div>
+      <div class="card-label">Option 1</div>
+      <div class="card-name">RootACE</div>
+      <div class="card-tagline">Instant AI visibility audit. No sales call, no contract. Results in under 15 minutes.</div>
+      <div class="card-price">$49 <span>one-time · or $119/mo</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="card-label">Option 2</div>
+      <div class="card-name">Profound</div>
+      <div class="card-tagline">Enterprise AI analytics platform. Custom pricing, sales-led, ongoing contract.</div>
+      <div class="card-price">$2,000+ <span>/month · custom quote</span></div>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <h2>Feature comparison</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th class="highlight-col">RootACE</th>
+          <th>Profound</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Starting price</td>
+          <td class="highlight-col"><strong>$49 one-time</strong></td>
+          <td><span class="neutral">$2,000+/month</span></td>
+        </tr>
+        <tr>
+          <td>Self-serve (no sales call)</td>
+          <td class="highlight-col"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Results without a contract</td>
+          <td class="highlight-col"><span class="check">✓</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Delivery time</td>
+          <td class="highlight-col"><strong>~15 minutes</strong></td>
+          <td><span class="neutral">Varies / ongoing</span></td>
+        </tr>
+        <tr>
+          <td>Synthetic buyer persona simulation</td>
+          <td class="highlight-col"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>AI platforms tested</td>
+          <td class="highlight-col"><strong>7 platforms</strong></td>
+          <td><span class="neutral">Multiple (varies)</span></td>
+        </tr>
+        <tr>
+          <td>Competitor visibility comparison</td>
+          <td class="highlight-col"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Monthly monitoring</td>
+          <td class="highlight-col"><span class="neutral">$119/mo (Professional)</span></td>
+          <td><span class="check">✓ (enterprise)</span></td>
+        </tr>
+        <tr>
+          <td>Money-back guarantee</td>
+          <td class="highlight-col"><span class="check">✓ Full refund</span></td>
+          <td><span class="cross">✗</span></td>
+        </tr>
+        <tr>
+          <td>Procurement / legal required</td>
+          <td class="highlight-col"><span class="check">No</span></td>
+          <td><span class="cross">Yes</span></td>
+        </tr>
+        <tr>
+          <td>Best for</td>
+          <td class="highlight-col"><strong>B2B teams that need answers now</strong></td>
+          <td><span class="neutral">Enterprise with dedicated AI teams</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- NARRATIVE -->
+  <div class="section">
+    <h2>What changed with Profound in 2026</h2>
+    <p>Profound launched as a self-serve AI analytics tool and built a strong early following. In 2026, they repositioned as an enterprise platform — removing transparent pricing from their site, requiring sales discovery calls, and targeting companies with dedicated AI teams and six-figure budgets.</p>
+    <p>This is a legitimate strategic move for them. But it means <strong>Profound is no longer a viable option for most B2B companies</strong> that need to understand their AI visibility without a procurement cycle, a legal review, or a multi-month onboarding process.</p>
+    <p>RootACE was built for exactly that gap. You enter your business details, pay $49, and have a full AI visibility report in your inbox within 15 minutes. No call required.</p>
+  </div>
+
+  <div class="section">
+    <h2>When Profound is still the right choice</h2>
+    <p>If your company has a dedicated AI marketing team, a budget for enterprise SaaS, and needs continuous monitoring with custom reporting integrations, Profound's depth is worth the investment and the process. Their platform is genuinely powerful for the use case it's designed for.</p>
+    <p>But if you're a VP of Marketing at a mid-size company trying to answer the question <strong>"Are we showing up when AI buyers research our category?"</strong> — you don't need an enterprise platform. You need an answer, fast.</p>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="verdict">
+    <h2>The bottom line</h2>
+    <p>Profound is an excellent tool for enterprise teams that have the budget and the process to support it. If that's you, it's worth evaluating. If you need AI visibility data without a sales cycle, RootACE is the only credible self-serve option in the market.</p>
+    <p>$49. Results in 15 minutes. Full refund if it's not actionable.</p>
+    <a href="/order.html" class="verdict-cta">Run your AI visibility audit</a>
+    <div class="verdict-note">No subscription required. No sales call. Cancel-free.</div>
+  </div>
+
+  <!-- FAQ -->
+  <h2>Common questions</h2>
+  <div style="margin-bottom: 56px;">
+    <div class="faq-item">
+      <div class="faq-q">Can I use RootACE as a starting point before committing to an enterprise platform?</div>
+      <div class="faq-a">Yes — many teams use RootACE to build the internal case for AI visibility investment. A $49 audit that shows concrete gaps is a much easier sell to leadership than a $24,000/year enterprise contract with a 6-week onboarding process.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Does RootACE offer ongoing monitoring like Profound?</div>
+      <div class="faq-a">Yes. The Professional plan ($119/month) includes monthly re-simulation, score tracking over time, and alerts when your AI visibility changes — without the enterprise pricing or procurement requirements.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What AI platforms does RootACE test?</div>
+      <div class="faq-a">RootACE runs simulations across 7 AI platforms including ChatGPT, Perplexity, Claude, and Gemini — covering the platforms where B2B buyers are most actively researching vendors.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">What if the report doesn't reveal anything useful?</div>
+      <div class="faq-a">Full refund, no questions asked. If your audit doesn't surface something specific and actionable about your AI visibility, we'll return your $49 immediately.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 RootPartners LLC &nbsp;·&nbsp; <a href="/privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="/terms.html">Terms</a> &nbsp;·&nbsp; <a href="/">Home</a></p>
+</footer>
+
+</body>
+</html>
