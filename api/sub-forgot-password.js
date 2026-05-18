@@ -41,7 +41,7 @@ function sendResetEmail(toEmail, resetUrl) {
     </div>
     <div style="padding:36px;">
       <p style="font-size:20px;font-weight:700;color:#0B0F1A;margin:0 0 12px;">Reset your password</p>
-      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 28px;">We received a request to reset the password for your RootACE account. Click the button below to choose a new password. This link expires in 1 hour.</p>
+      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 28px;">We received a request to reset the password for your Citro account. Click the button below to choose a new password. This link expires in 1 hour.</p>
       <a href="${resetUrl}" style="display:inline-block;background:#2563EB;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">Reset password →</a>
       <p style="font-size:13px;color:#94A3B8;line-height:1.7;margin:0;">If you didn't request this, you can safely ignore this email — your password won't change.<br><br>Questions? Reply to this email or contact <a href="mailto:support@rootpartners.co" style="color:#2563EB;">support@rootpartners.co</a></p>
     </div>
@@ -50,9 +50,9 @@ function sendResetEmail(toEmail, resetUrl) {
 </html>`;
 
   const payload = JSON.stringify({
-    from: 'RootACE <audit@rootace.ai>',
+    from: 'Citro <audit@getcitro.ai>',
     to: [toEmail],
-    subject: 'Reset your RootACE password',
+    subject: 'Reset your Citro password',
     html,
   });
 
@@ -101,7 +101,7 @@ module.exports = async function handler(req, res) {
     await upstashSetEx(`sub-reset:${token}`, { email: normalized }, ttl);
 
     // Send reset email
-    const resetUrl = `https://rootace.ai/sub-reset-password.html?token=${token}`;
+    const resetUrl = `https://getcitro.ai/sub-reset-password.html?token=${token}`;
     await sendResetEmail(normalized, resetUrl);
 
     res.json({ success: true });
