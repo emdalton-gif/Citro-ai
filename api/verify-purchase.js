@@ -41,7 +41,7 @@ async function sendConfirmationEmail(toEmail, companyName, sessionId) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return; // skip silently if not configured
 
-  const auditUrl = `https://rootace.ai/audit.html?session_id=${sessionId}`;
+  const auditUrl = `https://getcitro.ai/audit.html?session_id=${sessionId}`;
 
   const html = `
 <!DOCTYPE html>
@@ -57,25 +57,25 @@ async function sendConfirmationEmail(toEmail, companyName, sessionId) {
       <p style="font-size:15px;color:#6B5D4F;line-height:1.75;margin:0 0 16px;">Thanks for your order${companyName ? ` for <strong style="color:#2C2318;">${companyName}</strong>` : ''}. Your Competitive AI Audit is queued and ready — click below to start it now.</p>
       <p style="font-size:15px;color:#6B5D4F;line-height:1.75;margin:0 0 32px;">The audit typically completes in under 15 minutes and runs entirely in your browser. Keep the tab open until results appear.</p>
       <a href="${auditUrl}" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:14px 28px;border-radius:100px;font-size:15px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">Start my audit →</a>
-      <p style="font-size:13px;color:#9E8E7E;margin:32px 0 0;line-height:1.7;">Your results will be saved to your account dashboard at <a href="https://rootace.ai/dashboard.html" style="color:#8B4A2A;">rootace.ai/dashboard.html</a>. If you have any issues, reply to this email or contact <a href="mailto:support@rootpartners.co" style="color:#8B4A2A;">support@rootpartners.co</a>.</p>
+      <p style="font-size:13px;color:#9E8E7E;margin:32px 0 0;line-height:1.7;">Your results will be saved to your account dashboard at <a href="https://getcitro.ai/dashboard.html" style="color:#8B4A2A;">getcitro.ai/dashboard.html</a>. If you have any issues, reply to this email or contact <a href="mailto:support@rootpartners.co" style="color:#8B4A2A;">support@rootpartners.co</a>.</p>
       <div style="margin-top:40px;padding:28px 32px;background:#2C2318;border-radius:12px;">
         <p style="font-family:Georgia,serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#8B4A2A;margin:0 0 10px;">After your audit</p>
         <p style="font-family:Georgia,serif;font-size:18px;font-weight:700;color:#FAF7F2;margin:0 0 10px;line-height:1.3;">AI recommendations shift every month. Know if yours are improving.</p>
         <p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin:0 0 20px;">Your Snapshot shows where you stand today. Professional re-runs your simulation every month, tracks your score movement, and flags new competitive threats as they appear. Snapshot buyers get their first month credited.</p>
-        <a href="https://rootace.ai/subscribe.html?plan=professional" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:12px 24px;border-radius:8px;font-size:14px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">See Professional — $119/mo →</a>
+        <a href="https://getcitro.ai/subscribe.html?plan=professional" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:12px 24px;border-radius:8px;font-size:14px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">See Professional — $119/mo →</a>
       </div>
     </div>
     <div style="padding:24px 40px;border-top:1px solid rgba(44,35,24,0.08);">
-      <p style="font-size:12px;color:#9E8E7E;margin:0;">RootACE by RootPartners LLC &nbsp;·&nbsp; <a href="https://rootace.ai/privacy.html" style="color:#9E8E7E;">Privacy</a> &nbsp;·&nbsp; <a href="https://rootace.ai/terms.html" style="color:#9E8E7E;">Terms</a></p>
+      <p style="font-size:12px;color:#9E8E7E;margin:0;">Citro by RootPartners LLC &nbsp;·&nbsp; <a href="https://getcitro.ai/privacy.html" style="color:#9E8E7E;">Privacy</a> &nbsp;·&nbsp; <a href="https://getcitro.ai/terms.html" style="color:#9E8E7E;">Terms</a></p>
     </div>
   </div>
 </body>
 </html>`;
 
   const payload = JSON.stringify({
-    from: 'RootACE <audit@rootace.ai>',
+    from: 'Citro <audit@getcitro.ai>',
     to: [toEmail],
-    subject: `Your RootACE audit is ready${companyName ? ` — ${companyName}` : ''}`,
+    subject: `Your Citro audit is ready${companyName ? ` — ${companyName}` : ''}`,
     html,
   });
 
@@ -126,7 +126,7 @@ function emailHeader() {
 
 function emailFooter() {
   return `<div style="padding:20px 40px;border-top:1px solid rgba(44,35,24,0.08);">
-    <p style="font-size:12px;color:#9E8E7E;margin:0;">RootACE by RootPartners LLC &nbsp;·&nbsp; <a href="https://rootace.ai/privacy.html" style="color:#9E8E7E;">Privacy</a> &nbsp;·&nbsp; <a href="https://rootace.ai/terms.html" style="color:#9E8E7E;">Terms</a></p>
+    <p style="font-size:12px;color:#9E8E7E;margin:0;">Citro by RootPartners LLC &nbsp;·&nbsp; <a href="https://getcitro.ai/privacy.html" style="color:#9E8E7E;">Privacy</a> &nbsp;·&nbsp; <a href="https://getcitro.ai/terms.html" style="color:#9E8E7E;">Terms</a></p>
   </div>`;
 }
 
@@ -134,7 +134,7 @@ function upgradeCta() {
   return `<div style="margin-top:36px;padding:24px 28px;background:#2C2318;border-radius:12px;">
     <p style="font-family:Georgia,serif;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#8B4A2A;margin:0 0 8px;">Professional — $119/month</p>
     <p style="font-size:14px;color:rgba(250,247,242,0.65);line-height:1.65;margin:0 0 16px;">Monthly re-simulation, score tracking, and competitive alerts — automatically. Snapshot buyers get their first month credited.</p>
-    <a href="https://rootace.ai/subscribe.html?plan=professional" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:11px 22px;border-radius:8px;font-size:14px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">Start Professional →</a>
+    <a href="https://getcitro.ai/subscribe.html?plan=professional" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:11px 22px;border-radius:8px;font-size:14px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">Start Professional →</a>
   </div>`;
 }
 
@@ -143,7 +143,7 @@ async function sendDripSequence(toEmail, companyName) {
   if (!apiKey) return;
 
   const co = companyName ? `<strong style="color:#2C2318;">${companyName}</strong>` : 'your company';
-  const dashUrl = 'https://rootace.ai/dashboard.html';
+  const dashUrl = 'https://getcitro.ai/dashboard.html';
 
   // Day 1 — Understanding your score
   const day1At = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -152,7 +152,7 @@ async function sendDripSequence(toEmail, companyName) {
 <div style="max-width:560px;margin:48px auto;background:#FAF7F2;border-radius:16px;overflow:hidden;border:1px solid rgba(44,35,24,0.1);">
   ${emailHeader()}
   <div style="padding:36px 40px;">
-    <p style="font-family:Georgia,serif;font-size:20px;color:#2C2318;margin:0 0 18px;line-height:1.3;">What your AI visibility score actually means</p>
+    <p style="font-family:Georgia,serif;font-size:20px;color:#2C2318;margin:0 0 18px;line-height:1.3;">What your Citro Score actually means</p>
     <p style="font-size:15px;color:#6B5D4F;line-height:1.8;margin:0 0 16px;">Now that your audit for ${co} is done, here's the context that makes the score useful.</p>
     <p style="font-size:15px;color:#6B5D4F;line-height:1.8;margin:0 0 16px;">The seven platforms we simulate — ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok — weight information differently. Perplexity heavily favors recent web citations. ChatGPT draws more from its training data and broad web context. Gemini weights Google-indexed content and Knowledge Graph entries.</p>
     <p style="font-size:15px;color:#6B5D4F;line-height:1.8;margin:0 0 16px;">This means a low score on one platform doesn't mean a low score on all of them — and the 90-day plan in your report is sequenced to target the platforms where improvement is fastest first.</p>
@@ -193,7 +193,7 @@ async function sendDripSequence(toEmail, companyName) {
     <p style="font-size:15px;color:#6B5D4F;line-height:1.8;margin:0 0 16px;">If you've made any changes based on your audit — updating your website copy, publishing content, adjusting how you describe your category — the right question now is whether those changes are showing up in AI recommendations.</p>
     <p style="font-size:15px;color:#6B5D4F;line-height:1.8;margin:0 0 16px;">That's exactly what Professional tracks. Run a simulation whenever you want, compare it against your baseline, and see your score move in real time as your work compounds.</p>
     <p style="font-size:15px;color:#6B5D4F;line-height:1.8;margin:0 0 28px;">As a Snapshot buyer, your first month is credited. So if you start now, the first month costs you nothing beyond what you already paid.</p>
-    <a href="https://rootace.ai/subscribe.html?plan=professional" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:14px 28px;border-radius:100px;font-size:15px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">Start Professional — first month free →</a>
+    <a href="https://getcitro.ai/subscribe.html?plan=professional" style="display:inline-block;background:#8B4A2A;color:#FAF7F2;padding:14px 28px;border-radius:100px;font-size:15px;font-family:Georgia,serif;text-decoration:none;font-weight:bold;">Start Professional — first month free →</a>
     <p style="font-size:13px;color:#9E8E7E;margin:24px 0 0;line-height:1.6;">Questions? Reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#8B4A2A;">support@rootpartners.co</a>.</p>
   </div>
   ${emailFooter()}
@@ -203,21 +203,21 @@ async function sendDripSequence(toEmail, companyName) {
   // Schedule all three — non-blocking, never throw
   await Promise.allSettled([
     resendSend(apiKey, {
-      from: 'Eric at RootACE <eric@rootace.ai>',
+      from: 'Eric at Citro <eric@getcitro.ai>',
       to: [toEmail],
-      subject: `What your AI visibility score actually means${companyName ? ` — ${companyName}` : ''}`,
+      subject: `What your Citro Score actually means${companyName ? ` — ${companyName}` : ''}`,
       html: email1Html,
       scheduled_at: day1At,
     }),
     resendSend(apiKey, {
-      from: 'Eric at RootACE <eric@rootace.ai>',
+      from: 'Eric at Citro <eric@getcitro.ai>',
       to: [toEmail],
       subject: 'AI recommendations are not static',
       html: email2Html,
       scheduled_at: day3At,
     }),
     resendSend(apiKey, {
-      from: 'Eric at RootACE <eric@rootace.ai>',
+      from: 'Eric at Citro <eric@getcitro.ai>',
       to: [toEmail],
       subject: `It's been a week. Is it working?`,
       html: email3Html,
