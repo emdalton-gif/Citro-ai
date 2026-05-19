@@ -36,11 +36,10 @@ function gtag(){dataLayer.push(arguments);}
       --mono: 'DM Mono', monospace;
     }
     body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
-    nav { background: rgba(245,240,232,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { text-decoration: none; display: flex; align-items: baseline; }
-    .nav-logo-root { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); }
-    .nav-logo-ace  { font-family: var(--serif); font-size: 22px; font-weight: 400; font-style: italic; color: var(--terra); }
-    .nav-logo-citro { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    nav { background: rgba(10,15,28,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo img { height: 28px; width: auto; display: block; }
+    .nav-logo-citro { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .wrap { max-width: 760px; margin: 0 auto; padding: 72px 32px 100px; }
     .page-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terra); margin-bottom: 14px; }
     .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
@@ -61,7 +60,7 @@ function gtag(){dataLayer.push(arguments);}
 <body>
 
 <nav>
-  <a class="nav-logo" href="/"><span class="nav-logo-citro">Citro</span></a>
+  <a class="nav-logo" href="/"><img src="/citro-logo.png" alt="Citro"></a>
 </nav>
 
 <div class="wrap">
