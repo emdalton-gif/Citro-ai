@@ -58,23 +58,22 @@ function gtag(){dataLayer.push(arguments);}
     /* ── NAV ── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(248,250,252,0.92); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
+      background: rgba(10,15,28,0.97); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       padding: 0 56px; height: 64px;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .nav-logo { text-decoration: none; display: flex; align-items: center; gap: 0; }
-    .nav-logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
-    .nav-logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
-    .nav-logo-citro { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo img { height: 32px; width: auto; display: block; }
+    .nav-logo-citro { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
     .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-link { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; transition: color 0.15s; }
-    .nav-link:hover { color: var(--ink); }
+    .nav-link { font-size: 14px; color: rgba(248,250,252,0.6); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .nav-link:hover { color: #fff; }
     .nav-right { display: flex; align-items: center; gap: 12px; }
-    .nav-signin { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; }
-    .nav-signin:hover { color: var(--ink); }
-    .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
-    .nav-cta:hover { background: var(--ink-2); }
+    .nav-signin { font-size: 14px; color: rgba(248,250,252,0.6); text-decoration: none; font-weight: 500; }
+    .nav-signin:hover { color: #fff; }
+    .nav-cta { background: var(--accent); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
+    .nav-cta:hover { background: var(--accent-d); }
 
     /* ── HERO ── */
     .hero {
@@ -404,6 +403,7 @@ function gtag(){dataLayer.push(arguments);}
       nav { padding: 0 24px; }
       .nav-links { display: none; }
       .nav-signin { display: none; }
+      .nav-logo-citro { font-size: 22px; }
       .hero { padding: 64px 24px 56px; }
       .hero-inner { grid-template-columns: 1fr; gap: 48px; }
       .hero-title { font-size: 40px; }
@@ -647,7 +647,7 @@ function gtag(){dataLayer.push(arguments);}
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="/">
-    <span class="nav-logo-citro">Citro</span>
+    <img src="/citro-logo.png" alt="Citro">
   </a>
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
@@ -665,7 +665,7 @@ function gtag(){dataLayer.push(arguments);}
 <div class="hero">
   <div class="hero-inner">
     <div>
-      <div class="hero-eyebrow">
+      <div class="hero-eyebrow" style="display:none;">
         <span class="hero-eyebrow-dot"></span>
         AI citation intelligence
       </div>
@@ -687,7 +687,6 @@ function gtag(){dataLayer.push(arguments);}
         <div class="hti-item"><span class="hti-icon">⚡</span> Results in under 5 minutes</div>
         <div class="hti-item"><span class="hti-icon">🔒</span> No calls, no setup</div>
         <div class="hti-item"><span class="hti-icon">📊</span> 7 platforms, 1 report</div>
-        <div class="hti-item"><span class="hti-icon">✓</span> Full refund if not actionable</div>
       </div>
     </div>
 
