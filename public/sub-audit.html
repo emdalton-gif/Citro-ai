@@ -267,6 +267,10 @@ function gtag(){dataLayer.push(arguments);}
     .chart-count { font-size: 12px; font-weight: 700; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0; }
 
     /* ── PRINT ── */
+    @page {
+      margin: 0.6in 0.75in 0.5in;
+      /* Suppresses browser-generated about:blank footer */
+    }
     @media print {
       nav, .back-btn, .run-btn, button, #save-status, .nav-back { display: none !important; }
       #screen-results { display: block !important; }
@@ -274,6 +278,19 @@ function gtag(){dataLayer.push(arguments);}
       .score-strip { background: #0B0F1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .result-section { break-inside: avoid; }
       body { background: white; }
+      /* Clean Citro print footer */
+      body::after {
+        content: 'Citro · getcitro.ai · Powered by RootPartners';
+        display: block;
+        text-align: center;
+        font-size: 9px;
+        color: #999;
+        margin-top: 32px;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: 0.04em;
+      }
     }
 
     @media (max-width: 700px) {
