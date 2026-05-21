@@ -435,6 +435,10 @@ function gtag(){dataLayer.push(arguments);}
       .footer-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
     }
 
+    @media (max-width: 400px) {
+      .hero-title { font-size: 32px; }
+    }
+
     /* ── SCORE PROJECTION (hero card) ── */
     .fc-projection {
       margin-top: 20px; padding-top: 18px;
@@ -670,18 +674,22 @@ function gtag(){dataLayer.push(arguments);}
         AI citation intelligence
       </div>
       <h1 class="hero-title">Your buyers are asking<br>AI who to call. <span class="accent">Are you<br>on the list?</span></h1>
-      <p class="hero-sub">Citro tells you exactly which AI platforms are citing your competitors instead of you, why they're winning the recommendation, and gives you a concrete 90-day plan to change the answer.</p>
+      <p class="hero-sub">Citro shows you where AI is sending your buyers instead of you — and how to change the answer.</p>
       <ul class="hero-bullets">
-        <li>Diagnoses why competitors show up and you don't</li>
-        <li>Simulates how your real buyers search AI for vendors like you</li>
-        <li>Delivers a 90-day plan to fix it — results in under 5 minutes</li>
+        <li>Simulates your real buyers across 7 AI platforms — blind, no brand signaling</li>
+        <li>Reveals which competitors AI recommends instead of you, and why</li>
+        <li>Delivers a prioritized 90-day plan to move your score — results in under 5 minutes</li>
       </ul>
       <div class="hero-actions">
-        <a href="/order.html" class="btn-hero">Get Started — $97</a>
+        <a href="/order.html" class="btn-hero">Run Your Citro — $97</a>
         <a href="/sample-audit.html" class="btn-hero-ghost">
           See a sample report
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </a>
+      </div>
+      <div class="hero-testimonial" style="margin-top:22px;padding:16px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:10px;max-width:500px;">
+        <p style="font-size:14px;color:rgba(248,250,252,0.75);line-height:1.65;font-style:italic;margin-bottom:10px;">"I ran my Citro and found out two direct competitors were being recommended before us on ChatGPT. The 90-day plan told me exactly why and what to change. Worth the $97 in the first read."</p>
+        <div style="font-size:12px;font-weight:600;color:rgba(248,250,252,0.4);letter-spacing:0.03em;">Eric, CMO</div>
       </div>
       <div class="hero-trust-inline">
         <div class="hti-item"><span class="hti-icon">⚡</span> Results in under 5 minutes</div>
@@ -817,7 +825,7 @@ function gtag(){dataLayer.push(arguments);}
         <div class="sp-icon-wrap">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
-        <div class="sp-text">Built by practitioners with firsthand experience running go-to-market systems across six successful exits and $1.4B+ in enterprise value</div>
+        <div class="sp-text">Built by Eric Dalton and the RootPartners team — practitioners with firsthand experience running go-to-market systems across six successful exits and $1.4B+ in enterprise value</div>
       </div>
       <div class="sp-item">
         <div class="sp-icon-wrap">
@@ -896,8 +904,8 @@ function gtag(){dataLayer.push(arguments);}
 <div class="section" id="how-it-works">
   <div class="section-inner">
     <div class="section-label">How it works</div>
-    <div class="section-title">Built from your<br>buyers up.</div>
-    <div class="section-sub">We profile your business, construct synthetic buyer personas from thousands of data signals, then watch what AI tells them.</div>
+    <div class="section-title">We simulate your buyers.<br>Then we show you what AI tells them.</div>
+    <div class="section-sub">Enter your URL. We profile your business, construct synthetic buyer personas, and run them across 7 AI platforms — blind, with no brand signaling.</div>
     <div class="steps">
       <div class="step">
         <div class="step-num">01 — Company Profile</div>
@@ -989,9 +997,9 @@ function gtag(){dataLayer.push(arguments);}
 <!-- WHO THIS IS FOR -->
 <div class="for-section">
   <div class="section-inner">
-    <div class="section-label">Is Citro right for you?</div>
-    <div class="section-title" style="margin-bottom:12px">Who this is built for.</div>
-    <div class="for-intro">If AI is part of how your customers find and evaluate options, this audit is for you.</div>
+    <div class="section-label">Who this is built for</div>
+    <div class="section-title" style="margin-bottom:12px">If buyers in your category use AI, you compete in AI search.</div>
+    <div class="for-intro">Whether you know it or not, AI is already building shortlists in your category. Here's who needs to know where they stand.</div>
     <ul class="for-list">
       <li>B2B companies with a defined buyer and at least one named competitor</li>
       <li>Ecommerce and D2C brands competing for AI-generated product recommendations and "best of" lists</li>
@@ -1089,7 +1097,7 @@ function gtag(){dataLayer.push(arguments);}
 <div class="section" id="pricing">
   <div class="section-inner">
     <div class="section-label">Pricing</div>
-    <div class="section-title">Start with a snapshot.<br>Stay ahead with monitoring.</div>
+    <div class="section-title">Know where you stand.<br>Track every shift that matters.</div>
     <div class="pricing-grid">
 
       <!-- SNAPSHOT -->
@@ -1105,8 +1113,9 @@ function gtag(){dataLayer.push(arguments);}
           <li>90-day action roadmap</li>
           <li>Shareable results link</li>
         </ul>
-        <div class="pricing-urgency">AI recommendations shift monthly. Your score today may not be your score in 30 days.</div>
-        <a href="/order.html?plan=snapshot" class="pricing-cta dark">See Where You Stand — $97</a>
+        <div class="pricing-urgency">AI recommendations shift every time models update. Competitors are publishing against your category right now.</div>
+        <a href="/order.html?plan=snapshot" class="pricing-cta dark">Run Your Citro — $97</a>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--quiet);">Full refund if the report isn't actionable. No questions asked.</div>
         <a href="/sample-audit.html" class="pricing-example">See an example audit →</a>
       </div>
 
@@ -1177,6 +1186,15 @@ function gtag(){dataLayer.push(arguments);}
       </div>
       <span style="font-size:12px;color:var(--quiet)">All plans include a secure customer dashboard</span>
     </div>
+  </div>
+</div>
+
+<!-- BOTTOM CTA STRIP -->
+<div style="background:var(--accent);padding:48px 56px;text-align:center;">
+  <div style="max-width:640px;margin:0 auto;">
+    <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.2;margin-bottom:14px;">Find out where AI is sending your buyers. Fix it in 90 days.</div>
+    <div style="font-size:15px;color:rgba(255,255,255,0.75);margin-bottom:28px;">Results in under 5 minutes. Full refund if the report isn't actionable.</div>
+    <a href="/order.html" style="display:inline-block;background:#fff;color:var(--accent);padding:14px 32px;border-radius:8px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.1px;">Run Your Citro — $97</a>
   </div>
 </div>
 
