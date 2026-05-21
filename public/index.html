@@ -58,22 +58,23 @@ function gtag(){dataLayer.push(arguments);}
     /* ── NAV ── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(10,15,28,0.97); backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(248,250,252,0.92); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
       padding: 0 56px; height: 64px;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .nav-logo { text-decoration: none; display: flex; align-items: center; }
-    .nav-logo img { height: 40px; width: auto; display: block; }
-    .nav-logo-citro { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; gap: 0; }
+    .nav-logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .nav-logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .nav-logo-citro { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
     .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-link { font-size: 14px; color: rgba(248,250,252,0.6); text-decoration: none; font-weight: 500; transition: color 0.15s; }
-    .nav-link:hover { color: #fff; }
+    .nav-link { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .nav-link:hover { color: var(--ink); }
     .nav-right { display: flex; align-items: center; gap: 12px; }
-    .nav-signin { font-size: 14px; color: rgba(248,250,252,0.6); text-decoration: none; font-weight: 500; }
-    .nav-signin:hover { color: #fff; }
-    .nav-cta { background: var(--accent); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
-    .nav-cta:hover { background: var(--accent-d); }
+    .nav-signin { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; }
+    .nav-signin:hover { color: var(--ink); }
+    .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
+    .nav-cta:hover { background: var(--ink-2); }
 
     /* ── HERO ── */
     .hero {
@@ -403,10 +404,9 @@ function gtag(){dataLayer.push(arguments);}
       nav { padding: 0 24px; }
       .nav-links { display: none; }
       .nav-signin { display: none; }
-      .nav-logo-citro { font-size: 22px; }
       .hero { padding: 64px 24px 56px; }
       .hero-inner { grid-template-columns: 1fr; gap: 48px; }
-      .hero-title { font-size: 36px; line-height: 1.12; }
+      .hero-title { font-size: 40px; }
       .trust-bar { padding: 16px 24px; }
       .trust-bar-inner { gap: 20px; }
       .social-proof { padding: 40px 24px; }
@@ -647,7 +647,7 @@ function gtag(){dataLayer.push(arguments);}
 <!-- NAV -->
 <nav>
   <a class="nav-logo" href="/">
-    <img src="/citro-logo.png" alt="Citro">
+    <span class="nav-logo-citro">Citro</span>
   </a>
   <div class="nav-links">
     <a href="#how-it-works" class="nav-link">How it works</a>
@@ -665,11 +665,11 @@ function gtag(){dataLayer.push(arguments);}
 <div class="hero">
   <div class="hero-inner">
     <div>
-      <div class="hero-eyebrow" style="display:none;">
+      <div class="hero-eyebrow">
         <span class="hero-eyebrow-dot"></span>
         AI citation intelligence
       </div>
-      <h1 class="hero-title">Your buyers are asking AI who to call. <span class="accent">Are you on the list?</span></h1>
+      <h1 class="hero-title">Your buyers are asking<br>AI who to call. <span class="accent">Are you<br>on the list?</span></h1>
       <p class="hero-sub">Citro tells you exactly which AI platforms are citing your competitors instead of you, why they're winning the recommendation, and gives you a concrete 90-day plan to change the answer.</p>
       <ul class="hero-bullets">
         <li>Diagnoses why competitors show up and you don't</li>
@@ -687,6 +687,7 @@ function gtag(){dataLayer.push(arguments);}
         <div class="hti-item"><span class="hti-icon">⚡</span> Results in under 5 minutes</div>
         <div class="hti-item"><span class="hti-icon">🔒</span> No calls, no setup</div>
         <div class="hti-item"><span class="hti-icon">📊</span> 7 platforms, 1 report</div>
+        <div class="hti-item"><span class="hti-icon">✓</span> Full refund if not actionable</div>
       </div>
     </div>
 
@@ -1068,6 +1069,16 @@ function gtag(){dataLayer.push(arguments);}
       <details class="faq-item">
         <summary class="faq-q">Who is this built for?</summary>
         <div class="faq-a">Any brand competing for attention in a category where buyers or consumers use AI to research options. That includes B2B companies, ecommerce brands, D2C products, and B2C brands in considered-purchase categories — anywhere AI is part of how people find and evaluate their options.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">My customers don't seem to use AI to research purchases. Is this still relevant?</summary>
+        <div class="faq-a">AI-assisted research is growing faster than most brands realize, and it's not evenly distributed. In B2B categories, procurement teams and senior buyers are already using ChatGPT and Perplexity to build vendor shortlists before a single sales call. In B2C, it shows up in product comparisons and "what should I buy" queries. If even 10% of your buyers are using AI to shortlist vendors and you're not on those lists, you're losing deals before the conversation starts. Citro tells you exactly where you stand today — and gives you 90 days to close the gap before that 10% becomes 30%.</div>
+      </details>
+
+      <details class="faq-item">
+        <summary class="faq-q">What industries does this work for?</summary>
+        <div class="faq-a">Citro has been used across B2B SaaS, professional services, financial services, ecommerce, healthcare technology, and D2C consumer brands. The common thread isn't industry — it's whether your buyers use AI to discover or evaluate options in your category. If buyers in your space ever ask AI a question like "best [your category] for [their situation]," you compete in AI search whether you've claimed that ground or not. The audit tells you who's currently winning those queries.</div>
       </details>
 
     </div>
