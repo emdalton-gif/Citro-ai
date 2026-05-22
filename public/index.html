@@ -75,6 +75,13 @@ function gtag(){dataLayer.push(arguments);}
     .nav-signin:hover { color: var(--ink); }
     .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; letter-spacing: -0.1px; }
     .nav-cta:hover { background: var(--ink-2); }
+    .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: var(--ink); line-height: 0; }
+    .mobile-nav { display: none; flex-direction: column; position: fixed; top: 60px; left: 0; right: 0; background: #fff; border-bottom: 1px solid var(--line); padding: 24px; gap: 18px; z-index: 998; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav-link { font-size: 16px; color: var(--ink); text-decoration: none; font-weight: 500; }
+    .mobile-nav-link:hover { color: var(--accent); }
+    .mobile-nav-divider { height: 1px; background: var(--line); margin: 2px 0; }
+    .mobile-nav-cta { background: var(--ink); color: #fff; padding: 14px 20px; border-radius: 8px; font-size: 15px; font-weight: 600; text-decoration: none; text-align: center; margin-top: 4px; }
 
     /* ── HERO ── */
     .hero {
@@ -450,6 +457,7 @@ function gtag(){dataLayer.push(arguments);}
       nav { padding: 0 24px; }
       .nav-links { display: none; }
       .nav-signin { display: none; }
+      .nav-hamburger { display: flex; align-items: center; }
       .hero { padding: 64px 24px 56px; }
       .hero-inner { grid-template-columns: 1fr; gap: 48px; }
       .hero-title { font-size: 40px; }
@@ -711,8 +719,20 @@ function gtag(){dataLayer.push(arguments);}
   <div class="nav-right">
     <a href="/signin.html" class="nav-signin">Sign in</a>
     <a href="#pricing" class="nav-cta">Get started</a>
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
 </nav>
+<div class="mobile-nav" id="mobile-nav">
+  <a href="#how-it-works" class="mobile-nav-link">How it works</a>
+  <a href="#pricing" class="mobile-nav-link">Pricing</a>
+  <a href="/sample-audit.html" class="mobile-nav-link">Sample audit</a>
+  <a href="/corporate.html" class="mobile-nav-link">Corporate Clients</a>
+  <div class="mobile-nav-divider"></div>
+  <a href="/signin.html" class="mobile-nav-link">Sign in</a>
+  <a href="#pricing" class="mobile-nav-cta">Get started →</a>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -1664,6 +1684,23 @@ window._ra_li = function() {
         m: m2 ? m2.checked : false
       });
     });
+  });
+})();
+</script>
+<script>
+(function(){
+  var btn = document.getElementById('nav-hamburger');
+  var menu = document.getElementById('mobile-nav');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    menu.classList.toggle('open');
+  });
+  menu.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() { menu.classList.remove('open'); });
+  });
+  document.addEventListener('click', function(e) {
+    if (!menu.contains(e.target) && e.target !== btn) menu.classList.remove('open');
   });
 })();
 </script>
