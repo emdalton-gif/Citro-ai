@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Citro Consent Mode v2 -->
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;
+  try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}
+  gtag('consent','default',{
+    analytics_storage: c&&c.a ? 'granted' : 'denied',
+    ad_storage:        c&&c.m ? 'granted' : 'denied',
+    ad_user_data:      c&&c.m ? 'granted' : 'denied',
+    ad_personalization:c&&c.m ? 'granted' : 'denied',
+    wait_for_update: 500
+  });
+})();
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-9LYVMPB7R3');</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Plans & Pricing | Citro — AI Citation Intelligence</title>
+<meta name="description" content="See Citro's plans. Start with a $97 one-time Snapshot to find out where you stand, or subscribe to track your AI visibility over time." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:          #F8FAFC;
+    --surface:     #FFFFFF;
+    --surface-2:   #F1F5F9;
+    --ink:         #0F172A;
+    --ink-2:       #1E293B;
+    --mid:         #64748B;
+    --quiet:       #94A3B8;
+    --border:      rgba(15,23,42,0.08);
+    --accent:      #2563EB;
+    --accent-d:    #1D4ED8;
+    --accent-light:rgba(37,99,235,0.08);
+    --accent-ring: rgba(37,99,235,0.18);
+    --green:       #059669;
+    --green-bg:    rgba(5,150,105,0.08);
+    --green-ring:  rgba(5,150,105,0.2);
+    --sans:        'Inter', system-ui, sans-serif;
+    --radius:      12px;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(248,250,252,0.95); backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-logo { text-decoration: none; display: flex; align-items: center; }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .nav-link { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+  .nav-link:hover { color: var(--ink); }
+  .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; }
+  .nav-cta:hover { background: var(--ink-2); }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 56px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-light); border: 1px solid var(--accent-ring);
+    border-radius: 100px; padding: 5px 14px;
+    font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.04em;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  .hero-title {
+    font-size: 44px; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--ink); line-height: 1.1; margin-bottom: 16px;
+  }
+  .hero-sub {
+    font-size: 17px; color: var(--mid); line-height: 1.65; margin-bottom: 0;
+  }
+
+  /* ── TRUST STRIP ── */
+  .trust-strip {
+    display: flex; align-items: center; justify-content: center;
+    gap: 28px; flex-wrap: wrap;
+    padding: 0 24px 52px;
+    font-size: 13px; color: var(--mid); font-weight: 500;
+  }
+  .trust-item { display: flex; align-items: center; gap: 6px; }
+  .trust-item svg { color: var(--green); flex-shrink: 0; }
+
+  /* ── PLANS GRID ── */
+  .plans-section { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; }
+  .plans-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.08fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .plan-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 28px;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .plan-card:hover { box-shadow: 0 4px 20px rgba(15,23,42,0.08); }
+
+  /* Hero card — Professional */
+  .plan-card.hero-plan {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(37,99,235,0.12);
+    padding: 36px 28px;
+  }
+  .plan-card.hero-plan:hover { box-shadow: 0 0 0 1px var(--accent), 0 12px 40px rgba(37,99,235,0.18); }
+
+  .plan-badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 20px;
+  }
+  .plan-badge.popular { background: var(--accent); color: #fff; }
+  .plan-badge.entry { background: var(--surface-2); color: var(--mid); border: 1px solid var(--border); }
+  .plan-badge.scale { background: var(--ink); color: #fff; }
+
+  .plan-name {
+    font-size: 22px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.3px; margin-bottom: 6px;
+  }
+  .plan-tagline { font-size: 14px; color: var(--mid); line-height: 1.5; margin-bottom: 24px; }
+
+  .plan-price-block { margin-bottom: 24px; }
+  .plan-price {
+    font-size: 42px; font-weight: 800; color: var(--ink);
+    letter-spacing: -0.05em; line-height: 1;
+  }
+  .plan-price .currency { font-size: 24px; font-weight: 700; vertical-align: top; margin-top: 6px; display: inline-block; }
+  .plan-price .period { font-size: 14px; font-weight: 400; color: var(--mid); letter-spacing: 0; }
+  .plan-price-note { font-size: 12px; color: var(--quiet); margin-top: 5px; }
+
+  .plan-divider { height: 1px; background: var(--border); margin-bottom: 22px; }
+
+  .plan-features { list-style: none; margin-bottom: 28px; display: flex; flex-direction: column; gap: 11px; }
+  .plan-features li {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 14px; color: var(--ink-2); line-height: 1.45;
+  }
+  .plan-features li svg { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+  .plan-features li.dim { color: var(--quiet); }
+  .plan-features li.dim svg { color: var(--quiet); }
+
+  .plan-cta {
+    display: block; width: 100%; padding: 13px 20px;
+    border-radius: 8px; font-family: var(--sans);
+    font-size: 15px; font-weight: 600; text-align: center;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: all 0.15s; letter-spacing: -0.1px;
+  }
+  .plan-cta.primary { background: var(--accent); color: #fff; }
+  .plan-cta.primary:hover { background: var(--accent-d); }
+  .plan-cta.secondary { background: var(--ink); color: #fff; }
+  .plan-cta.secondary:hover { background: var(--ink-2); }
+  .plan-cta.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--border); }
+  .plan-cta.ghost:hover { border-color: var(--ink); }
+
+  .plan-cta-note { font-size: 12px; color: var(--quiet); text-align: center; margin-top: 8px; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-section {
+    max-width: 900px; margin: 0 auto; padding: 0 24px 80px;
+  }
+  .compare-title {
+    font-size: 22px; font-weight: 700; color: var(--ink);
+    letter-spacing: -0.3px; text-align: center; margin-bottom: 32px;
+  }
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th, .compare-table td {
+    padding: 14px 16px; text-align: left;
+    border-bottom: 1px solid var(--border); font-size: 14px;
+  }
+  .compare-table th { font-weight: 600; color: var(--mid); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; background: var(--surface-2); }
+  .compare-table th:first-child { border-radius: 8px 0 0 8px; }
+  .compare-table th:last-child { border-radius: 0 8px 8px 0; }
+  .compare-table td { color: var(--ink-2); vertical-align: top; }
+  .compare-table td:first-child { font-weight: 500; color: var(--ink); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .check { color: var(--green); font-size: 16px; }
+  .dash { color: var(--quiet); }
+  .col-hero { background: rgba(37,99,235,0.03); }
+
+  /* ── FAQ ── */
+  .faq-section { max-width: 680px; margin: 0 auto; padding: 0 24px 96px; }
+  .faq-title { font-size: 22px; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; margin-bottom: 28px; text-align: center; }
+  .faq-item { border-top: 1px solid var(--border); padding: 20px 0; }
+  .faq-item:last-child { border-bottom: 1px solid var(--border); }
+  .faq-q { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .faq-q svg { flex-shrink: 0; color: var(--mid); transition: transform 0.2s; }
+  .faq-q.open svg { transform: rotate(45deg); }
+  .faq-a { font-size: 14px; color: var(--mid); line-height: 1.7; display: none; }
+  .faq-a.open { display: block; }
+
+  /* ── GUARANTEE BANNER ── */
+  .guarantee-section {
+    max-width: 680px; margin: 0 auto 80px;
+    padding: 28px 32px; background: var(--green-bg);
+    border: 1px solid var(--green-ring); border-radius: var(--radius);
+    display: flex; align-items: flex-start; gap: 16px; margin-left: auto; margin-right: auto;
+  }
+  .guarantee-section svg { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+  .guarantee-text h3 { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .guarantee-text p { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border); padding: 32px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 13px; color: var(--quiet); flex-wrap: wrap; gap: 12px;
+  }
+  footer a { color: var(--quiet); text-decoration: none; }
+  footer a:hover { color: var(--mid); }
+  .footer-links { display: flex; gap: 24px; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    nav { padding: 0 20px; }
+    .hero { padding: 52px 20px 40px; }
+    .hero-title { font-size: 34px; }
+    .plans-section { padding: 0 16px 60px; }
+    .plans-grid { grid-template-columns: 1fr; gap: 12px; }
+    .plan-card.hero-plan { padding: 32px 24px; }
+    .compare-section { overflow-x: auto; }
+    .guarantee-section { margin: 0 16px 60px; }
+    footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
+    .trust-strip { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <img src="/citro-logo-dark.png" alt="Citro" height="32" style="display:block;">
+  </a>
+  <div class="nav-right">
+    <a href="/sample-audit.html" class="nav-link">See a sample report</a>
+    <a href="/order.html" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Plans &amp; Pricing</div>
+  <h1 class="hero-title">Know exactly where AI sends your buyers</h1>
+  <p class="hero-sub">Start with a single audit to see where you stand, or subscribe to track your Citro Score over time as you improve it.</p>
+</div>
+
+<!-- TRUST STRIP -->
+<div class="trust-strip">
+  <span class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    Results in under 5 minutes
+  </span>
+  <span class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    No sales call required
+  </span>
+  <span class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    Full refund if not actionable
+  </span>
+  <span class="trust-item">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    Cancel anytime
+  </span>
+</div>
+
+<!-- PLANS -->
+<div class="plans-section">
+  <div class="plans-grid">
+
+    <!-- Snapshot -->
+    <div class="plan-card">
+      <div class="plan-badge entry">One-time</div>
+      <div class="plan-name">Snapshot</div>
+      <div class="plan-tagline">Find out exactly where you stand with AI buyers — no commitment.</div>
+      <div class="plan-price-block">
+        <div class="plan-price"><span class="currency">$</span>97<span class="period"> one-time</span></div>
+        <div class="plan-price-note">Pay once. Results yours to keep.</div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Full Citro audit for one company or product
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Tested across 7 AI platforms
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Citro Score + competitive matrix
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          90-day action roadmap
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Delivered in under 5 minutes
+        </li>
+        <li class="dim">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Score trend tracking over time
+        </li>
+        <li class="dim">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Multiple companies or brands
+        </li>
+      </ul>
+      <a href="/order.html?plan=snapshot" class="plan-cta ghost">Get your Snapshot</a>
+      <p class="plan-cta-note">One-time charge. No subscription.</p>
+    </div>
+
+    <!-- Professional (hero) -->
+    <div class="plan-card hero-plan">
+      <div class="plan-badge popular">Most popular</div>
+      <div class="plan-name">Professional</div>
+      <div class="plan-tagline">Track your Citro Score over time and measure the impact of every improvement you make.</div>
+      <div class="plan-price-block">
+        <div class="plan-price"><span class="currency">$</span>119<span class="period"> / month</span></div>
+        <div class="plan-price-note">Billed monthly. Cancel anytime.</div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <strong>Unlimited re-runs</strong> for one company or product
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Tested across 7 AI platforms every run
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Citro Score + competitive matrix
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          90-day action roadmap, refreshed each run
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <strong>Score trend history</strong> — see progress over time
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Full report history with email delivery
+        </li>
+        <li class="dim">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Multiple companies or brands
+        </li>
+      </ul>
+      <a href="/order.html?plan=professional" class="plan-cta primary">Start Professional</a>
+      <p class="plan-cta-note">Includes a full Snapshot audit on day one.</p>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="plan-card">
+      <div class="plan-badge scale">Enterprise</div>
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-tagline">Monitor AI visibility across multiple brands, products, or client portfolios.</div>
+      <div class="plan-price-block">
+        <div class="plan-price"><span class="currency">$</span>299<span class="period"> / month</span></div>
+        <div class="plan-price-note">Billed monthly. Cancel anytime.</div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <strong>Up to 10 companies, brands, or websites</strong>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Unlimited re-runs across all brands
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          7 AI platforms tested per run
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Cross-brand comparison dashboard
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Score trend history for every brand
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Priority support
+        </li>
+      </ul>
+      <a href="/order.html?plan=enterprise" class="plan-cta secondary">Get Enterprise</a>
+      <p class="plan-cta-note">Great for agencies and multi-brand companies.</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- GUARANTEE -->
+<div style="max-width:680px;margin:0 auto 64px;padding:0 24px;">
+  <div class="guarantee-section">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <div class="guarantee-text">
+      <h3>Full refund guaranteed</h3>
+      <p>If your report doesn't reveal something actionable about your AI citation visibility, email us within 7 days of delivery and we'll refund you in full. No questions asked. Powered by RootPartners — six exits, $1.4B+.</p>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="compare-section">
+  <h2 class="compare-title">Compare plans</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th style="width:40%;">Feature</th>
+        <th>Snapshot<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);">$97 one-time</span></th>
+        <th class="col-hero">Professional<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--accent);">$119 / mo</span></th>
+        <th>Enterprise<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);">$299 / mo</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>7 AI platforms tested</td>
+        <td><span class="check">✓</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Citro Score</td>
+        <td><span class="check">✓</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Competitive matrix</td>
+        <td><span class="check">✓</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>90-day action roadmap</td>
+        <td><span class="check">✓</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Unlimited re-runs</td>
+        <td><span class="dash">—</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Score trend history</td>
+        <td><span class="dash">—</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Full report history + email delivery</td>
+        <td><span class="dash">—</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Companies / brands monitored</td>
+        <td>1</td>
+        <td class="col-hero">1</td>
+        <td>Up to 10</td>
+      </tr>
+      <tr>
+        <td>Cross-brand dashboard</td>
+        <td><span class="dash">—</span></td>
+        <td class="col-hero"><span class="dash">—</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+      <tr>
+        <td>Priority support</td>
+        <td><span class="dash">—</span></td>
+        <td class="col-hero"><span class="dash">—</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <h2 class="faq-title">Common questions</h2>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      What exactly is a Citro audit?
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="faq-a">Citro simulates the way your buyers actually use AI — building synthetic buyer personas for your industry and running blind queries across ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, and Grok. It scores how often your brand appears versus competitors and produces a prioritized action plan to improve your position. Results deliver in under 5 minutes, no calls or waiting required.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      What's the difference between a Snapshot and a Professional subscription?
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="faq-a">A Snapshot is a one-time audit — you get the full report and roadmap, and it's yours to keep. Professional gives you unlimited re-runs so you can track your Citro Score over time and measure whether your improvements are actually working. Most buyers start with a Snapshot to understand where they stand, then subscribe once they're actively working through the roadmap.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Can I cancel my subscription at any time?
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="faq-a">Yes. Cancel anytime from your account dashboard — no phone calls, no hoops. You keep access through the end of your billing period.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      What if the report isn't useful?
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="faq-a">Email us within 7 days of delivery and we'll refund you in full, no questions asked. We're confident the report will show you something actionable — but if it doesn't, you shouldn't pay for it.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">
+      Who is this built for?
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="faq-a">Citro is built for B2B companies whose buyers use AI to research options before making a purchase — professional services, SaaS, consulting, healthcare, and similar industries. If your buyers are asking AI "who should I call for X" and you're not sure whether your name comes up, Citro answers that question directly.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <a href="/"><img src="/citro-logo-dark.png" alt="Citro" height="28" style="display:block;opacity:0.5;"></a>
+  <div class="footer-links">
+    <a href="/sample-audit.html">Sample report</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+  </div>
+  <span>© 2026 RootPartners. All rights reserved.</span>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  const answer = el.nextElementSibling;
+  const isOpen = answer.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.faq-a').forEach(a => a.classList.remove('open'));
+  document.querySelectorAll('.faq-q').forEach(q => q.classList.remove('open'));
+  // Open clicked (if it was closed)
+  if (!isOpen) {
+    answer.classList.add('open');
+    el.classList.add('open');
+  }
+}
+</script>
+
+<!-- Citro Cookie Consent Banner -->
+<style>
+#ra-cb-wrap{position:fixed;bottom:0;left:0;right:0;z-index:99999;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
+#ra-cb-wrap.ra-cb-show{transform:translateY(0);}
+#ra-cb{background:#0F172A;border-top:2px solid #2563EB;padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+#ra-cb-text{flex:1;min-width:220px;}
+#ra-cb-title{font-size:14px;font-weight:600;color:#F8FAFC;margin:0 0 4px;}
+#ra-cb-desc{font-size:12px;color:#94A3B8;margin:0;line-height:1.5;}
+#ra-cb-desc a{color:#60A5FA;text-decoration:none;}
+#ra-cb-btns{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ra-btn-accept{background:#2563EB;color:#fff;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+.ra-btn-reject{background:transparent;color:#94A3B8;border:1px solid #334155;border-radius:6px;padding:9px 16px;font-size:13px;cursor:pointer;}
+</style>
+<div id="ra-cb-wrap">
+  <div id="ra-cb">
+    <div id="ra-cb-text">
+      <p id="ra-cb-title">We use cookies</p>
+      <p id="ra-cb-desc">We use analytics and ad cookies to improve Citro. See our <a href="/privacy.html">Privacy Policy</a>.</p>
+    </div>
+    <div id="ra-cb-btns">
+      <button class="ra-btn-accept" onclick="saveConsent(true)">Accept</button>
+      <button class="ra-btn-reject" onclick="saveConsent(false)">Reject</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var KEY='ra_cc';
+  function saveConsent(yes){
+    var p={n:true,a:yes,m:yes};
+    localStorage.setItem(KEY,JSON.stringify(p));
+    if(typeof gtag==='function')gtag('consent','update',{analytics_storage:yes?'granted':'denied',ad_storage:yes?'granted':'denied',ad_user_data:yes?'granted':'denied',ad_personalization:yes?'granted':'denied'});
+    document.getElementById('ra-cb-wrap').classList.remove('ra-cb-show');
+  }
+  window.saveConsent=saveConsent;
+  document.addEventListener('DOMContentLoaded',function(){
+    var stored=null;try{stored=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+    if(!stored){setTimeout(function(){document.getElementById('ra-cb-wrap').classList.add('ra-cb-show');},600);}
+    else if(typeof gtag==='function')gtag('consent','update',{analytics_storage:stored.a?'granted':'denied',ad_storage:stored.m?'granted':'denied',ad_user_data:stored.m?'granted':'denied',ad_personalization:stored.m?'granted':'denied'});
+  });
+})();
+</script>
+
+</body>
+</html>
