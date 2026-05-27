@@ -357,8 +357,25 @@ function gtag(){dataLayer.push(arguments);}
       </div>
       <div class="modal-form-group">
         <label class="modal-label">Website *</label>
-        <input class="modal-input" id="ap-website" type="text" placeholder="acmecorp.com" required />
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="modal-input" id="ap-website" type="text" placeholder="acmecorp.com" required style="flex:1;" />
+          <button type="button" id="ap-research-btn" onclick="researchProperty()" style="white-space:nowrap;padding:10px 14px;background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);flex-shrink:0;">Research →</button>
+        </div>
+        <div id="ap-research-hint" style="font-size:12px;color:#94A3B8;margin-top:5px;">Enter name + website, then click Research to auto-fill the fields below.</div>
       </div>
+
+      <!-- Research results card (hidden until research runs) -->
+      <div id="ap-research-result" style="display:none;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Company identified</div>
+        <p id="ap-research-summary" style="font-size:13px;color:#0F172A;line-height:1.6;margin:0;"></p>
+      </div>
+
+      <!-- Research loading state -->
+      <div id="ap-research-loading" style="display:none;font-size:13px;color:#64748B;padding:10px 0;display:none;align-items:center;gap:8px;margin-bottom:12px;">
+        <svg style="animation:spin 0.85s linear infinite;flex-shrink:0;" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#CBD5E1" stroke-width="2.5"/><path d="M8 2a6 6 0 0 1 6 6" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/></svg>
+        Researching your company…
+      </div>
+
       <div class="modal-form-group">
         <label class="modal-label">Industry</label>
         <input class="modal-input" id="ap-industry" type="text" placeholder="e.g. B2B SaaS, Healthcare, Legal Services" />
@@ -779,6 +796,48 @@ function gtag(){dataLayer.push(arguments);}
     document.getElementById('addPropertyModal').style.display = 'none';
     document.getElementById('addPropertyForm').reset();
     document.getElementById('addPropError').style.display = 'none';
+    document.getElementById('ap-research-result').style.display = 'none';
+    document.getElementById('ap-research-loading').style.display = 'none';
+    document.getElementById('ap-research-hint').style.display = 'block';
+  }
+
+  async function researchProperty() {
+    const name    = document.getElementById('ap-name').value.trim();
+    const website = document.getElementById('ap-website').value.trim();
+    if (!name && !website) {
+      document.getElementById('ap-name').focus();
+      return;
+    }
+
+    const btn = document.getElementById('ap-research-btn');
+    const loading = document.getElementById('ap-research-loading');
+    const result  = document.getElementById('ap-research-result');
+    const hint    = document.getElementById('ap-research-hint');
+
+    btn.disabled = true; btn.textContent = 'Researching…';
+    loading.style.display = 'flex';
+    result.style.display  = 'none';
+    hint.style.display    = 'none';
+
+    try {
+      const resp = await fetch('/api/research', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ name, website }),
+      });
+      const data = await resp.json();
+
+      if (data.industry)    document.getElementById('ap-industry').value    = data.industry;
+      if (data.offer)       document.getElementById('ap-product').value      = data.offer;
+      if (data.competitors) document.getElementById('ap-competitors').value  = data.competitors;
+      if (data.summary) {
+        document.getElementById('ap-research-summary').textContent = data.summary;
+        result.style.display = 'block';
+      }
+    } catch (e) { /* non-critical — fields stay empty */ }
+
+    loading.style.display = 'none';
+    btn.disabled = false; btn.textContent = 'Research →';
   }
 
   async function submitAddProperty(e) {
