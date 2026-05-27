@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}
+  gtag('consent','default',{analytics_storage:c&&c.a?'granted':'denied',ad_storage:c&&c.m?'granted':'denied',ad_user_data:c&&c.m?'granted':'denied',ad_personalization:c&&c.m?'granted':'denied',wait_for_update:500});
+})();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Start Your Free Trial — Citro</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #F8FAFC;
+  --dark:    #0B0F1A;
+  --accent:  #2563EB;
+  --accent-d:#1D4ED8;
+  --green:   #059669;
+  --green-bg:rgba(5,150,105,0.08);
+  --green-border:rgba(5,150,105,0.22);
+  --mid:     #64748B;
+  --quiet:   #94A3B8;
+  --border:  #E2E8F0;
+  --ink:     #0F172A;
+  --surface: #FFFFFF;
+  --red:     #DC2626;
+  --sans:    'Inter', system-ui, sans-serif;
+}
+html { scroll-behavior: smooth; }
+body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── NAV ── */
+nav {
+  background: var(--dark); padding: 0 48px; height: 60px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.nav-logo { text-decoration: none; display: flex; align-items: center; }
+.nav-logo-text { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+.nav-secure { display: flex; align-items: center; gap: 6px; font-size: 13px; color: rgba(255,255,255,0.45); font-weight: 500; }
+.nav-secure svg { color: var(--green); }
+
+/* ── PROGRESS BAR ── */
+.progress-wrap { background: rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 48px; background: var(--dark); }
+.progress-steps { display: flex; align-items: center; max-width: 640px; margin: 0 auto; padding: 16px 0; gap: 0; }
+.ps { display: flex; align-items: center; gap: 8px; flex: 1; }
+.ps-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all 0.3s; }
+.ps-dot.done   { background: var(--green); color: #fff; }
+.ps-dot.active { background: var(--accent); color: #fff; }
+.ps-dot.pending{ background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+.ps-label { font-size: 11px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; white-space: nowrap; transition: color 0.3s; }
+.ps-label.done   { color: var(--green); }
+.ps-label.active { color: #fff; }
+.ps-label.pending{ color: rgba(255,255,255,0.25); }
+.ps-line { flex: 1; height: 1px; background: rgba(255,255,255,0.1); margin: 0 12px; }
+.ps-line.done { background: var(--green); }
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 48px 20px 80px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; max-width: 580px; width: 100%; box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 8px 32px rgba(15,23,42,0.04); }
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+.step-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(37,99,235,0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+.step-icon.green { background: rgba(5,150,105,0.1); }
+
+h1.step-title { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); line-height: 1.2; margin-bottom: 8px; }
+p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-bottom: 28px; }
+
+/* ── FORM ELEMENTS ── */
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 6px; letter-spacing: 0.01em; }
+.field input, .field select, .field textarea {
+  width: 100%; font-family: var(--sans); font-size: 15px; color: var(--ink);
+  border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  background: var(--bg); outline: none; transition: border-color 0.15s, background 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
+.field input.error { border-color: var(--red); }
+.field .field-error { font-size: 12px; color: var(--red); margin-top: 5px; display: none; }
+.field .field-error.show { display: block; }
+
+.field-hint { font-size: 12px; color: var(--quiet); margin-top: 5px; }
+
+/* Password strength */
+.pw-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.pw-bar { height: 100%; width: 0; border-radius: 2px; transition: width 0.3s, background 0.3s; }
+
+/* Email chip */
+.email-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--mid); margin-bottom: 24px; }
+
+/* ── BUTTONS ── */
+.btn-primary {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px 24px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--sans); font-size: 15px;
+  font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s;
+  margin-top: 8px; letter-spacing: -0.1px;
+}
+.btn-primary:hover { background: var(--accent-d); }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { background: var(--quiet); cursor: not-allowed; }
+.btn-primary.green { background: var(--green); }
+.btn-primary.green:hover { background: #047857; }
+
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 18px; background: transparent; color: var(--mid);
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: var(--sans); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; margin-top: 12px;
+}
+.btn-ghost:hover { border-color: var(--mid); color: var(--ink); }
+
+/* ── RESEARCH CARD ── */
+.research-card {
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 20px; margin-bottom: 20px; display: none;
+}
+.research-card.visible { display: block; }
+.research-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.research-company-name { font-size: 17px; font-weight: 700; color: var(--ink); }
+.research-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); padding: 2px 8px; border-radius: 20px; }
+.research-summary { font-size: 14px; color: var(--mid); line-height: 1.65; margin-bottom: 16px; }
+.research-field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--quiet); margin-bottom: 6px; }
+.research-field-value { font-size: 14px; color: var(--ink); margin-bottom: 14px; }
+.research-edit-link { font-size: 12px; color: var(--accent); cursor: pointer; text-decoration: underline; float: right; margin-top: -18px; }
+
+/* Competitor tags */
+.competitor-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.competitor-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 13px; color: var(--ink); }
+.competitor-tag button { background: none; border: none; cursor: pointer; color: var(--quiet); font-size: 14px; line-height: 1; padding: 0 0 0 2px; }
+.competitor-tag button:hover { color: var(--red); }
+.competitor-add-wrap { display: flex; gap: 8px; margin-bottom: 6px; }
+.competitor-add-input { flex: 1; font-family: var(--sans); font-size: 13px; color: var(--ink); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; background: var(--surface); outline: none; }
+.competitor-add-input:focus { border-color: var(--accent); }
+.competitor-add-btn { padding: 7px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer; white-space: nowrap; }
+.competitor-add-btn:hover { background: rgba(37,99,235,0.05); }
+
+/* ── PERSONA CARDS ── */
+.persona-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.persona-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 18px; transition: border-color 0.15s; }
+.persona-card:hover { border-color: rgba(37,99,235,0.3); }
+.persona-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.persona-name { font-size: 15px; font-weight: 700; color: var(--ink); }
+.persona-title { font-size: 13px; color: var(--mid); margin-bottom: 10px; }
+.persona-desc { font-size: 13px; color: var(--mid); line-height: 1.6; }
+.persona-edit-btn { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: var(--sans); font-weight: 600; }
+
+/* ── TRIAL SUMMARY ── */
+.trial-summary { background: var(--dark); border-radius: 12px; padding: 24px; margin-bottom: 24px; color: #fff; }
+.trial-summary-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
+.trial-summary-row:last-child { border-bottom: none; }
+.trial-summary-label { color: rgba(255,255,255,0.5); }
+.trial-summary-value { font-weight: 600; color: #fff; }
+.trial-callout {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--green-bg); border: 1.5px solid var(--green-border);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 20px;
+}
+.trial-callout svg { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+.trial-callout-text { font-size: 13.5px; color: #065F46; line-height: 1.55; }
+.trial-callout-text strong { color: #064E3B; }
+
+/* ── LOADING ── */
+.loading-state { display: none; flex-direction: column; align-items: center; padding: 32px 0; text-align: center; }
+.loading-state.visible { display: flex; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.loading-sub { font-size: 14px; color: var(--mid); }
+
+/* ── GLOBAL ERROR ── */
+.global-error { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--red); margin-bottom: 16px; display: none; }
+.global-error.show { display: block; }
+
+/* ── STRIPE BADGE ── */
+.stripe-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+.stripe-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--quiet); }
+.stripe-item svg { flex-shrink: 0; }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+/* ── MOBILE ── */
+@media (max-width: 640px) {
+  nav { padding: 0 20px; }
+  .progress-wrap { padding: 0 20px; }
+  .ps-label { display: none; }
+  .card { padding: 32px 24px; border-radius: 12px; }
+  h1.step-title { font-size: 22px; }
+  .main { padding: 24px 16px 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-text">Citro</span>
+  </a>
+  <div class="nav-secure">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    Secure checkout
+  </div>
+</nav>
+
+<!-- STEP PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="ps" id="ps-1">
+      <div class="ps-dot active" id="ps-dot-1">1</div>
+      <span class="ps-label active" id="ps-label-1">Email</span>
+    </div>
+    <div class="ps-line" id="ps-line-1"></div>
+    <div class="ps" id="ps-2">
+      <div class="ps-dot pending" id="ps-dot-2">2</div>
+      <span class="ps-label pending" id="ps-label-2">Account</span>
+    </div>
+    <div class="ps-line" id="ps-line-2"></div>
+    <div class="ps" id="ps-3">
+      <div class="ps-dot pending" id="ps-dot-3">3</div>
+      <span class="ps-label pending" id="ps-label-3">Your Business</span>
+    </div>
+    <div class="ps-line" id="ps-line-3"></div>
+    <div class="ps" id="ps-4">
+      <div class="ps-dot pending" id="ps-dot-4">4</div>
+      <span class="ps-label pending" id="ps-label-4">Buyers</span>
+    </div>
+    <div class="ps-line" id="ps-line-4"></div>
+    <div class="ps" id="ps-5">
+      <div class="ps-dot pending" id="ps-dot-5">5</div>
+      <span class="ps-label pending" id="ps-label-5">Start Trial</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="card">
+
+  <!-- ── STEP 1: EMAIL ── -->
+  <div class="step-panel active" id="step-1">
+    <div class="step-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    </div>
+    <h1 class="step-title">Let's get your AI search ranking audit going.</h1>
+    <p class="step-sub">Enter your business email to create your free account and start your 7-day trial.</p>
+    <div class="global-error" id="err-1"></div>
+    <div class="field">
+      <label for="f-email">Business email</label>
+      <input type="email" id="f-email" placeholder="you@company.com" autocomplete="email" />
+    </div>
+    <button class="btn-primary" onclick="goStep2()">
+      Continue
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <div class="stripe-row" style="margin-top:20px;">
+      <span class="stripe-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Card collected at Step 5 — no charge today
+      </span>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: PASSWORD ── -->
+  <div class="step-panel" id="step-2">
+    <div class="step-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h1 class="step-title">Create your account password.</h1>
+    <p class="step-sub">You'll use this to log into your Citro dashboard and track your ranking improvement over time.</p>
+    <div class="email-chip">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span id="email-display-2">—</span>
+    </div>
+    <div class="global-error" id="err-2"></div>
+    <div class="field">
+      <label for="f-password">Password</label>
+      <input type="password" id="f-password" placeholder="At least 8 characters" autocomplete="new-password" oninput="updatePwStrength()" />
+      <div class="pw-bar-wrap"><div class="pw-bar" id="pw-bar"></div></div>
+    </div>
+    <div class="field">
+      <label for="f-password2">Confirm password</label>
+      <input type="password" id="f-password2" placeholder="Repeat your password" autocomplete="new-password" />
+    </div>
+    <button class="btn-primary" onclick="goStep3()">
+      Continue
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <button class="btn-ghost" onclick="goStep(1)">← Back</button>
+  </div>
+
+  <!-- ── STEP 3: BUSINESS PROFILE ── -->
+  <div class="step-panel" id="step-3">
+
+    <!-- Phase A: input form -->
+    <div id="step-3a">
+      <div class="step-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h1 class="step-title">Tell us about your business.</h1>
+      <p class="step-sub">We'll research your company and build a pre-filled profile you can verify and adjust before running your audit.</p>
+      <div class="global-error" id="err-3"></div>
+      <div class="field">
+        <label for="f-biz-name">Business name <span style="color:var(--red);">*</span></label>
+        <input type="text" id="f-biz-name" placeholder="Acme Consulting" />
+      </div>
+      <div class="field">
+        <label for="f-biz-url">Website URL <span style="color:var(--quiet);font-weight:400;">(optional — helps us research faster)</span></label>
+        <input type="text" id="f-biz-url" placeholder="yourcompany.com" />
+      </div>
+      <div class="field">
+        <label for="f-biz-product">Specific product or service to audit <span style="color:var(--quiet);font-weight:400;">(optional)</span></label>
+        <input type="text" id="f-biz-product" placeholder="e.g. fractional CFO services, B2B SaaS security platform" />
+        <div class="field-hint">Leave blank to audit your overall brand.</div>
+      </div>
+      <button class="btn-primary" id="research-btn" onclick="runResearch()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Look up my business
+      </button>
+      <button class="btn-ghost" onclick="goStep(2)">← Back</button>
+    </div>
+
+    <!-- Phase B: loading -->
+    <div class="loading-state" id="research-loading">
+      <div class="spinner"></div>
+      <div class="loading-title">Researching your business…</div>
+      <div class="loading-sub">We're reading your website and building your profile.</div>
+    </div>
+
+    <!-- Phase C: research results -->
+    <div id="step-3b" style="display:none;">
+      <div class="step-icon green">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h1 class="step-title">Here's what we found.</h1>
+      <p class="step-sub">Review your profile and make any corrections. This drives how we simulate buyer searches across 7 AI platforms.</p>
+      <div class="global-error" id="err-3b"></div>
+      <div class="research-card visible" id="research-result-card">
+        <div class="research-card-header">
+          <div class="research-company-name" id="rc-name">—</div>
+          <div class="research-badge">AI-researched</div>
+        </div>
+        <div class="research-summary" id="rc-summary">—</div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>What you sell</label>
+          <input type="text" id="rc-offer" placeholder="Your offer" />
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>Target buyer</label>
+          <input type="text" id="rc-buyer" placeholder="Who buys from you" />
+        </div>
+        <div class="field" style="margin-bottom:14px;">
+          <label>Market</label>
+          <input type="text" id="rc-geo" placeholder="e.g. United States" />
+        </div>
+        <div>
+          <div class="research-field-label">Key competitors</div>
+          <div class="competitor-tags" id="competitor-tags"></div>
+          <div class="competitor-add-wrap">
+            <input class="competitor-add-input" id="competitor-input" type="text" placeholder="Add competitor…" onkeydown="if(event.key==='Enter'){event.preventDefault();addCompetitor();}" />
+            <button class="competitor-add-btn" onclick="addCompetitor()">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="confirmProfile()">
+        This looks right — continue
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-ghost" onclick="resetToStep3a()">← Edit business details</button>
+    </div>
+
+  </div>
+
+  <!-- ── STEP 4: BUYER PERSONAS ── -->
+  <div class="step-panel" id="step-4">
+    <!-- Loading personas -->
+    <div class="loading-state" id="personas-loading" style="display:flex;">
+      <div class="spinner"></div>
+      <div class="loading-title">Building your buyer personas…</div>
+      <div class="loading-sub">We're creating AI-accurate buyers based on your business profile.</div>
+    </div>
+    <!-- Personas content -->
+    <div id="personas-content" style="display:none;">
+      <div class="step-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h1 class="step-title">Verify your target buyers.</h1>
+      <p class="step-sub">These personas drive every query we run across AI platforms — they're your buyers asking AI who to call. Edit anything that doesn't match your real customers.</p>
+      <div class="global-error" id="err-4"></div>
+      <div class="persona-grid" id="persona-grid"></div>
+      <button class="btn-primary" onclick="goStep5()">
+        These look right — continue
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <button class="btn-ghost" onclick="goStep(3)">← Back</button>
+    </div>
+    <div class="global-error" id="err-4-load" style="margin-top:16px;"></div>
+  </div>
+
+  <!-- ── STEP 5: START TRIAL ── -->
+  <div class="step-panel" id="step-5">
+    <div class="step-icon green">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h1 class="step-title">You're all set — let's start your free trial.</h1>
+    <p class="step-sub">Review what we've set up, then enter your payment details to begin. You won't be charged for 7 days.</p>
+
+    <!-- Summary -->
+    <div class="trial-summary" id="trial-summary-block">
+      <div class="trial-summary-row">
+        <span class="trial-summary-label">Account</span>
+        <span class="trial-summary-value" id="ts-email">—</span>
+      </div>
+      <div class="trial-summary-row">
+        <span class="trial-summary-label">Business</span>
+        <span class="trial-summary-value" id="ts-biz">—</span>
+      </div>
+      <div class="trial-summary-row">
+        <span class="trial-summary-label">Personas</span>
+        <span class="trial-summary-value" id="ts-personas">—</span>
+      </div>
+      <div class="trial-summary-row">
+        <span class="trial-summary-label">Plan</span>
+        <span class="trial-summary-value">Citro Professional</span>
+      </div>
+      <div class="trial-summary-row">
+        <span class="trial-summary-label">Due today</span>
+        <span class="trial-summary-value" style="color:#34D399;">$0.00</span>
+      </div>
+      <div class="trial-summary-row">
+        <span class="trial-summary-label">After trial (day 8)</span>
+        <span class="trial-summary-value">$119.00 / month</span>
+      </div>
+    </div>
+
+    <div class="trial-callout">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="trial-callout-text">
+        <strong>7-day free trial.</strong> Your card is saved securely by Stripe but won't be charged until day 8. Cancel any time before then from your dashboard — no charge, no questions.
+      </div>
+    </div>
+
+    <div class="global-error" id="err-5"></div>
+    <button class="btn-primary green" id="start-trial-btn" onclick="startTrial()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span id="start-trial-label">Start Free Trial — Enter Payment</span>
+    </button>
+    <button class="btn-ghost" onclick="goStep(4)">← Back</button>
+
+    <div class="stripe-row">
+      <span class="stripe-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Secured by Stripe
+      </span>
+      <span class="stripe-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Card encrypted — never stored on our servers
+      </span>
+      <span class="stripe-item">
+        Cancel anytime before day 8
+      </span>
+    </div>
+    <p style="font-size:12px;color:var(--quiet);text-align:center;margin-top:12px;line-height:1.5;">By continuing you agree to our <a href="/terms.html" target="_blank" style="color:var(--mid);">Terms of Service</a> and <a href="/privacy.html" target="_blank" style="color:var(--mid);">Privacy Policy</a>.</p>
+  </div>
+
+</div><!-- /card -->
+</div><!-- /main -->
+
+<script>
+// ── STATE ──
+let state = {
+  email: '',
+  password: '',
+  bizName: '',
+  bizUrl: '',
+  bizProduct: '',
+  profile: {},     // returned from /api/research
+  competitors: [], // user-editable
+  personas: [],    // generated by Claude
+};
+
+// ── STEP NAVIGATION ──
+function goStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+  updateProgress(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateProgress(active) {
+  for (let i = 1; i <= 5; i++) {
+    const dot   = document.getElementById('ps-dot-' + i);
+    const label = document.getElementById('ps-label-' + i);
+    const line  = document.getElementById('ps-line-' + i);
+    const status = i < active ? 'done' : i === active ? 'active' : 'pending';
+    dot.className   = 'ps-dot ' + status;
+    label.className = 'ps-label ' + status;
+    if (i < active) dot.innerHTML = '✓';
+    else dot.innerHTML = i;
+    if (line) line.className = 'ps-line' + (i < active ? ' done' : '');
+  }
+}
+
+// ── STEP 1 → 2 ──
+function goStep2() {
+  const email = document.getElementById('f-email').value.trim();
+  const err   = document.getElementById('err-1');
+  err.classList.remove('show');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.textContent = 'Please enter a valid email address.';
+    err.classList.add('show'); return;
+  }
+  state.email = email;
+  document.getElementById('email-display-2').textContent = email;
+  goStep(2);
+}
+
+// ── PASSWORD STRENGTH ──
+function updatePwStrength() {
+  const pw  = document.getElementById('f-password').value;
+  const bar = document.getElementById('pw-bar');
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const pct   = [0, 25, 50, 75, 100][score];
+  const color = ['','#EF4444','#F59E0B','#3B82F6','#059669'][score];
+  bar.style.width = pct + '%';
+  bar.style.background = color;
+}
+
+// ── STEP 2 → 3 ──
+function goStep3() {
+  const pw  = document.getElementById('f-password').value;
+  const pw2 = document.getElementById('f-password2').value;
+  const err = document.getElementById('err-2');
+  err.classList.remove('show');
+  if (pw.length < 8) {
+    err.textContent = 'Password must be at least 8 characters.';
+    err.classList.add('show'); return;
+  }
+  if (pw !== pw2) {
+    err.textContent = 'Passwords do not match.';
+    err.classList.add('show'); return;
+  }
+  state.password = pw;
+  goStep(3);
+}
+
+// ── RESEARCH ──
+async function runResearch() {
+  const name = document.getElementById('f-biz-name').value.trim();
+  const err  = document.getElementById('err-3');
+  err.classList.remove('show');
+  if (!name) {
+    err.textContent = 'Business name is required.';
+    err.classList.add('show'); return;
+  }
+  state.bizName    = name;
+  state.bizUrl     = document.getElementById('f-biz-url').value.trim();
+  state.bizProduct = document.getElementById('f-biz-product').value.trim();
+
+  // Show loading
+  document.getElementById('step-3a').style.display    = 'none';
+  document.getElementById('research-loading').style.display = 'flex';
+
+  try {
+    const resp = await fetch('/api/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, website: state.bizUrl, industry: '', specific_product: state.bizProduct }),
+    });
+    const data = await resp.json();
+
+    state.profile    = data;
+    state.competitors = (data.competitors || '').split(',').map(c => c.trim()).filter(Boolean);
+
+    // Populate result card
+    document.getElementById('rc-name').textContent    = name;
+    document.getElementById('rc-summary').textContent = data.summary || 'Profile generated from your website and business description.';
+    document.getElementById('rc-offer').value = data.offer || '';
+    document.getElementById('rc-buyer').value = data.buyer || '';
+    document.getElementById('rc-geo').value   = data.geo   || '';
+    renderCompetitorTags();
+
+    // Show Phase C
+    document.getElementById('research-loading').style.display = 'none';
+    document.getElementById('step-3b').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('research-loading').style.display = 'none';
+    document.getElementById('step-3a').style.display = 'block';
+    err.textContent = 'Could not research your business. Please try again.';
+    err.classList.add('show');
+  }
+}
+
+function resetToStep3a() {
+  document.getElementById('step-3b').style.display = 'none';
+  document.getElementById('step-3a').style.display = 'block';
+}
+
+// ── COMPETITOR TAGS ──
+function renderCompetitorTags() {
+  const wrap = document.getElementById('competitor-tags');
+  wrap.innerHTML = state.competitors.map((c, i) => `
+    <span class="competitor-tag">
+      ${c}
+      <button onclick="removeCompetitor(${i})" title="Remove">&times;</button>
+    </span>`).join('');
+}
+
+function removeCompetitor(i) {
+  state.competitors.splice(i, 1);
+  renderCompetitorTags();
+}
+
+function addCompetitor() {
+  const input = document.getElementById('competitor-input');
+  const val = input.value.trim();
+  if (val && !state.competitors.includes(val)) {
+    state.competitors.push(val);
+    renderCompetitorTags();
+  }
+  input.value = '';
+  input.focus();
+}
+
+// ── CONFIRM PROFILE → STEP 4 ──
+async function confirmProfile() {
+  // Save edits back to state
+  state.profile.offer = document.getElementById('rc-offer').value.trim();
+  state.profile.buyer = document.getElementById('rc-buyer').value.trim();
+  state.profile.geo   = document.getElementById('rc-geo').value.trim();
+  state.profile.competitors = state.competitors.join(', ');
+  state.profile.company_name = state.bizName;
+  state.profile.website = state.bizUrl;
+  state.profile.specific_product = state.bizProduct;
+
+  goStep(4);
+  generatePersonas();
+}
+
+// ── GENERATE PERSONAS ──
+async function generatePersonas() {
+  document.getElementById('personas-loading').style.display = 'flex';
+  document.getElementById('personas-content').style.display = 'none';
+
+  const p = state.profile;
+  const prompt = `You are a B2B buyer persona expert. Based on this company profile, generate exactly 3 realistic buyer personas. Return ONLY a valid JSON array, no explanation or markdown.
+
+Company: ${state.bizName}
+What they sell: ${p.offer || ''}
+Target buyer: ${p.buyer || ''}
+Industry niche: ${p.industry || ''}
+Geography: ${p.geo || ''}
+Key competitors: ${p.competitors || ''}
+
+Return this exact JSON structure:
+[
+  {
+    "name": "First Last (a realistic name)",
+    "title": "Job title",
+    "company": "Type of company they work at",
+    "painPoint": "1-2 sentences describing their main challenge that this company solves",
+    "searchBehavior": "1 sentence on how they use AI to find vendors"
+  }
+]`;
+
+  try {
+    const resp = await fetch('/api/claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text || '[]';
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    state.personas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+    if (!state.personas.length) throw new Error('No personas returned');
+    renderPersonas();
+  } catch(e) {
+    // Fallback personas
+    state.personas = [
+      { name: 'Sarah Mitchell', title: 'VP of Marketing', company: 'Mid-market B2B company', painPoint: 'Needs to prove ROI on content and understand where qualified buyers are coming from.', searchBehavior: 'Asks AI platforms for recommended vendors before contacting sales.' },
+      { name: 'David Chen', title: 'Head of Growth', company: 'SaaS startup (Series A)', painPoint: 'Struggling to get their brand in front of buyers earlier in the research process.', searchBehavior: 'Uses ChatGPT and Perplexity to shortlist tools before demoing.' },
+      { name: 'Rachel Torres', title: 'Director of Strategy', company: 'Professional services firm', painPoint: 'Competitors are showing up in AI recommendations; they are not.', searchBehavior: 'Runs AI queries to benchmark how their firm appears vs. competitors.' },
+    ];
+    renderPersonas();
+  }
+}
+
+function renderPersonas() {
+  const grid = document.getElementById('persona-grid');
+  grid.innerHTML = state.personas.map((p, i) => `
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-name">${p.name}</div>
+      </div>
+      <div class="persona-title">${p.title} · ${p.company}</div>
+      <div class="persona-desc">${p.painPoint}</div>
+      ${p.searchBehavior ? `<div class="persona-desc" style="margin-top:6px;color:var(--accent);font-size:12px;">AI behavior: ${p.searchBehavior}</div>` : ''}
+    </div>`).join('');
+
+  document.getElementById('personas-loading').style.display = 'none';
+  document.getElementById('personas-content').style.display = 'block';
+}
+
+// ── STEP 4 → 5 ──
+function goStep5() {
+  document.getElementById('ts-email').textContent   = state.email;
+  document.getElementById('ts-biz').textContent     = state.bizName;
+  document.getElementById('ts-personas').textContent = state.personas.length + ' buyer personas configured';
+  goStep(5);
+}
+
+// ── START TRIAL ──
+async function startTrial() {
+  const btn   = document.getElementById('start-trial-btn');
+  const label = document.getElementById('start-trial-label');
+  const err   = document.getElementById('err-5');
+  err.classList.remove('show');
+
+  btn.disabled = true;
+  label.textContent = 'Creating your account…';
+
+  try {
+    const resp = await fetch('/api/start-trial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:    state.email,
+        password: state.password,
+        profile:  { ...state.profile, company_name: state.bizName, website: state.bizUrl, specific_product: state.bizProduct, competitors: state.competitors.join(', ') },
+        personas: state.personas,
+      }),
+    });
+    const data = await resp.json();
+
+    if (!resp.ok || !data.url) {
+      throw new Error(data.error || 'Could not create your account. Please try again.');
+    }
+
+    // Store email so trial-confirm.html can use it
+    sessionStorage.setItem('trial_email', state.email);
+    label.textContent = 'Redirecting to secure payment…';
+    window.location.href = data.url;
+
+  } catch(e) {
+    btn.disabled = false;
+    label.textContent = 'Start Free Trial — Enter Payment';
+    err.textContent = e.message;
+    err.classList.add('show');
+  }
+}
+
+// ── ENTER KEY SUPPORT ──
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') return;
+  const active = document.querySelector('.step-panel.active');
+  if (!active) return;
+  const id = active.id;
+  if (id === 'step-1') goStep2();
+  else if (id === 'step-2') goStep3();
+});
+</script>
+</body>
+</html>
