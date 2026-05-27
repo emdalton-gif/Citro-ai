@@ -812,6 +812,8 @@ function gtag(){dataLayer.push(arguments);}
     } catch(e) {
       errEl.textContent = e.message;
       errEl.style.display = 'block';
+      // Scroll error into view — it sits above the form fold so easy to miss
+      errEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       btn.disabled = false; btn.textContent = 'Add property →';
     }
   }
