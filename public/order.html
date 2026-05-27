@@ -791,7 +791,7 @@ function gtag(){dataLayer.push(arguments);}
               <div class="plan-badge">Most popular</div>
               <div class="plan-name">Professional</div>
               <div class="plan-price">$119 <span>/ month</span></div>
-              <div class="plan-desc">Unlimited re-runs for one company or product. Score trend tracking, full history, and email delivery every run.</div>
+              <div class="plan-desc"><strong style="color:#059669;">7-day free trial.</strong> Card required — charged after trial ends. Unlimited re-runs, score trend tracking, full history, and email delivery.</div>
             </div>
             <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
               <div class="plan-radio"></div>
@@ -825,6 +825,12 @@ function gtag(){dataLayer.push(arguments);}
             </div>
           </div>
 
+          <!-- Trial callout — visible when Professional is selected -->
+          <div id="trial-callout" style="display:none;align-items:flex-start;gap:10px;background:rgba(5,150,105,0.08);border:1.5px solid rgba(5,150,105,0.25);border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><polyline points="20 6 9 17 4 12"/></svg>
+            <span style="font-size:13px;color:#374151;line-height:1.5;"><strong style="color:#065f46;">7-day free trial.</strong> Your card is saved now but not charged until your trial ends on day 8. Cancel anytime before then — no charge.</span>
+          </div>
+
           <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(5,150,105,0.06);border:1px solid rgba(5,150,105,0.18);border-radius:10px;padding:12px 14px;margin-bottom:16px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             <span style="font-size:13px;color:#374151;line-height:1.5;"><strong style="color:#065f46;">7-day full refund guarantee.</strong> If your report doesn't reveal something actionable about your Citro visibility, email us within 7 days for a full refund. No questions asked.</span>
@@ -834,9 +840,9 @@ function gtag(){dataLayer.push(arguments);}
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            Proceed to Secure Payment
+            <span id="checkout-btn-label">Proceed to Secure Payment</span>
           </button>
-          <p style="font-size:12px;color:var(--mid);text-align:center;margin-top:10px;line-height:1.5;">Not what you expected? Email us within 7 days of delivery for a full refund, no questions asked.</p>
+          <p style="font-size:12px;color:var(--mid);text-align:center;margin-top:10px;line-height:1.5;" id="checkout-refund-note">Not what you expected? Email us within 7 days of delivery for a full refund, no questions asked.</p>
           <p class="btn-note">You'll be taken to a secure payment page. We accept all major cards.</p>
           <p class="btn-note" style="margin-top:6px;">By purchasing you agree to our <a href="/terms.html" target="_blank">Terms of Service</a> and <a href="/privacy.html" target="_blank">Privacy Policy</a>.</p>
 
@@ -984,9 +990,9 @@ function gtag(){dataLayer.push(arguments);}
     let selectedPlan = 'snapshot';
 
     const PLAN_DATA = {
-      snapshot:     { name: 'Snapshot',     price: '$97',      priceDisplay: '$97 one-time'  },
-      professional: { name: 'Professional', price: '$119/mo',  priceDisplay: '$119 / month'  },
-      enterprise:   { name: 'Enterprise',   price: '$299/mo',  priceDisplay: '$299 / month'  }
+      snapshot:     { name: 'Snapshot',     price: '$97',          priceDisplay: '$97 one-time'           },
+      professional: { name: 'Professional', price: 'Free (7 days)', priceDisplay: 'Free trial → $119/mo'  },
+      enterprise:   { name: 'Enterprise',   price: '$299/mo',      priceDisplay: '$299 / month'           }
     };
 
     const INDUSTRY_LABELS = {
@@ -1168,6 +1174,20 @@ function gtag(){dataLayer.push(arguments);}
       const p = PLAN_DATA[selectedPlan];
       document.getElementById('sum-plan-name').textContent = p.name;
       document.getElementById('sum-price').textContent     = p.price;
+
+      const isTrial = selectedPlan === 'professional';
+      const trialBox = document.getElementById('trial-callout');
+      if (trialBox) trialBox.style.display = isTrial ? 'flex' : 'none';
+
+      const btnLabel = document.getElementById('checkout-btn-label');
+      if (btnLabel) btnLabel.textContent = isTrial ? 'Start Free Trial' : 'Proceed to Secure Payment';
+
+      const refundNote = document.getElementById('checkout-refund-note');
+      if (refundNote) {
+        refundNote.textContent = isTrial
+          ? 'Trial ends in 7 days. Cancel before then and you will not be charged.'
+          : 'Not what you expected? Email us within 7 days of delivery for a full refund, no questions asked.';
+      }
     }
 
     // ── CHECKOUT ──
