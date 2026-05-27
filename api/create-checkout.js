@@ -78,29 +78,37 @@ module.exports = async function handler(req, res) {
 
   const origin = req.headers.origin || 'https://rootpartners.co';
 
+  // Build session params — add a 7-day free trial for Professional plan
+  const sessionParams = {
+    mode: isSubscription ? 'subscription' : 'payment',
+    allow_promotion_codes: true,
+    customer_email: email,
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: isSubscription
+      ? `${origin}/sub-confirm.html?session_id={CHECKOUT_SESSION_ID}`
+      : `${origin}/confirm.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/order.html`,
+    metadata: {
+      plan: plan || 'snapshot',
+      company_name: (name || '').slice(0, 400),
+      website: (website || '').slice(0, 400),
+      industry: (industry || '').slice(0, 100),
+      email: (email || '').slice(0, 200),
+      specific_product: (specific_product || '').slice(0, 400),
+      offer: (offer || '').slice(0, 480),
+      buyer: (buyer || '').slice(0, 480),
+      geo: (geo || '').slice(0, 100),
+      competitors: (competitors || '').slice(0, 400),
+    },
+  };
+
+  // 7-day free trial for Professional (card collected upfront, charged after trial)
+  if (plan === 'professional') {
+    sessionParams.subscription_data = { trial_period_days: 7 };
+  }
+
   try {
-    const session = await stripePost('/checkout/sessions', {
-      mode: isSubscription ? 'subscription' : 'payment',
-      allow_promotion_codes: true,
-      customer_email: email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: isSubscription
-        ? `${origin}/sub-confirm.html?session_id={CHECKOUT_SESSION_ID}`
-        : `${origin}/confirm.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/order.html`,
-      metadata: {
-        plan: plan || 'snapshot',
-        company_name: (name || '').slice(0, 400),
-        website: (website || '').slice(0, 400),
-        industry: (industry || '').slice(0, 100),
-        email: (email || '').slice(0, 200),
-        specific_product: (specific_product || '').slice(0, 400),
-        offer: (offer || '').slice(0, 480),
-        buyer: (buyer || '').slice(0, 480),
-        geo: (geo || '').slice(0, 100),
-        competitors: (competitors || '').slice(0, 400),
-      },
-    });
+    const session = await stripePost('/checkout/sessions', sessionParams);
 
     if (session.error) {
       return res.status(400).json({ error: session.error.message });
