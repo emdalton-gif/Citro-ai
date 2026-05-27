@@ -642,12 +642,12 @@ function gtag(){dataLayer.push(arguments);}
         <!-- STEP 1: Company basics -->
         <div class="step-panel active" id="step-1">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
-            <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;color:#059669;">
+            <span id="plan-header-pill" style="display:inline-flex;align-items:center;gap:6px;background:rgba(5,150,105,0.08);border:1px solid rgba(5,150,105,0.2);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:600;color:#059669;">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              $97 one-time &nbsp;·&nbsp; No subscription
+              <span id="plan-header-pill-text">$97 one-time &nbsp;·&nbsp; No subscription</span>
             </span>
             <span style="font-size:12px;color:var(--quiet);">⚡ Results in under 5 minutes</span>
-            <span style="font-size:12px;color:var(--quiet);">🔒 Full refund guaranteed</span>
+            <span id="plan-header-guarantee" style="font-size:12px;color:var(--quiet);">🔒 Full refund guaranteed</span>
           </div>
           <h1 class="step-title">Tell us about your business</h1>
           <p class="step-sub">We use this to build buyer personas specific to your industry and simulate the queries your actual buyers are running.</p>
@@ -1175,7 +1175,26 @@ function gtag(){dataLayer.push(arguments);}
       document.getElementById('sum-plan-name').textContent = p.name;
       document.getElementById('sum-price').textContent     = p.price;
 
-      const isTrial = selectedPlan === 'professional';
+      const isTrial      = selectedPlan === 'professional';
+      const isEnterprise = selectedPlan === 'enterprise';
+
+      // Header pill (Step 1 trust badge)
+      const pillText = document.getElementById('plan-header-pill-text');
+      const pillGuarantee = document.getElementById('plan-header-guarantee');
+      if (pillText) {
+        if (isTrial) {
+          pillText.innerHTML = '7-day free trial &nbsp;·&nbsp; Card required';
+        } else if (isEnterprise) {
+          pillText.innerHTML = '$299/mo &nbsp;·&nbsp; Cancel anytime';
+        } else {
+          pillText.innerHTML = '$97 one-time &nbsp;·&nbsp; No subscription';
+        }
+      }
+      if (pillGuarantee) {
+        pillGuarantee.textContent = isTrial ? '🔒 No charge for 7 days' : '🔒 Full refund guaranteed';
+      }
+
+      // Trial callout (Step 3)
       const trialBox = document.getElementById('trial-callout');
       if (trialBox) trialBox.style.display = isTrial ? 'flex' : 'none';
 
