@@ -780,6 +780,7 @@ function gtag(){dataLayer.push(arguments);}
           <div class="prop-detail-runs"><p style="font-size:13px;color:var(--muted);text-align:center;padding:8px 0;">Loading…</p></div>
           <div class="prop-detail-actions">
             ${canceled ? '' : `<a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-primary" onclick="event.stopPropagation()">Run audit</a>`}
+            <a href="/sub-audit.html?propertyId=${prop.id}&editPersonas=1" class="prop-btn-ghost" onclick="event.stopPropagation()">Edit personas</a>
             <a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-ghost" onclick="event.stopPropagation()">View all history →</a>
           </div>
         </div>
