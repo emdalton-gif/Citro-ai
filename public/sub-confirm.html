@@ -186,8 +186,8 @@ function gtag(){dataLayer.push(arguments);}
         <div class="step inactive"><div class="step-dot">3</div><span>Buyer personas</span></div>
       </div>
       <div class="success-icon">✓</div>
-      <h1>Subscription confirmed.</h1>
-      <p class="sub">Choose a password to secure your account. You'll use this to log in and run audits.</p>
+      <h1 id="confirmHeading">Subscription confirmed.</h1>
+      <p class="sub" id="confirmSubheading">Choose a password to secure your account. You'll use this to log in and run audits.</p>
       <div class="email-chip">✉ <span id="emailDisplay">—</span></div>
       <div class="error-msg" id="pwError"></div>
       <form id="passwordForm">
@@ -366,6 +366,15 @@ function gtag(){dataLayer.push(arguments);}
       })();
 
       document.getElementById('emailDisplay').textContent = data.email;
+
+      // Show trial-specific messaging for Professional plan
+      if (data.plan === 'professional') {
+        var h = document.getElementById('confirmHeading');
+        var s = document.getElementById('confirmSubheading');
+        if (h) h.textContent = 'Your free trial has started.';
+        if (s) s.textContent = 'Your card is saved but won\'t be charged for 7 days. Create a password to access your account.';
+      }
+
       showState('statePassword');
     } catch (err) {
       showFatalError('Network error. Please refresh the page.');
