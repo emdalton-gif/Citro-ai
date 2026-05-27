@@ -1138,6 +1138,7 @@ function gtag(){dataLayer.push(arguments);}
     const params = new URLSearchParams(window.location.search);
     const runId = params.get('runId');
     const propertyId = params.get('propertyId');
+    const editPersonas = params.get('editPersonas') === '1';
 
     if (runId) {
       // View mode: load existing run
@@ -1335,6 +1336,30 @@ function gtag(){dataLayer.push(arguments);}
                 document.getElementById('f-competitors').value = rd.competitors;
             } catch (e) { /* non-critical — user can fill manually */ }
           })();
+        }
+
+        // If ?editPersonas=1, skip the setup form and go straight to personas
+        if (editPersonas) {
+          const profile = {
+            company_name: p.name || document.getElementById('f-name').value.trim(),
+            website:      p.website || document.getElementById('f-website').value.trim(),
+            industry:     p.industry || '',
+            geo:          p.geo || '',
+            specific_product: p.specific_product || '',
+            competitors:  p.competitors || '',
+          };
+          _currentProfile = profile;
+          flex('screen-loading');
+          try {
+            const personas = p.personas && p.personas.length ? p.personas : await genPersonas(profile);
+            renderPersonas(personas);
+            hide('screen-loading');
+            block('screen-personas');
+          } catch(e) {
+            hide('screen-loading');
+            block('screen-setup');
+          }
+          return;
         }
 
         block('screen-setup');
