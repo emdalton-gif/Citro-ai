@@ -661,50 +661,28 @@ async function generatePersonas() {
   document.getElementById('personas-content').style.display = 'none';
 
   const p = state.profile;
-  const prompt = `You are a B2B buyer persona expert. Based on this company profile, generate exactly 3 realistic buyer personas. Return ONLY a valid JSON array, no explanation or markdown.
-
-Company: ${state.bizName}
-What they sell: ${p.offer || ''}
-Target buyer: ${p.buyer || ''}
-Industry niche: ${p.industry || ''}
-Geography: ${p.geo || ''}
-Key competitors: ${p.competitors || ''}
-
-Return this exact JSON structure:
-[
-  {
-    "name": "First Last (a realistic name)",
-    "title": "Job title",
-    "company": "Type of company they work at",
-    "painPoint": "1-2 sentences describing their main challenge that this company solves",
-    "searchBehavior": "1 sentence on how they use AI to find vendors"
-  }
-]`;
 
   try {
-    const resp = await fetch('/api/claude', {
+    const resp = await fetch('/api/gen-personas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1200,
-        messages: [{ role: 'user', content: prompt }],
+        company_name: state.bizName,
+        offer:        p.offer || '',
+        buyer:        p.buyer || '',
+        industry:     p.industry || '',
+        geo:          p.geo || '',
+        competitors:  p.competitors || state.competitors.join(', '),
       }),
     });
     const data = await resp.json();
-    const text = data.content?.[0]?.text || '[]';
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    state.personas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+    state.personas = data.personas || [];
     if (!state.personas.length) throw new Error('No personas returned');
     renderPersonas();
   } catch(e) {
-    // Fallback personas
-    state.personas = [
-      { name: 'Sarah Mitchell', title: 'VP of Marketing', company: 'Mid-market B2B company', painPoint: 'Needs to prove ROI on content and understand where qualified buyers are coming from.', searchBehavior: 'Asks AI platforms for recommended vendors before contacting sales.' },
-      { name: 'David Chen', title: 'Head of Growth', company: 'SaaS startup (Series A)', painPoint: 'Struggling to get their brand in front of buyers earlier in the research process.', searchBehavior: 'Uses ChatGPT and Perplexity to shortlist tools before demoing.' },
-      { name: 'Rachel Torres', title: 'Director of Strategy', company: 'Professional services firm', painPoint: 'Competitors are showing up in AI recommendations; they are not.', searchBehavior: 'Runs AI queries to benchmark how their firm appears vs. competitors.' },
-    ];
-    renderPersonas();
+    document.getElementById('err-4-load').textContent = 'Could not generate personas. Please go back and try again.';
+    document.getElementById('err-4-load').classList.add('show');
+    document.getElementById('personas-loading').style.display = 'none';
   }
 }
 
