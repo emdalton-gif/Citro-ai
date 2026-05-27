@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}
+  gtag('consent','default',{analytics_storage:c&&c.a?'granted':'denied',ad_storage:c&&c.m?'granted':'denied',ad_user_data:c&&c.m?'granted':'denied',ad_personalization:c&&c.m?'granted':'denied',wait_for_update:500});
+})();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starting Your Trial — Citro</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --dark:   #0B0F1A;
+  --accent: #2563EB;
+  --green:  #059669;
+  --mid:    #64748B;
+  --ink:    #0F172A;
+  --bg:     #F8FAFC;
+  --sans:   'Inter', system-ui, sans-serif;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--dark); height: 60px; padding: 0 48px;
+  display: flex; align-items: center;
+}
+.nav-logo-text { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+
+/* ── CARD ── */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  padding: 56px 48px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+}
+
+/* ── SPINNER ── */
+.spinner {
+  width: 48px; height: 48px;
+  border: 4px solid #E2E8F0;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+  margin: 0 auto 28px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── STATUS ── */
+#status-icon { display: none; margin: 0 auto 24px; }
+.icon-success { color: var(--green); }
+.icon-error   { color: #DC2626; }
+
+h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+.sub { font-size: 15px; color: var(--mid); line-height: 1.55; }
+
+/* ── STEPS ── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+  text-align: left;
+}
+.step {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; color: var(--mid); font-weight: 500;
+}
+.step .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #CBD5E1; flex-shrink: 0; transition: background 0.3s;
+}
+.step.done .dot  { background: var(--green); }
+.step.active .dot { background: var(--accent); animation: pulse 1s ease infinite; }
+.step.done span  { color: var(--ink); }
+.step.active span { color: var(--accent); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── ERROR CTA ── */
+.btn-retry {
+  display: inline-block; margin-top: 28px;
+  background: var(--accent); color: #fff;
+  padding: 12px 28px; border-radius: 8px;
+  font-size: 15px; font-weight: 600;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" style="text-decoration:none;">
+    <span class="nav-logo-text">Citro</span>
+  </a>
+</nav>
+
+<div class="card">
+  <!-- Spinner (shown during activation) -->
+  <div class="spinner" id="spinner"></div>
+
+  <!-- Status icon (shown after) -->
+  <div id="status-icon">
+    <!-- success -->
+    <svg id="icon-success" class="icon-success" style="display:none;" width="52" height="52" fill="none" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="26" fill="rgba(5,150,105,0.1)"/>
+      <path d="M16 26l8 8 12-14" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <!-- error -->
+    <svg id="icon-error" class="icon-error" style="display:none;" width="52" height="52" fill="none" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="26" fill="rgba(220,38,38,0.08)"/>
+      <path d="M18 18l16 16M34 18L18 34" stroke="#DC2626" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <h1 id="heading">Starting your free trial…</h1>
+  <p class="sub" id="subheading">Hang on while we set up your Citro account.</p>
+
+  <!-- Progress steps -->
+  <div class="steps" id="steps">
+    <div class="step" id="step-verify">
+      <div class="dot"></div><span>Verifying payment</span>
+    </div>
+    <div class="step" id="step-account">
+      <div class="dot"></div><span>Activating your account</span>
+    </div>
+    <div class="step" id="step-audit">
+      <div class="dot"></div><span>Preparing your audit</span>
+    </div>
+  </div>
+
+  <div id="error-cta" style="display:none;">
+    <a href="/start.html" class="btn-retry">Back to signup</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var sessionId = params.get('session_id');
+
+  function setStep(id, state) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('done', 'active');
+    if (state) el.classList.add(state);
+  }
+
+  function showError(msg) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('status-icon').style.display = 'block';
+    document.getElementById('icon-error').style.display = 'block';
+    document.getElementById('steps').style.display = 'none';
+    document.getElementById('heading').textContent = 'Something went wrong';
+    document.getElementById('subheading').textContent = msg || 'We could not activate your account. Please contact support@getcitro.ai and we\'ll sort it out right away.';
+    document.getElementById('error-cta').style.display = 'block';
+  }
+
+  function showSuccess() {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('status-icon').style.display = 'block';
+    document.getElementById('icon-success').style.display = 'block';
+    document.getElementById('steps').style.display = 'none';
+    document.getElementById('heading').textContent = 'Your free trial has started!';
+    document.getElementById('subheading').textContent = 'Running your first Citro audit now…';
+  }
+
+  async function activate() {
+    if (!sessionId) {
+      showError('No session ID found. Please try completing checkout again.');
+      return;
+    }
+
+    // Step 1 — verify
+    setStep('step-verify', 'active');
+    var verifyResp, verifyData;
+    try {
+      verifyResp = await fetch('/api/trial-activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: sessionId }),
+      });
+      verifyData = await verifyResp.json();
+    } catch (e) {
+      showError('Network error during account activation. Please try refreshing.');
+      return;
+    }
+
+    if (!verifyResp.ok || !verifyData.token) {
+      showError(verifyData.error || 'Could not activate your account.');
+      return;
+    }
+
+    setStep('step-verify', 'done');
+
+    // Step 2 — store token (account now active)
+    setStep('step-account', 'active');
+    try {
+      localStorage.setItem('sub_token', verifyData.token);
+      localStorage.setItem('sub_email', verifyData.email || '');
+    } catch (e) { /* localStorage blocked — non-fatal */ }
+    setStep('step-account', 'done');
+
+    // Step 3 — redirect to audit with autorun
+    setStep('step-audit', 'active');
+    showSuccess();
+
+    // Brief pause so the user sees the success state, then redirect
+    setTimeout(function () {
+      window.location.href = '/sub-audit.html?autorun=1';
+    }, 1200);
+  }
+
+  // Fire immediately
+  activate();
+})();
+</script>
+</body>
+</html>
