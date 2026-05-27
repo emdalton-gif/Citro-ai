@@ -1084,12 +1084,12 @@ function gtag(){dataLayer.push(arguments);}
         p = property;
 
         // Always pre-fill the setup form for Enterprise — user confirms before running
-        if (p.name) document.getElementById('f-name').value = p.name;
-        if (p.website) document.getElementById('f-website').value = p.website;
-        if (p.industry) document.getElementById('f-industry').value = p.industry;
-        if (p.geo) document.getElementById('f-geo').value = p.geo;
-        if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
-        if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
+        if (p.name)            document.getElementById('f-name').value            = p.name;
+        if (p.website)         document.getElementById('f-website').value         = p.website;
+        if (p.industry)        document.getElementById('f-industry').value        = p.industry;
+        if (p.geo)             document.getElementById('f-geo').value             = p.geo;
+        if (p.specific_product) document.getElementById('f-product').value        = p.specific_product;
+        if (p.competitors)     document.getElementById('f-competitors').value     = p.competitors;
 
         // Update heading based on whether this property has been run before
         const isFirstPropertyRun = (property.runCount || 0) === 0;
@@ -1098,6 +1098,28 @@ function gtag(){dataLayer.push(arguments);}
         if (!isFirstPropertyRun) {
           if (titleEl) titleEl.textContent = 'Update your profile before running.';
           if (subEl)   subEl.textContent   = 'Your settings from last time are pre-filled. Update anything that\'s changed — new product focus, added competitors — then run.';
+        }
+
+        // Auto-research in the background if this is a new property with no industry set yet.
+        // This fills industry, product, and competitors without blocking the form display.
+        if (isFirstPropertyRun && p.name && p.website && !p.industry) {
+          (async () => {
+            try {
+              const rr = await fetch('/api/research', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ name: p.name, website: p.website }),
+              });
+              const rd = await rr.json();
+              // Only fill in fields that are still empty (don't overwrite anything the user typed)
+              if (rd.industry && !document.getElementById('f-industry').value)
+                document.getElementById('f-industry').value = rd.industry;
+              if (rd.offer && !document.getElementById('f-product').value)
+                document.getElementById('f-product').value = rd.offer;
+              if (rd.competitors && !document.getElementById('f-competitors').value)
+                document.getElementById('f-competitors').value = rd.competitors;
+            } catch (e) { /* non-critical — user can fill manually */ }
+          })();
         }
 
         block('screen-setup');
