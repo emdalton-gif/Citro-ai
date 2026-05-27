@@ -62,6 +62,11 @@ function verifySubscriberToken(token) {
 
 // ── Handler ──────────────────────────────────────────────────────────────────
 
+// Timeout for outgoing Anthropic requests (ms).
+// Must be safely under the Vercel maxDuration for api/claude.js (300s on Pro, 60s on Hobby).
+// Set to 55s so Hobby-plan users get a clean error instead of a hard gateway 504.
+const ANTHROPIC_TIMEOUT_MS = 55000;
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -109,16 +114,39 @@ module.exports = async function handler(req, res) {
     }
   };
 
-  const proxy = https.request(opts, (anthropicRes) => {
-    res.writeHead(anthropicRes.statusCode, { 'Content-Type': 'application/json' });
-    anthropicRes.pipe(res);
-  });
+  return new Promise((resolve) => {
+    let timedOut = false;
 
-  proxy.on('error', (err) => {
-    console.error('Anthropic proxy error:', err.message);
-    res.status(502).json({ error: 'Upstream API error: ' + err.message });
-  });
+    const proxy = https.request(opts, (anthropicRes) => {
+      res.writeHead(anthropicRes.statusCode, { 'Content-Type': 'application/json' });
+      anthropicRes.pipe(res);
+      anthropicRes.on('end', resolve);
+    });
 
-  proxy.write(body);
-  proxy.end();
+    // Clean timeout: if Anthropic hasn't responded in time, return a clear error
+    // so the client shows "Request timed out" rather than Vercel's opaque 504.
+    const timer = setTimeout(() => {
+      timedOut = true;
+      proxy.destroy();
+      if (!res.headersSent) {
+        res.status(504).json({ error: 'Request timed out. The report generation took too long — please try again.' });
+      }
+      resolve();
+    }, ANTHROPIC_TIMEOUT_MS);
+
+    proxy.on('error', (err) => {
+      clearTimeout(timer);
+      if (timedOut) return; // already handled
+      console.error('Anthropic proxy error:', err.message);
+      if (!res.headersSent) {
+        res.status(502).json({ error: 'Upstream API error: ' + err.message });
+      }
+      resolve();
+    });
+
+    proxy.on('finish', () => clearTimeout(timer));
+
+    proxy.write(body);
+    proxy.end();
+  });
 };
