@@ -112,9 +112,12 @@ module.exports = async function handler(req, res) {
   if (password.length < 8) {
     return res.status(400).json({ error: 'Password must be at least 8 characters' });
   }
-  if (!profile || !profile.name) {
+  if (!profile || (!profile.company_name && !profile.name)) {
     return res.status(400).json({ error: 'Business name is required' });
   }
+  // Normalize — rest of the system uses company_name; accept either
+  if (!profile.company_name) profile.company_name = profile.name;
+  if (!profile.name) profile.name = profile.company_name;
 
   const normalized = email.toLowerCase().trim();
 
