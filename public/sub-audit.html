@@ -1002,25 +1002,7 @@ function gtag(){dataLayer.push(arguments);}
         activePropertyId = propertyId;
         p = property;
 
-        const isFirstPropertyRun = property.runCount === 0;
-
-        // First run + profile from onboarding → auto-run
-        if (isFirstPropertyRun && p.name && p.website) {
-          const profile = {
-            company_name: p.name,
-            website: p.website,
-            industry: p.industry || '',
-            geo: p.geo || '',
-            specific_product: p.specific_product || '',
-            offer: p.offer || '',
-            competitors: p.competitors || '',
-          };
-          flex('screen-loading');
-          runAudit(profile, property.personas?.length ? property.personas : null);
-          return;
-        }
-
-        // Returning Enterprise run — pre-fill form (no locks)
+        // Always pre-fill the setup form for Enterprise — user confirms before running
         if (p.name) document.getElementById('f-name').value = p.name;
         if (p.website) document.getElementById('f-website').value = p.website;
         if (p.industry) document.getElementById('f-industry').value = p.industry;
