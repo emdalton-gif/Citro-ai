@@ -316,9 +316,9 @@ function gtag(){dataLayer.push(arguments);}
 <!-- SETUP SCREEN -->
 <div id="screen-setup">
   <div class="wrap">
-    <div class="setup-label">New audit run</div>
-    <h1 class="setup-title">Update your profile before running.</h1>
-    <p class="setup-sub">Your settings from last time are pre-filled. Update anything that's changed — new product focus, added competitors — then run.</p>
+    <div class="setup-label" id="setup-label">New audit run</div>
+    <h1 class="setup-title" id="setup-title">Set up your company profile.</h1>
+    <p class="setup-sub" id="setup-sub">Fill in the details below, then run your first audit. Your Citro Score measures how often AI recommends your company.</p>
 
     <div class="setup-form">
       <h3>Company profile</h3>
@@ -968,6 +968,87 @@ function gtag(){dataLayer.push(arguments);}
 
     // Run mode: load profile, show setup form (or auto-run on first visit)
     let p = {}; // hoisted so startRunBtn click handler can access it
+
+    // Register all button listeners BEFORE the async fetch so they fire regardless of path.
+    // The handlers close over the hoisted variables (p, activePropertyId, etc.) which will
+    // have been populated by the time the user can click anything.
+    document.getElementById('startRunBtn').addEventListener('click', async () => {
+      // Enterprise: read from form (property name/website are pre-filled but editable).
+      // Professional: use locked values or form values.
+      const lockedName    = p.profileLocked ? (p.lockedCompanyName || p.company_name || '') : null;
+      const lockedWebsite = p.profileLocked ? (p.lockedWebsite    || p.website      || '') : null;
+      const profile = {
+        company_name: activePropertyId ? document.getElementById('f-name').value.trim()
+                                       : (lockedName ?? document.getElementById('f-name').value.trim()),
+        website:      activePropertyId ? document.getElementById('f-website').value.trim()
+                                       : (lockedWebsite ?? document.getElementById('f-website').value.trim()),
+        industry:         document.getElementById('f-industry').value.trim(),
+        geo:              document.getElementById('f-geo').value.trim(),
+        specific_product: document.getElementById('f-product').value.trim(),
+        competitors:      document.getElementById('f-competitors').value.trim(),
+      };
+      if (!profile.company_name || !profile.website) {
+        alert('Please enter your company name and website before running.');
+        return;
+      }
+      // Persist profile so future visits pre-fill
+      if (subscriberEmail) {
+        fetch('/api/sub-register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: subscriberEmail, password: '_noop_update_', profile }),
+        }).catch(() => {});
+      }
+
+      // Load saved personas or generate new ones
+      _currentProfile = profile;
+      const btn = document.getElementById('startRunBtn');
+      btn.disabled = true;
+      try {
+        let personas;
+        if (p.personas && p.personas.length > 0) {
+          btn.textContent = 'Loading personas…';
+          personas = p.personas;
+        } else {
+          btn.textContent = 'Generating personas…';
+          personas = await genPersonas(profile);
+        }
+        renderPersonas(personas);
+        hide('screen-setup');
+        block('screen-personas');
+      } catch(e) {
+        alert('Could not load personas. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Continue →';
+      }
+    });
+
+    document.getElementById('runAuditBtn').addEventListener('click', () => {
+      const personas = getPersonasFromForm();
+      runAudit(_currentProfile, personas);
+    });
+
+    document.getElementById('regenBtn').addEventListener('click', async () => {
+      if (!_currentProfile) return;
+      const btn = document.getElementById('regenBtn');
+      btn.disabled = true; btn.textContent = 'Regenerating…';
+      try {
+        const personas = await genPersonas(_currentProfile);
+        renderPersonas(personas);
+      } catch(e) {
+        alert('Could not regenerate personas. Please try again.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Regenerate';
+      }
+    });
+
+    document.getElementById('backToProfileBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      hide('screen-personas');
+      block('screen-setup');
+    });
+
     try {
       const resp = await fetch('/api/sub-dashboard', {
         headers: { 'Authorization': `Bearer ${SUB_TOKEN}` },
@@ -1010,6 +1091,15 @@ function gtag(){dataLayer.push(arguments);}
         if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
         if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
 
+        // Update heading based on whether this property has been run before
+        const isFirstPropertyRun = (property.runCount || 0) === 0;
+        const titleEl = document.getElementById('setup-title');
+        const subEl   = document.getElementById('setup-sub');
+        if (!isFirstPropertyRun) {
+          if (titleEl) titleEl.textContent = 'Update your profile before running.';
+          if (subEl)   subEl.textContent   = 'Your settings from last time are pre-filled. Update anything that\'s changed — new product focus, added competitors — then run.';
+        }
+
         block('screen-setup');
         return;
       }
@@ -1039,6 +1129,14 @@ function gtag(){dataLayer.push(arguments);}
         return;
       }
 
+      // Update heading for returning subscribers (not first run)
+      if (!isFirstRun) {
+        const titleEl = document.getElementById('setup-title');
+        const subEl   = document.getElementById('setup-sub');
+        if (titleEl) titleEl.textContent = 'Update your profile before running.';
+        if (subEl)   subEl.textContent   = 'Your settings from last time are pre-filled. Update anything that\'s changed — new product focus, added competitors — then run.';
+      }
+
       // Returning subscriber — pre-fill and show the form
       if (p.company_name) document.getElementById('f-name').value = p.company_name;
       if (p.website) document.getElementById('f-website').value = p.website;
@@ -1063,85 +1161,6 @@ function gtag(){dataLayer.push(arguments);}
     } catch(e) { /* show form anyway */ }
 
     block('screen-setup');
-
-    document.getElementById('startRunBtn').addEventListener('click', async () => {
-      // Enterprise: use property name/website (no lock). Professional: use locked values or form.
-      const lockedName = p.profileLocked ? (p.lockedCompanyName || p.company_name || '') : null;
-      const lockedWebsite = p.profileLocked ? (p.lockedWebsite || p.website || '') : null;
-      const profile = {
-        company_name: activePropertyId ? (p.name || document.getElementById('f-name').value.trim())
-                                       : (lockedName ?? document.getElementById('f-name').value.trim()),
-        website: activePropertyId ? (p.website || document.getElementById('f-website').value.trim())
-                                  : (lockedWebsite ?? document.getElementById('f-website').value.trim()),
-        industry: document.getElementById('f-industry').value.trim(),
-        geo: document.getElementById('f-geo').value.trim(),
-        specific_product: document.getElementById('f-product').value.trim(),
-        competitors: document.getElementById('f-competitors').value.trim(),
-      };
-      if (!profile.company_name || !profile.website) {
-        alert('Please enter your company name and website before running.');
-        return;
-      }
-      // Persist profile so future visits pre-fill
-      if (subscriberEmail) {
-        fetch('/api/sub-register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: subscriberEmail, password: '_noop_update_', profile }),
-        }).catch(() => {});
-      }
-
-      // Load saved personas or generate new ones on first run
-      _currentProfile = profile;
-      const btn = document.getElementById('startRunBtn');
-      btn.disabled = true;
-      try {
-        let personas;
-        if (p.personas && p.personas.length > 0) {
-          // Reuse personas from last run — preserves apples-to-apples comparison
-          btn.textContent = 'Loading personas…';
-          personas = p.personas;
-        } else {
-          btn.textContent = 'Generating personas…';
-          personas = await genPersonas(profile);
-        }
-        renderPersonas(personas);
-        hide('screen-setup');
-        block('screen-personas');
-      } catch(e) {
-        alert('Could not load personas. Please try again.');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Continue →';
-      }
-    });
-
-    document.getElementById('runAuditBtn').addEventListener('click', () => {
-      const personas = getPersonasFromForm();
-      runAudit(_currentProfile, personas);
-    });
-
-    document.getElementById('regenBtn').addEventListener('click', async () => {
-      if (!_currentProfile) return;
-      const btn = document.getElementById('regenBtn');
-      btn.disabled = true;
-      btn.textContent = '↻ Regenerating…';
-      try {
-        const personas = await genPersonas(_currentProfile);
-        renderPersonas(personas);
-      } catch(e) {
-        alert('Could not regenerate personas. Please try again.');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '↻ Regenerate personas';
-      }
-    });
-
-    document.getElementById('backToProfileBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      hide('screen-personas');
-      block('screen-setup');
-    });
   }
 
   // ── Persona file parsing ──────────────────────────────────────────────────
