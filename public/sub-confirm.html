@@ -220,10 +220,10 @@ function gtag(){dataLayer.push(arguments);}
         <span>Researching your company…</span>
       </div>
       <div id="companySummary" style="display:none; margin-bottom:24px;">
-        <div style="display:flex; align-items:flex-start; gap:12px; background:#F0FDF4; border:1px solid #BBF7D0; border-radius:10px; padding:16px;">
-          <div style="width:32px;height:32px;background:#059669;border-radius:50%;display:flex;align-items:center;justify-content:flex-start;flex-shrink:0;font-size:14px;color:#fff;align-items:center;justify-content:center;">✓</div>
-          <div>
-            <div style="font-size:12px;font-weight:700;color:#059669;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Company identified</div>
+        <div style="display:flex; align-items:flex-start; gap:12px; background:#EFF6FF; border:1px solid #BFDBFE; border-radius:10px; padding:16px;">
+          <div style="width:32px;height:32px;background:#2563EB;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:#fff;">✓</div>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Company identified</div>
             <textarea id="companySummaryText" style="font-size:14px;color:#0B0F1A;line-height:1.65;width:100%;border:none;background:transparent;outline:none;resize:vertical;min-height:80px;font-family:var(--sans);"></textarea>
             <div style="font-size:12px;color:#64748B;margin-top:6px;">Not quite right? Edit the summary directly above.</div>
           </div>
@@ -300,6 +300,7 @@ function gtag(){dataLayer.push(arguments);}
           <input type="file" id="personaUpload" accept=".csv,.txt" style="display:none;" onchange="handlePersonaUpload(event)" />
         </div>
         <button class="submit-btn" id="personaBtn" onclick="savePersonas()">Save personas &amp; run my first audit →</button>
+        <a id="personaDashLink" href="/sub-dashboard.html" style="display:none;font-size:13px;color:#2563EB;margin-left:16px;">Go to dashboard instead →</a>
         <span class="skip-link" onclick="window.location.href='/sub-dashboard.html'">Skip for now, go to dashboard →</span>
       </div>
     </div>
@@ -656,19 +657,33 @@ function gtag(){dataLayer.push(arguments);}
 
     // Enterprise: create first property and redirect to its audit page
     if (sessionData.plan === 'enterprise') {
+      let propData = null;
       try {
         const propResp = await fetch('/api/sub-add-property', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
           body: JSON.stringify({ ...baseProfile, personas }),
         });
-        const propData = await propResp.json();
-        if (propData.property?.id) {
-          window.location.href = `/sub-audit.html?propertyId=${propData.property.id}`;
-          return;
+        propData = await propResp.json();
+        if (!propResp.ok) throw new Error(propData.error || 'Could not create property');
+      } catch (err) {
+        // Show error in-page so user knows what happened instead of silently going to dashboard
+        btn.disabled = false; btn.textContent = 'Save personas & run my first audit →';
+        const errEl = document.getElementById('personaError');
+        if (errEl) {
+          errEl.textContent = 'Could not save your property: ' + (err.message || 'Unknown error') + '. Please try again or go to your dashboard.';
+          errEl.style.display = 'block';
+          // Add a fallback link to dashboard
+          const dashLink = document.getElementById('personaDashLink');
+          if (dashLink) dashLink.style.display = 'inline';
         }
-      } catch (err) { /* fall through to dashboard */ }
-      window.location.href = '/sub-dashboard.html';
+        return;
+      }
+      if (propData.property?.id) {
+        window.location.href = `/sub-audit.html?propertyId=${propData.property.id}`;
+      } else {
+        window.location.href = '/sub-dashboard.html';
+      }
       return;
     }
 
