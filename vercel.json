@@ -1,6 +1,7 @@
 {
   "version": 2,
   "functions": {
+    "api/claude.js": { "maxDuration": 300 },
     "api/*.js": { "maxDuration": 60 }
   },
   "headers": [
