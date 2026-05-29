@@ -226,23 +226,6 @@ h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; 
       localStorage.setItem('sub_token', verifyData.token);
       localStorage.setItem('sub_email', verifyData.email || '');
     } catch (e) { /* localStorage blocked — non-fatal */ }
-
-    // Fire conversion event — deduplicated by sessionId
-    (function() {
-      var fireKey = 'ra_trial_' + sessionId;
-      try {
-        if (!sessionStorage.getItem(fireKey) && typeof gtag === 'function') {
-          sessionStorage.setItem(fireKey, '1');
-          gtag('event', 'purchase', {
-            transaction_id: sessionId,
-            value: 119.00,
-            currency: 'USD',
-            items: [{ item_id: 'professional_trial', item_name: 'Citro Professional Trial', price: 119.00, quantity: 1 }]
-          });
-        }
-      } catch(e) {}
-    })();
-
     setStep('step-account', 'done');
 
     // Step 3 — redirect to audit with autorun
@@ -251,7 +234,7 @@ h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; 
 
     // Brief pause so the user sees the success state, then redirect
     setTimeout(function () {
-      window.location.href = '/sub-audit.html';
+      window.location.href = '/sub-audit.html?autorun=1';
     }, 1200);
   }
 
