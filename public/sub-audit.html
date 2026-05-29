@@ -743,8 +743,87 @@ function gtag(){dataLayer.push(arguments);}
       n = { executive_summary: '', key_finding: '', projection_narrative: '' };
     }
 
-    // ── Call 2: Recommendations + roadmap — specific and actionable ───────────
-    const raw2 = await callClaude([{ role:'user', content:`Write an action plan for a Citro audit report for ${c.company_name}.
+    // ── Recommendations + roadmap — JS-generated from audit context ───────────
+    // Generated in JS (not Claude) so they are always specific to the actual
+    // gap queries, platforms, competitors, and company context from this audit.
+    // This eliminates JSON parse failures and guarantees company-specific output.
+    const topGapQuery  = gapQueries[0]?.query  || null;
+    const topGapPlatform = gapQueries[0]?.platform || (gapPlatforms || 'Perplexity and ChatGPT');
+    const topComp0     = comps[0] || null;
+    const reviewDirs   = topComp0
+      ? `G2, Crunchbase, and Capterra — the same directories where ${topComp0} builds its AI citation advantage`
+      : 'G2, Crunchbase, and Capterra';
+    const schemaTarget = c.industry
+      ? `your ${c.industry.split(' ').slice(0,3).join(' ')} pages on ${c.website}`
+      : `your key product and service pages on ${c.website}`;
+    const llmsTxtNote  = `listing your top pages with one-line descriptions — this directly signals AI crawlers which content to prioritize`;
+    const gapContentNote = topGapQuery
+      ? `Your site had no visibility for "${topGapQuery}" on ${topGapPlatform}`
+      : `${c.company_name} is missing from AI responses for ${gapQueries.length} tested buyer queries`;
+    const compNote = topComp0
+      ? `${topComp0} is appearing ahead of ${c.company_name} in AI responses because of stronger review-platform presence and third-party citations`
+      : `Building third-party citations across review platforms is the primary lever to improve AI recommendation frequency`;
+
+    const acts = {
+      recommendations: [
+        {
+          action: `Add FAQ schema (JSON-LD, type FAQPage) to ${schemaTarget} and test implementation at search.google.com/test/rich-results. This enables ${topGapPlatform} to pull your Q&A content directly into advisory responses.`,
+          impact: 'high', effort: 'low', category: 'technical'
+        },
+        {
+          action: `${gapContentNote} — publish a 1,000-word page answering that question with concrete statistics, customer outcomes, and a comparison to alternatives. Match the exact phrasing buyers use.`,
+          impact: 'high', effort: 'medium', category: 'content'
+        },
+        {
+          action: `Create or complete your profiles on ${reviewDirs}. Fill in current product descriptions, pricing range, and use cases — AI systems weight these directories heavily when recommending vendors.`,
+          impact: 'high', effort: 'medium', category: 'distribution'
+        },
+        {
+          action: `Deploy an llms.txt file at ${c.website}/llms.txt ${llmsTxtNote}. Also add Organization and Product schema markup sitewide and verify in Google's Rich Results Test.`,
+          impact: 'medium', effort: 'low', category: 'technical'
+        },
+        {
+          action: `${compNote}. Publish 2-3 buyer-intent comparison pages (e.g., "${c.company_name} vs [competitor]") with pass rates, pricing, and outcome data that AI systems can cite as evidence.`,
+          impact: 'medium', effort: 'medium', category: 'content'
+        },
+      ],
+      roadmap_phases: [
+        {
+          days: 'Days 1-30',
+          theme: 'Technical Foundation',
+          actions: [
+            `Add FAQ and Organization schema markup to ${schemaTarget} — test each page at search.google.com/test/rich-results before publishing.`,
+            `Create ${c.website}/llms.txt listing your 5-7 most important pages with one-line descriptions of what each covers.`,
+            `Claim and fully complete your Crunchbase and Wikidata profiles — these are the structured data sources ChatGPT and Perplexity reference most.`,
+          ]
+        },
+        {
+          days: 'Days 31-60',
+          theme: 'Content and Visibility',
+          actions: [
+            topGapQuery
+              ? `Publish a long-form page targeting "${topGapQuery}" — include statistics, third-party quotes, and a FAQ section matching how buyers phrase this search.`
+              : `Publish 3 long-form pages targeting the gap queries identified in this audit — include statistics, third-party quotes, and FAQ sections.`,
+            topComp0
+              ? `Write a "${c.company_name} vs ${topComp0}" comparison page with objective data on pricing, outcomes, and support — AI systems cite these pages when buyers ask "which is better."`
+              : `Publish comparison content covering how ${c.company_name} differs from the top alternatives in your category — AI systems cite these pages when buyers research options.`,
+            `Submit to 3-5 industry-specific directories and publications relevant to ${c.industry || 'your category'} — third-party citations are the primary factor AI systems use to rank vendor recommendations.`,
+          ]
+        },
+        {
+          days: 'Days 61-90',
+          theme: 'Distribution and Measurement',
+          actions: [
+            `Run a second Citro audit at day 75 and compare Citro Scores — focus re-investment on the platforms (${topGapPlatform}) that showed the largest gaps in this audit.`,
+            `Pitch 2-3 industry publications or newsletters for coverage of ${c.company_name} — AI systems like Perplexity heavily weight recent third-party articles as citation sources.`,
+            `Review which comparison and FAQ pages earned the highest AI visibility, double down on that format, and archive or update any pages with zero improvement.`,
+          ]
+        }
+      ]
+    };
+
+    // ── DEAD CODE BELOW — kept as reference, no longer executed ───────────────
+    if (false) { const raw2 = await callClaude([{ role:'user', content:`Write an action plan for a Citro audit report for ${c.company_name}.
 
 SPECIFICITY RULES — every action must follow all of these:
 1. Name exact schema types: write "FAQ schema (JSON-LD, @type:FAQPage)" not "schema markup"
@@ -773,21 +852,7 @@ Context:\n${ctx}\nKey finding: ${n.key_finding||''}\n\nReturn ONLY this JSON wit
       acts = JSON.parse(j2.slice(j2.indexOf('{'), j2.lastIndexOf('}')+1));
     } catch(e) {
       console.error('genReport Call 2 parse failed:', e.message, '| raw:', raw2?.slice(0,200));
-      acts = {
-        recommendations: [
-          { action: 'Publish comparison content targeting the exact queries where gaps were found.', impact: 'high', effort: 'medium', category: 'content' },
-          { action: 'Add Organization, Product, and FAQ schema markup to all key pages.', impact: 'high', effort: 'low', category: 'technical' },
-          { action: 'Build citations on G2, Capterra, and category-specific review platforms.', impact: 'high', effort: 'medium', category: 'distribution' },
-          { action: 'Deploy llms.txt at the domain root to guide AI crawlers.', impact: 'medium', effort: 'low', category: 'technical' },
-          { action: 'Create buyer-intent FAQ pages matching how your buyers phrase searches.', impact: 'medium', effort: 'medium', category: 'content' },
-        ],
-        roadmap_phases: [
-          { days: 'Days 1-30', theme: 'Technical Foundation', actions: ['Add schema markup to all key pages.', 'Deploy llms.txt at domain root.', 'Audit content for AI-citation gaps.'] },
-          { days: 'Days 31-60', theme: 'Content and Visibility', actions: ['Publish 3 comparison guides for gap queries.', 'List on top review platforms.', 'Refresh meta descriptions for AI readability.'] },
-          { days: 'Days 61-90', theme: 'Distribution and Measurement', actions: ['Build co-citation partnerships with industry sources.', 'Track Citro Score monthly.', 'Report improvement and recalibrate priorities.'] },
-        ]
-      };
-    }
+    } // end if(false)
 
     return {
       executive_summary: n.executive_summary || '',
