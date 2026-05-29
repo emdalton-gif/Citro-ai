@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account Setup — Citro Enterprise</title>
+  <link rel="icon" type="image/png" href="/citro-logo.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #0B0F1A;
+      --muted:  #64748B;
+      --border: #E2E8F0;
+      --blue:   #2563EB;
+      --blue-h: #1D4ED8;
+      --green:  #16A34A;
+      --error:  #DC2626;
+      --bg:     #F8FAFC;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background: #0B0F1A;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+    }
+    .nav-logo span { color: rgba(255,255,255,0.4); font-weight: 400; }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .step.active { color: var(--ink); font-weight: 600; }
+    .step.done   { color: var(--green); }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      background: var(--border); color: var(--muted);
+      flex-shrink: 0;
+    }
+    .step.active .step-num { background: var(--ink); color: #fff; }
+    .step.done   .step-num { background: var(--green); color: #fff; }
+    .step-connector { width: 40px; height: 1px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+
+    /* ── States ── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 24px 64px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    /* Activating state */
+    #stateActivating {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .activation-steps { list-style: none; text-align: left; margin: 28px 0 0; }
+    .activation-steps li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 14px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .activation-steps li:last-child { border-bottom: none; }
+    .activation-steps li.done  { color: var(--ink); }
+    .activation-steps li.active { color: var(--ink); font-weight: 500; }
+    .step-icon {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+    }
+    .step-icon.pending  { background: var(--border); }
+    .step-icon.spinning {
+      border: 2px solid var(--border);
+      border-top-color: var(--blue);
+      animation: spin 0.7s linear infinite;
+    }
+    .step-icon.done {
+      background: var(--green);
+      color: #fff;
+    }
+
+    /* Profile setup state */
+    #stateProfile { display: none; }
+
+    .card-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.3px;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+    .card-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* Research card */
+    .research-card {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .research-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1D4ED8;
+      margin-bottom: 6px;
+    }
+    .research-card-header svg { flex-shrink: 0; }
+    .research-card p {
+      font-size: 13px;
+      color: #1E40AF;
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Form fields */
+    .field { margin-bottom: 18px; }
+    .field-row { display: flex; gap: 12px; }
+    .field-row .field { flex: 1; min-width: 0; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 14px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+      height: 42px;
+    }
+    textarea {
+      height: auto;
+      padding: 10px 14px;
+      resize: vertical;
+      min-height: 72px;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--blue); }
+
+    .input-with-btn {
+      display: flex;
+      gap: 8px;
+    }
+    .input-with-btn input { flex: 1; }
+    .btn-research {
+      height: 42px;
+      padding: 0 14px;
+      background: #EFF6FF;
+      border: 1.5px solid #BFDBFE;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .btn-research:hover:not(:disabled) { background: #DBEAFE; }
+    .btn-research:disabled { opacity: 0.6; cursor: default; }
+
+    .optional-label {
+      display: inline;
+      font-weight: 400;
+      text-transform: none;
+      font-size: 10px;
+      letter-spacing: 0;
+      color: #94A3B8;
+      margin-left: 4px;
+    }
+
+    .error-msg {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--error);
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--blue-h); }
+    .btn-primary:disabled { opacity: 0.6; cursor: default; }
+
+    /* Fatal error state */
+    #stateFatal { display: none; text-align: center; }
+    #stateFatal h1 { font-size: 20px; margin-bottom: 10px; }
+    #stateFatal p  { color: var(--muted); font-size: 14px; line-height: 1.6; }
+    #stateFatal a  { color: var(--blue); }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .spinner-inline {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+      .field-row { flex-direction: column; gap: 0; }
+      h1 { font-size: 19px; }
+      .step span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">Citro <span>Enterprise</span></a>
+  </nav>
+
+  <div class="progress-bar">
+    <div class="step done" id="step1">
+      <div class="step-num">✓</div>
+      <span>Account</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step done" id="step2">
+      <div class="step-num">✓</div>
+      <span>Payment</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step active" id="step3">
+      <div class="step-num">3</div>
+      <span>Setup</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+
+      <!-- Activating -->
+      <div id="stateActivating">
+        <div style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--blue);margin-bottom:12px;">
+          Setting up your account
+        </div>
+        <h1 style="font-size:22px;letter-spacing:-0.3px;">Just a moment…</h1>
+        <ul class="activation-steps">
+          <li id="aStep1" class="active">
+            <div class="step-icon spinning" id="aIcon1"></div>
+            Verifying payment
+          </li>
+          <li id="aStep2">
+            <div class="step-icon pending" id="aIcon2"></div>
+            Activating your account
+          </li>
+          <li id="aStep3">
+            <div class="step-icon pending" id="aIcon3"></div>
+            Preparing your workspace
+          </li>
+        </ul>
+      </div>
+
+      <!-- Profile setup -->
+      <div id="stateProfile">
+        <div class="card-eyebrow">Payment confirmed</div>
+        <h1>Set up your first property.</h1>
+        <p class="card-sub">Tell us about the company you want to track. We'll run your first Citro audit right after.</p>
+
+        <div class="research-card" id="researchCard">
+          <div class="research-card-header">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6.5" stroke="#2563EB"/>
+              <path d="M7 3.5v4M7 9.5h.01" stroke="#2563EB" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            Company identified
+          </div>
+          <p id="researchSummary"></p>
+        </div>
+
+        <div class="error-msg" id="profileError"></div>
+
+        <form id="profileForm" novalidate>
+          <div class="field">
+            <label for="companyName">Company / brand name</label>
+            <input type="text" id="companyName" placeholder="Acme Corp" required>
+          </div>
+
+          <div class="field">
+            <label for="website">Website</label>
+            <div class="input-with-btn">
+              <input type="url" id="website" placeholder="https://acmecorp.com">
+              <button type="button" class="btn-research" id="researchBtn">Research →</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="industry">Industry <span class="optional-label">optional</span></label>
+            <input type="text" id="industry" placeholder="e.g. B2B SaaS, Financial Services">
+          </div>
+
+          <div class="field">
+            <label for="offer">What you sell <span class="optional-label">optional</span></label>
+            <textarea id="offer" rows="2" placeholder="Briefly describe your product or service and its key differentiator"></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="buyer">Target buyer <span class="optional-label">optional</span></label>
+              <input type="text" id="buyer" placeholder="e.g. VP Marketing at mid-market SaaS">
+            </div>
+            <div class="field">
+              <label for="geo">Geography <span class="optional-label">optional</span></label>
+              <input type="text" id="geo" placeholder="e.g. North America">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="competitors">Key competitors <span class="optional-label">optional</span></label>
+            <input type="text" id="competitors" placeholder="e.g. Competitor A, Competitor B">
+          </div>
+
+          <button type="submit" class="btn-primary" id="profileBtn">
+            <span id="profileBtnText">Launch my first audit →</span>
+            <div class="spinner-inline" id="profileSpinner"></div>
+          </button>
+        </form>
+      </div>
+
+      <!-- Fatal error -->
+      <div id="stateFatal">
+        <h1>Something went wrong.</h1>
+        <p id="fatalMsg" style="margin: 12px 0 20px;">We couldn't activate your account.</p>
+        <p><a href="mailto:support@getcitro.ai">Contact support</a> and we'll get you set up right away.</p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const params    = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+    let subToken    = null;
+    let subEmail    = null;
+
+    // ── Activation step helpers ─────────────────────────────────────────────
+    function setStep(n, state) {
+      const li   = document.getElementById('aStep' + n);
+      const icon = document.getElementById('aIcon' + n);
+      li.className = state;
+      if (state === 'done') {
+        icon.className = 'step-icon done';
+        icon.textContent = '✓';
+      } else if (state === 'active') {
+        icon.className = 'step-icon spinning';
+        icon.textContent = '';
+      } else {
+        icon.className = 'step-icon pending';
+        icon.textContent = '';
+      }
+    }
+
+    function showFatal(msg) {
+      document.getElementById('stateActivating').style.display = 'none';
+      document.getElementById('stateFatal').style.display = 'block';
+      if (msg) document.getElementById('fatalMsg').textContent = msg;
+    }
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ── Activate on load ────────────────────────────────────────────────────
+    async function activate() {
+      if (!sessionId) {
+        showFatal('No session ID found. Please contact support@getcitro.ai.');
+        return;
+      }
+
+      // Step 1: verify payment
+      setStep(1, 'active');
+      await delay(600);
+
+      let data;
+      try {
+        const resp = await fetch('/api/trial-activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        });
+        data = await resp.json();
+        if (!resp.ok) {
+          showFatal(data.error || 'Could not verify payment. Please contact support.');
+          return;
+        }
+      } catch (err) {
+        showFatal('Network error. Please refresh and try again, or contact support.');
+        return;
+      }
+
+      setStep(1, 'done');
+      setStep(2, 'active');
+      await delay(500);
+
+      // Store token
+      subToken = data.token;
+      subEmail = data.email;
+      try { localStorage.setItem('sub_token', subToken); } catch(e) {}
+
+      setStep(2, 'done');
+      setStep(3, 'active');
+      await delay(600);
+
+      setStep(3, 'done');
+      await delay(400);
+
+      // Show profile form
+      document.getElementById('stateActivating').style.display = 'none';
+      document.getElementById('stateProfile').style.display = 'block';
+      document.getElementById('step3').className = 'step active';
+      document.getElementById('companyName').focus();
+    }
+
+    activate();
+
+    // ── Research ─────────────────────────────────────────────────────────────
+    document.getElementById('researchBtn').addEventListener('click', async () => {
+      const name    = document.getElementById('companyName').value.trim();
+      const website = document.getElementById('website').value.trim();
+      if (!name && !website) return;
+
+      const btn = document.getElementById('researchBtn');
+      btn.disabled = true;
+      btn.textContent = 'Researching…';
+
+      try {
+        const resp = await fetch('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, website }),
+        });
+        const r = await resp.json();
+
+        if (r.industry)    document.getElementById('industry').value    = r.industry;
+        if (r.competitors) document.getElementById('competitors').value = r.competitors;
+        if (r.summary) {
+          document.getElementById('researchSummary').textContent = r.summary;
+          document.getElementById('researchCard').style.display = 'block';
+        }
+      } catch (err) { /* non-critical */ }
+
+      btn.disabled = false;
+      btn.textContent = 'Research →';
+    });
+
+    // Auto-research when website field blurs
+    document.getElementById('website').addEventListener('blur', () => {
+      const website = document.getElementById('website').value.trim();
+      const name    = document.getElementById('companyName').value.trim();
+      if (website && name) document.getElementById('researchBtn').click();
+    });
+
+    // ── Profile submit ───────────────────────────────────────────────────────
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const errEl = document.getElementById('profileError');
+      errEl.style.display = 'none';
+
+      const companyName = document.getElementById('companyName').value.trim();
+      const website     = document.getElementById('website').value.trim();
+
+      if (!companyName) {
+        errEl.textContent = 'Company name is required.';
+        errEl.style.display = 'block';
+        document.getElementById('companyName').focus();
+        return;
+      }
+      if (!website) {
+        errEl.textContent = 'Website is required to run an audit.';
+        errEl.style.display = 'block';
+        document.getElementById('website').focus();
+        return;
+      }
+
+      const btn = document.getElementById('profileBtn');
+      btn.disabled = true;
+      document.getElementById('profileBtnText').style.display = 'none';
+      document.getElementById('profileSpinner').style.display = 'block';
+
+      const profile = {
+        company_name: companyName,
+        website:      website,
+        industry:     document.getElementById('industry').value.trim(),
+        offer:        document.getElementById('offer').value.trim(),
+        buyer:        document.getElementById('buyer').value.trim(),
+        geo:          document.getElementById('geo').value.trim(),
+        competitors:  document.getElementById('competitors').value.trim(),
+      };
+
+      const token = subToken || localStorage.getItem('sub_token');
+
+      try {
+        // Save profile
+        await fetch('/api/sub-register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            email: subEmail,
+            password: '_noop_update_',
+            profile,
+          }),
+        }).catch(() => {});
+
+        // Create first property
+        const propResp = await fetch('/api/sub-add-property', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ ...profile, name: companyName }),
+        });
+        const propData = await propResp.json();
+
+        if (!propResp.ok) {
+          errEl.textContent = propData.error || 'Could not create property. Please try again.';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          document.getElementById('profileBtnText').style.display = 'inline';
+          document.getElementById('profileSpinner').style.display = 'none';
+          return;
+        }
+
+        // Redirect to dashboard
+        window.location.href = '/sub-dashboard.html';
+
+      } catch (err) {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        document.getElementById('profileBtnText').style.display = 'inline';
+        document.getElementById('profileSpinner').style.display = 'none';
+      }
+    });
+  </script>
+
+</body>
+</html>
