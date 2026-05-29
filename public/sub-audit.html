@@ -744,7 +744,29 @@ function gtag(){dataLayer.push(arguments);}
     }
 
     // ── Call 2: Recommendations + roadmap — specific and actionable ───────────
-    const raw2 = await callClaude([{ role:'user', content:`Write an action plan for a Citro audit report. Be specific to this company — name the actual pages, platforms, content types, or tactics relevant to their business. Each action should tell a marketer exactly what to do and why it improves AI visibility. Do NOT use vague verbs like "audit", "improve", or "optimize" without explaining specifically what that means. Do NOT add any fields beyond those shown in the schema. Context:\n${ctx}\nKey finding: ${n.key_finding||''}\n\nRecommendation actions: 1-2 specific sentences. Name the thing to build, publish, or fix, and the AI platform or directory it helps with.\nRoadmap actions: 1 sentence of ~20 words. Specific enough that a marketer knows what to open or write.\n\nReturn ONLY this JSON with exactly these fields — no extras, no markdown:\n{"recommendations":[{"action":"specific 1-2 sentence action naming what to build/fix and why","impact":"high","effort":"low","category":"technical"},{"action":"specific 1-2 sentence action naming what to build/fix and why","impact":"high","effort":"medium","category":"content"},{"action":"specific 1-2 sentence action naming what to build/fix and why","impact":"high","effort":"medium","category":"distribution"},{"action":"specific 1-2 sentence action naming what to build/fix and why","impact":"medium","effort":"low","category":"technical"},{"action":"specific 1-2 sentence action naming what to build/fix and why","impact":"medium","effort":"medium","category":"content"}],"roadmap_phases":[{"days":"Days 1-30","theme":"Technical Foundation","actions":["specific ~20-word action","specific ~20-word action","specific ~20-word action"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["specific ~20-word action","specific ~20-word action","specific ~20-word action"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["specific ~20-word action","specific ~20-word action","specific ~20-word action"]}]}` }], sys, 1800);
+    const raw2 = await callClaude([{ role:'user', content:`Write an action plan for a Citro audit report for ${c.company_name}.
+
+SPECIFICITY RULES — every action must follow all of these:
+1. Name exact schema types: write "FAQ schema (JSON-LD, @type:FAQPage)" not "schema markup"
+2. Name exact pages: write "your [product name] and [product name] pages" not "key pages"
+3. Name exact platforms and directories: write "Perplexity, G2, Crunchbase" not "AI platforms" or "review sites"
+4. If the audit found gaps on specific platforms, name those platforms in the relevant actions
+5. Explain the "so that" — what does this action accomplish for AI visibility
+6. Never use "audit", "optimize", or "improve" without saying specifically what to look at, change, or produce
+
+EXAMPLES OF BAD actions (never write like this):
+- "Add schema markup to all key pages" — too vague, which schema, which pages?
+- "Audit content for AI-citation gaps" — marketers cannot act on this, what does it mean?
+- "List on top review platforms" — which platforms? why those?
+- "Refresh meta descriptions for AI readability" — what does AI readability mean specifically?
+
+EXAMPLES OF GOOD actions (write like this):
+- "Add FAQ schema (JSON-LD, @type:FAQPage) to your [specific product] pages — copy the structured data block, paste before </body>, then test at search.google.com/test/rich-results"
+- "Your site had no visibility on Perplexity for '[name a gap query from the audit]' — publish a 1,000-word page answering that exact question with statistics and third-party quotes"
+- "Claim and complete your profiles on G2, Crunchbase, and Capterra with current product descriptions — these are the directories ChatGPT references when recommending [industry] vendors"
+- "Deploy an llms.txt file at ${c.website}/llms.txt listing your top 5 pages and their one-line descriptions — this directly signals AI crawlers which content to prioritize"
+
+Context:\n${ctx}\nKey finding: ${n.key_finding||''}\n\nReturn ONLY this JSON with exactly these fields — no extras, no markdown:\n{"recommendations":[{"action":"2 specific sentences: what to build/publish/fix, naming exact pages or platforms, and what it does for AI visibility","impact":"high","effort":"low","category":"technical"},{"action":"2 specific sentences naming exact content type, target query or platform, and expected outcome","impact":"high","effort":"medium","category":"content"},{"action":"2 specific sentences naming exact directories or platforms and what to do there","impact":"high","effort":"medium","category":"distribution"},{"action":"2 specific sentences naming exact technical fix and where to implement it","impact":"medium","effort":"low","category":"technical"},{"action":"2 specific sentences naming exact content to create and which AI gap it closes","impact":"medium","effort":"medium","category":"content"}],"roadmap_phases":[{"days":"Days 1-30","theme":"Technical Foundation","actions":["specific action naming schema type and page names","specific action naming a tool or file to create","specific action naming a directory or platform to set up"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["specific action naming content format and target query","specific action naming comparison or page type and competitors","specific action naming a distribution channel and content type"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["specific action naming platforms to monitor and metrics","specific action naming content syndication targets","specific action naming what to track and how to recalibrate"]}]}` }], sys, 1800);
     let acts;
     try {
       const j2 = raw2.replace(/```json[\s\S]*?```|```/g,'').trim();
