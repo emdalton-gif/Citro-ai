@@ -386,11 +386,13 @@ function gtag(){dataLayer.push(arguments);}
       </div>
       <div class="modal-form-group">
         <label class="modal-label">Website *</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input class="modal-input" id="ap-website" type="text" placeholder="acmecorp.com" required style="flex:1;" />
-          <button type="button" id="ap-research-btn" onclick="researchProperty()" style="white-space:nowrap;padding:10px 14px;background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sans);flex-shrink:0;">Research →</button>
-        </div>
-        <div id="ap-research-hint" style="font-size:12px;color:#94A3B8;margin-top:5px;">Enter name + website, then click Research to auto-fill the fields below.</div>
+        <input class="modal-input" id="ap-website" type="text" placeholder="acmecorp.com" required />
+      </div>
+
+      <!-- Research loading state -->
+      <div id="ap-research-loading" style="display:none;font-size:13px;color:#64748B;padding:10px 0;align-items:center;gap:8px;margin-bottom:12px;">
+        <svg style="animation:spin 0.85s linear infinite;flex-shrink:0;" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#CBD5E1" stroke-width="2.5"/><path d="M8 2a6 6 0 0 1 6 6" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/></svg>
+        Researching your company…
       </div>
 
       <!-- Research results card (hidden until research runs) -->
@@ -399,25 +401,23 @@ function gtag(){dataLayer.push(arguments);}
         <p id="ap-research-summary" style="font-size:13px;color:#0F172A;line-height:1.6;margin:0;"></p>
       </div>
 
-      <!-- Research loading state -->
-      <div id="ap-research-loading" style="display:none;font-size:13px;color:#64748B;padding:10px 0;display:none;align-items:center;gap:8px;margin-bottom:12px;">
-        <svg style="animation:spin 0.85s linear infinite;flex-shrink:0;" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#CBD5E1" stroke-width="2.5"/><path d="M8 2a6 6 0 0 1 6 6" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/></svg>
-        Researching your company…
+      <!-- Fields revealed after research -->
+      <div id="ap-fields" style="display:none;">
+        <div class="modal-form-group">
+          <label class="modal-label">Industry</label>
+          <input class="modal-input" id="ap-industry" type="text" placeholder="e.g. B2B SaaS, Healthcare, Legal Services" />
+        </div>
+        <div class="modal-form-group">
+          <label class="modal-label">Product / offer <span style="font-weight:400;text-transform:none;font-size:11px;color:#94A3B8;">(optional)</span></label>
+          <input class="modal-input" id="ap-product" type="text" placeholder="What does this company sell?" />
+        </div>
+        <div class="modal-form-group">
+          <label class="modal-label">Known competitors <span style="font-weight:400;text-transform:none;font-size:11px;color:#94A3B8;">(optional)</span></label>
+          <input class="modal-input" id="ap-competitors" type="text" placeholder="Competitor A, Competitor B" />
+        </div>
       </div>
 
-      <div class="modal-form-group">
-        <label class="modal-label">Industry</label>
-        <input class="modal-input" id="ap-industry" type="text" placeholder="e.g. B2B SaaS, Healthcare, Legal Services" />
-      </div>
-      <div class="modal-form-group">
-        <label class="modal-label">Product / offer (optional)</label>
-        <input class="modal-input" id="ap-product" type="text" placeholder="What does this company sell?" />
-      </div>
-      <div class="modal-form-group">
-        <label class="modal-label">Known competitors (optional)</label>
-        <input class="modal-input" id="ap-competitors" type="text" placeholder="Competitor A, Competitor B" />
-      </div>
-      <button class="modal-submit" type="submit" id="addPropBtn">Add property →</button>
+      <button class="modal-submit" type="button" id="addPropBtn" onclick="handleAddPropertyBtn()">Research my company →</button>
     </form>
   </div>
 </div>
@@ -910,26 +910,44 @@ function gtag(){dataLayer.push(arguments);}
     document.getElementById('addPropError').style.display = 'none';
     document.getElementById('ap-research-result').style.display = 'none';
     document.getElementById('ap-research-loading').style.display = 'none';
-    document.getElementById('ap-research-hint').style.display = 'block';
+    document.getElementById('ap-fields').style.display = 'none';
+    _researchDone = false;
+    const btn = document.getElementById('addPropBtn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Research my company →'; }
+    // Reset hint if it still exists
+    const hint = document.getElementById('ap-research-hint');
+    if (hint) hint.style.display = 'block';
+  }
+
+  let _researchDone = false;
+
+  async function handleAddPropertyBtn() {
+    if (_researchDone) {
+      // Second click — submit the form
+      document.getElementById('addPropertyForm').dispatchEvent(new Event('submit', { cancelable: true }));
+    } else {
+      // First click — run research
+      await researchProperty();
+    }
   }
 
   async function researchProperty() {
     const name    = document.getElementById('ap-name').value.trim();
     const website = document.getElementById('ap-website').value.trim();
-    if (!name && !website) {
-      document.getElementById('ap-name').focus();
+    if (!name || !website) {
+      if (!name) document.getElementById('ap-name').focus();
+      else document.getElementById('ap-website').focus();
       return;
     }
 
-    const btn = document.getElementById('ap-research-btn');
+    const btn     = document.getElementById('addPropBtn');
     const loading = document.getElementById('ap-research-loading');
     const result  = document.getElementById('ap-research-result');
-    const hint    = document.getElementById('ap-research-hint');
+    const fields  = document.getElementById('ap-fields');
 
     btn.disabled = true; btn.textContent = 'Researching…';
     loading.style.display = 'flex';
     result.style.display  = 'none';
-    hint.style.display    = 'none';
 
     try {
       const resp = await fetch('/api/research', {
@@ -949,7 +967,11 @@ function gtag(){dataLayer.push(arguments);}
     } catch (e) { /* non-critical — fields stay empty */ }
 
     loading.style.display = 'none';
-    btn.disabled = false; btn.textContent = 'Research →';
+    // Reveal the additional fields and switch to "Add property" mode
+    fields.style.display = 'block';
+    _researchDone = true;
+    btn.disabled = false;
+    btn.textContent = 'Add property →';
   }
 
   async function submitAddProperty(e) {
