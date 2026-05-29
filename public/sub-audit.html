@@ -1295,8 +1295,10 @@ function gtag(){dataLayer.push(arguments);}
         alert('Please enter your company name and website before running.');
         return;
       }
-      // Persist profile so future visits pre-fill
-      if (subscriberEmail) {
+      // Persist profile so future visits pre-fill — skip for Enterprise since
+      // each property has its own profile; writing it here overwrites the
+      // account-level profile (subscriber-profile:email) with the property data.
+      if (subscriberEmail && !isEnterprise) {
         fetch('/api/sub-register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
