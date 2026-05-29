@@ -149,8 +149,17 @@ module.exports = async function handler(req, res) {
         if (session.mode === 'subscription' && session.customer) {
           const email = session.customer_details?.email || session.customer_email || '';
           if (email) {
+            const normalizedEmail = email.toLowerCase().trim();
             // Store customer ID → email index for future webhook lookups
-            await upstashCmd(['SET', `stripe-customer:${session.customer}`, JSON.stringify(email.toLowerCase().trim())]);
+            await upstashCmd(['SET', `stripe-customer:${session.customer}`, JSON.stringify(normalizedEmail)]);
+            // Update subscriber plan in case they upgraded an existing account
+            const plan = session.metadata?.plan;
+            if (plan) {
+              const account = await upstashGet(`subscriber:${normalizedEmail}`);
+              if (account) {
+                await upstashSet(`subscriber:${normalizedEmail}`, { ...account, plan, updatedAt: Date.now() });
+              }
+            }
           }
         }
         break;
