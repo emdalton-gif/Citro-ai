@@ -822,37 +822,6 @@ function gtag(){dataLayer.push(arguments);}
       ]
     };
 
-    // ── DEAD CODE BELOW — kept as reference, no longer executed ───────────────
-    if (false) { const raw2 = await callClaude([{ role:'user', content:`Write an action plan for a Citro audit report for ${c.company_name}.
-
-SPECIFICITY RULES — every action must follow all of these:
-1. Name exact schema types: write "FAQ schema (JSON-LD, @type:FAQPage)" not "schema markup"
-2. Name exact pages: write "your [product name] and [product name] pages" not "key pages"
-3. Name exact platforms and directories: write "Perplexity, G2, Crunchbase" not "AI platforms" or "review sites"
-4. If the audit found gaps on specific platforms, name those platforms in the relevant actions
-5. Explain the "so that" — what does this action accomplish for AI visibility
-6. Never use "audit", "optimize", or "improve" without saying specifically what to look at, change, or produce
-
-EXAMPLES OF BAD actions (never write like this):
-- "Add schema markup to all key pages" — too vague, which schema, which pages?
-- "Audit content for AI-citation gaps" — marketers cannot act on this, what does it mean?
-- "List on top review platforms" — which platforms? why those?
-- "Refresh meta descriptions for AI readability" — what does AI readability mean specifically?
-
-EXAMPLES OF GOOD actions (write like this):
-- "Add FAQ schema (JSON-LD, @type:FAQPage) to your [specific product] pages — copy the structured data block, paste before </body>, then test at search.google.com/test/rich-results"
-- "Your site had no visibility on Perplexity for '[name a gap query from the audit]' — publish a 1,000-word page answering that exact question with statistics and third-party quotes"
-- "Claim and complete your profiles on G2, Crunchbase, and Capterra with current product descriptions — these are the directories ChatGPT references when recommending [industry] vendors"
-- "Deploy an llms.txt file at ${c.website}/llms.txt listing your top 5 pages and their one-line descriptions — this directly signals AI crawlers which content to prioritize"
-
-Context:\n${ctx}\nKey finding: ${n.key_finding||''}\n\nReturn ONLY this JSON with exactly these fields — no extras, no markdown:\n{"recommendations":[{"action":"2 specific sentences: what to build/publish/fix, naming exact pages or platforms, and what it does for AI visibility","impact":"high","effort":"low","category":"technical"},{"action":"2 specific sentences naming exact content type, target query or platform, and expected outcome","impact":"high","effort":"medium","category":"content"},{"action":"2 specific sentences naming exact directories or platforms and what to do there","impact":"high","effort":"medium","category":"distribution"},{"action":"2 specific sentences naming exact technical fix and where to implement it","impact":"medium","effort":"low","category":"technical"},{"action":"2 specific sentences naming exact content to create and which AI gap it closes","impact":"medium","effort":"medium","category":"content"}],"roadmap_phases":[{"days":"Days 1-30","theme":"Technical Foundation","actions":["specific action naming schema type and page names","specific action naming a tool or file to create","specific action naming a directory or platform to set up"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["specific action naming content format and target query","specific action naming comparison or page type and competitors","specific action naming a distribution channel and content type"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["specific action naming platforms to monitor and metrics","specific action naming content syndication targets","specific action naming what to track and how to recalibrate"]}]}` }], sys, 1800);
-    let acts;
-    try {
-      const j2 = raw2.replace(/```json[\s\S]*?```|```/g,'').trim();
-      acts = JSON.parse(j2.slice(j2.indexOf('{'), j2.lastIndexOf('}')+1));
-    } catch(e) {
-      console.error('genReport Call 2 parse failed:', e.message, '| raw:', raw2?.slice(0,200));
-    } // end if(false)
 
     return {
       executive_summary: n.executive_summary || '',
