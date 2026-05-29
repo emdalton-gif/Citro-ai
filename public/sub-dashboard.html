@@ -1041,11 +1041,23 @@ function gtag(){dataLayer.push(arguments);}
 
       const isEnterprise = data.plan === 'enterprise';
 
-      // Personalize heading with company name if available
+      // Personalize heading with account company name.
+      // For Enterprise: use the account-level profile (set during onboarding),
+      // NOT a property name. Properties have their own names on their tiles.
       const companyName = data.profile?.company_name || data.profile?.name;
-      if (companyName) {
+      if (companyName && !isEnterprise) {
+        // Professional: show their company name as the heading
         const h1 = document.querySelector('.top-row h1');
         if (h1) h1.textContent = companyName;
+      } else if (isEnterprise && companyName) {
+        // Enterprise: show the account company name (set during onboarding)
+        // only if it doesn't match any property name — avoids showing a
+        // property name that overwrote the account profile
+        const propertyNames = (data.properties || []).map(p => (p.name || '').toLowerCase());
+        if (!propertyNames.includes(companyName.toLowerCase())) {
+          const h1 = document.querySelector('.top-row h1');
+          if (h1) h1.textContent = companyName;
+        }
       }
 
       if (isEnterprise) {
