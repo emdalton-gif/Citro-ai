@@ -829,66 +829,74 @@ function gtag(){dataLayer.push(arguments);}
 
     // Platform-specific distribution focus
     const platformFocus = gapPlatformList.length > 1
-      ? `${primaryGapP} and ${secondaryGapP} both showed gaps in this audit`
-      : `${primaryGapP} showed the largest gaps in this audit`;
+      ? `${primaryGapP} and ${secondaryGapP} both showed gaps`
+      : `${primaryGapP} showed the largest gaps`;
+
+    // ── Claude call: 14 numbered plain-text items (no JSON — can't break parsing) ──
+    // Items 1-5: standalone recommendations
+    // Items 6-8: Days 1-30 technical foundation actions
+    // Items 9-11: Days 31-60 content and visibility actions
+    // Items 12-14: Days 61-90 distribution and measurement actions
+    const actsPrompt = `Write 14 numbered action items for a Citro AI visibility audit report for ${c.company_name} (${c.website}).
+
+Audit findings:
+- Citro Score: ${score}% — ${isZeroScore ? 'zero visibility, brand not mentioned in any AI response' : isLowScore ? 'low visibility, appeared in only a fraction of queries' : isMidScore ? 'moderate visibility with platform gaps' : 'strong visibility, focus on defending position'}
+- Platforms with gaps: ${gapPlatformList.join(', ') || 'ChatGPT, Perplexity'}
+- Queries with no visibility: ${gapQueries.slice(0,3).map(q => `"${q.query}" on ${q.platform}`).join('; ') || 'multiple queries'}
+- Competitors in AI results: ${comps.slice(0,4).join(', ') || 'none detected — category underrepresented'}
+- Industry: ${c.industry || 'not specified'}
+- Product: ${c.offer || c.company_name}
+- Buyers: ${buyerCtx}
+
+Rules — every item must follow ALL of these:
+- Specific to this company's actual audit results above — reference real query phrases, real platform names, real competitor names from the data
+- Tell a non-technical marketer exactly what to do: what page to create, what file to deploy, what directory to update, what article to pitch
+- Do NOT write the same advice you would give any company — if a recommendation could apply to any brand, rewrite it to reflect this specific audit
+- Name exact schema types, exact directory names, exact publication names relevant to this industry
+- Each item is 2-3 sentences max
+
+Write ONLY 14 numbered items. No headers, no preamble, no explanation. Format exactly:
+1. [action]
+2. [action]
+...
+14. [action]`;
+
+    const rawActs = await callClaude([{ role: 'user', content: actsPrompt }], sys, 2000);
+
+    // Parse numbered list — much more reliable than JSON
+    const actLines = (rawActs || '').split('\n')
+      .map(l => l.replace(/^\d+\.\s*/, '').trim())
+      .filter(l => l.length > 20);
+
+    const getAct = (i) => actLines[i] || '';
+
+    // Impact/effort/category mapping for recommendations (items 0-4)
+    const impactMap  = ['high','high','high','medium','medium'];
+    const effortMap  = ['low','medium','medium','low','medium'];
+    const catMap     = ['technical','content','distribution','technical','content'];
 
     const acts = {
-      recommendations: [
-        {
-          action: `Add FAQ schema (JSON-LD, type FAQPage) and ${extraSchema} to ${c.website} — test each page at search.google.com/test/rich-results. This enables ${topGapPlatform} to surface structured Q&A directly in advisory responses.`,
-          impact: 'high', effort: 'low', category: 'technical'
-        },
-        {
-          action: gapPageDirective + ` Each page should include quantified outcomes, third-party validation, and comparison context.`,
-          impact: 'high', effort: 'medium', category: 'content'
-        },
-        {
-          action: `Create or complete your profiles on ${industryDirs}. Fill in current product descriptions, pricing, and buyer use cases — ${noCompetitors ? 'AI systems reference these directories when building advisory responses for emerging categories.' : `these are the directories where ${topComp0} builds its AI citation advantage.`}`,
-          impact: 'high', effort: 'medium', category: 'distribution'
-        },
-        {
-          action: `Deploy ${c.website}/llms.txt listing your 5-7 most important pages with one-line descriptions of what each covers. This file is read directly by AI crawlers to understand your site's content map.`,
-          impact: 'medium', effort: 'low', category: 'technical'
-        },
-        {
-          action: compAction,
-          impact: 'medium', effort: 'medium', category: 'content'
-        },
-      ],
+      recommendations: [0,1,2,3,4].map(i => ({
+        action: getAct(i),
+        impact: impactMap[i],
+        effort: effortMap[i],
+        category: catMap[i],
+      })).filter(r => r.action),
       roadmap_phases: [
-        {
-          days: 'Days 1-30',
-          theme: 'Technical Foundation',
-          actions: [
-            `${foundationPriority} Start with FAQ schema and ${extraSchema} on ${c.website} — test each implementation at search.google.com/test/rich-results.`,
-            `Create ${c.website}/llms.txt listing your 5-7 most important pages with one-line descriptions. Also claim your Wikidata entry — ChatGPT uses it to verify brand identity.`,
-            isZeroScore || isLowScore
-              ? `Complete your Crunchbase profile and Google Business Profile with current product descriptions and buyer use cases — these are entry-level citation sources AI systems check when a brand has low recognition.`
-              : `Complete your profiles on ${industryDirs.split(',')[0].trim()} and ${industryDirs.split(',')[1]?.trim() || 'Crunchbase'} — these are the specific directories where ${topComp0 || 'category leaders'} maintain their AI citation advantage.`,
-          ]
-        },
-        {
-          days: 'Days 31-60',
-          theme: 'Content and Visibility',
-          actions: [
-            topGapQuery
-              ? `Publish a 1,200-word page targeting "${topGapQuery}" with buyer-intent FAQ sections, statistics, and outcome data. ${c.company_name} had zero visibility for this query on ${topGapPlatform} — a well-structured page directly closes this gap.`
-              : `Publish long-form buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit. Use the exact phrasing buyers use and include statistics, outcome data, and FAQ sections.`,
-            compAction,
-            `Submit ${c.company_name} to ${industryDirs} — focus on completing profiles, not just creating them. AI systems weight completeness and recency heavily when ranking vendor citations.`,
-          ]
-        },
-        {
-          days: 'Days 61-90',
-          theme: 'Distribution and Measurement',
-          actions: [
-            `Run a second Citro audit at day 75 and compare Citro Scores — ${platformFocus}, so prioritize platform-specific re-investment there first.`,
-            `Pitch 2-3 original data stories or expert commentary to ${industryPubs} — Perplexity and ChatGPT heavily weight recent third-party articles as citation evidence.`,
-            `Review which gap-query pages and comparison pages earned the highest AI visibility scores, double down on that content format, and update any pages with zero movement.`,
-          ]
-        }
+        { days: 'Days 1-30',  theme: 'Technical Foundation',       actions: [getAct(5), getAct(6), getAct(7)].filter(Boolean) },
+        { days: 'Days 31-60', theme: 'Content and Visibility',      actions: [getAct(8), getAct(9), getAct(10)].filter(Boolean) },
+        { days: 'Days 61-90', theme: 'Distribution and Measurement',actions: [getAct(11), getAct(12), getAct(13)].filter(Boolean) },
       ]
     };
+
+    // Fallback if Claude returns too few items — fill remaining slots with data-driven text
+    if (acts.recommendations.length < 3) {
+      acts.recommendations = [
+        { action: `Add FAQ schema (JSON-LD, type FAQPage) and ${extraSchema} to ${c.website} and test at search.google.com/test/rich-results — this enables ${primaryGapP} to surface your Q&A content in advisory responses.`, impact:'high', effort:'low', category:'technical' },
+        { action: topGapQuery ? `Publish a 1,200-word page targeting "${topGapQuery}" with statistics and buyer-intent FAQ — ${c.company_name} had zero visibility for this query on ${topGapPlatform}.` : `Publish buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit.`, impact:'high', effort:'medium', category:'content' },
+        { action: `Complete your profiles on ${industryDirs} with current product descriptions and pricing — AI systems weight completeness when ranking vendor citations.`, impact:'high', effort:'medium', category:'distribution' },
+      ];
+    }
 
 
     return {
