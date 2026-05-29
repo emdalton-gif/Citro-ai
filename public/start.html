@@ -401,9 +401,6 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       <p class="step-sub">These personas drive every query we run across AI platforms — they're your buyers asking AI who to call. Edit anything that doesn't match your real customers.</p>
       <div class="global-error" id="err-4"></div>
       <div class="persona-grid" id="persona-grid"></div>
-      <p style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:20px;padding:12px 14px;background:var(--bg);border-radius:8px;border:1px solid var(--border);">
-        Want to add more personas? You can do this in your dashboard after running your first audit.
-      </p>
       <button class="btn-primary" onclick="goStep5()">
         These look right — continue
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -664,102 +661,65 @@ async function generatePersonas() {
   document.getElementById('personas-content').style.display = 'none';
 
   const p = state.profile;
+  const prompt = `You are a B2B buyer persona expert. Based on this company profile, generate exactly 3 realistic buyer personas. Return ONLY a valid JSON array, no explanation or markdown.
+
+Company: ${state.bizName}
+What they sell: ${p.offer || ''}
+Target buyer: ${p.buyer || ''}
+Industry niche: ${p.industry || ''}
+Geography: ${p.geo || ''}
+Key competitors: ${p.competitors || ''}
+
+Return this exact JSON structure:
+[
+  {
+    "name": "First Last (a realistic name)",
+    "title": "Job title",
+    "company": "Type of company they work at",
+    "painPoint": "1-2 sentences describing their main challenge that this company solves",
+    "searchBehavior": "1 sentence on how they use AI to find vendors"
+  }
+]`;
 
   try {
-    const resp = await fetch('/api/gen-personas', {
+    const resp = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        company_name: state.bizName,
-        offer:        p.offer || '',
-        buyer:        p.buyer || '',
-        industry:     p.industry || '',
-        geo:          p.geo || '',
-        competitors:  p.competitors || state.competitors.join(', '),
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }],
       }),
     });
     const data = await resp.json();
-    state.personas = data.personas || [];
+    const text = data.content?.[0]?.text || '[]';
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    state.personas = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
     if (!state.personas.length) throw new Error('No personas returned');
     renderPersonas();
   } catch(e) {
-    document.getElementById('err-4-load').textContent = 'Could not generate personas. Please go back and try again.';
-    document.getElementById('err-4-load').classList.add('show');
-    document.getElementById('personas-loading').style.display = 'none';
+    // Fallback personas
+    state.personas = [
+      { name: 'Sarah Mitchell', title: 'VP of Marketing', company: 'Mid-market B2B company', painPoint: 'Needs to prove ROI on content and understand where qualified buyers are coming from.', searchBehavior: 'Asks AI platforms for recommended vendors before contacting sales.' },
+      { name: 'David Chen', title: 'Head of Growth', company: 'SaaS startup (Series A)', painPoint: 'Struggling to get their brand in front of buyers earlier in the research process.', searchBehavior: 'Uses ChatGPT and Perplexity to shortlist tools before demoing.' },
+      { name: 'Rachel Torres', title: 'Director of Strategy', company: 'Professional services firm', painPoint: 'Competitors are showing up in AI recommendations; they are not.', searchBehavior: 'Runs AI queries to benchmark how their firm appears vs. competitors.' },
+    ];
+    renderPersonas();
   }
 }
 
-// ── HTML escape helper ──
-function escHtml(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Single card — view mode ──
-function renderPersonaCard(i) {
-  const p = state.personas[i];
-  return `<div class="persona-card" id="persona-card-${i}">
-    <div class="persona-header">
-      <div class="persona-name">${escHtml(p.name)}</div>
-      <button class="persona-edit-btn" onclick="editPersona(${i})">Edit</button>
-    </div>
-    <div class="persona-title">${escHtml(p.title)} · ${escHtml(p.company)}</div>
-    <div class="persona-desc">${escHtml(p.painPoint)}</div>
-    ${p.searchBehavior ? `<div class="persona-desc" style="margin-top:6px;color:var(--accent);font-size:12px;">AI behavior: ${escHtml(p.searchBehavior)}</div>` : ''}
-  </div>`;
-}
-
-// ── Single card — edit mode ──
-function editPersona(i) {
-  const p = state.personas[i];
-  document.getElementById('persona-card-' + i).outerHTML = `
-  <div class="persona-card" id="persona-card-${i}" style="border-color:var(--accent);">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent);margin-bottom:14px;">Editing persona ${i + 1}</div>
-    <div class="field" style="margin-bottom:10px;">
-      <label>Name</label>
-      <input type="text" id="pe-name-${i}" value="${escHtml(p.name)}" />
-    </div>
-    <div class="field" style="margin-bottom:10px;">
-      <label>Job title</label>
-      <input type="text" id="pe-title-${i}" value="${escHtml(p.title)}" />
-    </div>
-    <div class="field" style="margin-bottom:10px;">
-      <label>Company type &amp; size</label>
-      <input type="text" id="pe-company-${i}" value="${escHtml(p.company)}" />
-    </div>
-    <div class="field" style="margin-bottom:10px;">
-      <label>Pain point</label>
-      <textarea id="pe-pain-${i}" rows="3" style="resize:vertical;">${escHtml(p.painPoint)}</textarea>
-    </div>
-    <div class="field" style="margin-bottom:16px;">
-      <label>AI search behavior <span style="font-weight:400;color:var(--quiet);">(optional)</span></label>
-      <input type="text" id="pe-behavior-${i}" value="${escHtml(p.searchBehavior || '')}" placeholder="How they use AI to find vendors" />
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn-primary" style="margin-top:0;flex:none;width:auto;padding:10px 22px;font-size:14px;" onclick="savePersona(${i})">Save</button>
-      <button class="btn-ghost" style="margin-top:0;" onclick="cancelEditPersona(${i})">Cancel</button>
-    </div>
-  </div>`;
-}
-
-function savePersona(i) {
-  state.personas[i] = {
-    name:           document.getElementById('pe-name-' + i).value.trim() || state.personas[i].name,
-    title:          document.getElementById('pe-title-' + i).value.trim(),
-    company:        document.getElementById('pe-company-' + i).value.trim(),
-    painPoint:      document.getElementById('pe-pain-' + i).value.trim(),
-    searchBehavior: document.getElementById('pe-behavior-' + i).value.trim(),
-  };
-  document.getElementById('persona-card-' + i).outerHTML = renderPersonaCard(i);
-}
-
-function cancelEditPersona(i) {
-  document.getElementById('persona-card-' + i).outerHTML = renderPersonaCard(i);
-}
-
-// ── Render all personas ──
 function renderPersonas() {
   const grid = document.getElementById('persona-grid');
-  grid.innerHTML = state.personas.map((_, i) => renderPersonaCard(i)).join('');
+  grid.innerHTML = state.personas.map((p, i) => `
+    <div class="persona-card">
+      <div class="persona-header">
+        <div class="persona-name">${p.name}</div>
+      </div>
+      <div class="persona-title">${p.title} · ${p.company}</div>
+      <div class="persona-desc">${p.painPoint}</div>
+      ${p.searchBehavior ? `<div class="persona-desc" style="margin-top:6px;color:var(--accent);font-size:12px;">AI behavior: ${p.searchBehavior}</div>` : ''}
+    </div>`).join('');
+
   document.getElementById('personas-loading').style.display = 'none';
   document.getElementById('personas-content').style.display = 'block';
 }
