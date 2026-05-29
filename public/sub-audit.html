@@ -743,47 +743,115 @@ function gtag(){dataLayer.push(arguments);}
       n = { executive_summary: '', key_finding: '', projection_narrative: '' };
     }
 
-    // ── Recommendations + roadmap — JS-generated from audit context ───────────
-    // Generated in JS (not Claude) so they are always specific to the actual
-    // gap queries, platforms, competitors, and company context from this audit.
-    // This eliminates JSON parse failures and guarantees company-specific output.
-    const topGapQuery  = gapQueries[0]?.query  || null;
-    const topGapPlatform = gapQueries[0]?.platform || (gapPlatforms || 'Perplexity and ChatGPT');
-    const topComp0     = comps[0] || null;
-    const reviewDirs   = topComp0
-      ? `G2, Crunchbase, and Capterra — the same directories where ${topComp0} builds its AI citation advantage`
-      : 'G2, Crunchbase, and Capterra';
-    const schemaTarget = c.industry
-      ? `your ${c.industry.split(' ').slice(0,3).join(' ')} pages on ${c.website}`
-      : `your key product and service pages on ${c.website}`;
-    const llmsTxtNote  = `listing your top pages with one-line descriptions — this directly signals AI crawlers which content to prioritize`;
-    const gapContentNote = topGapQuery
-      ? `Your site had no visibility for "${topGapQuery}" on ${topGapPlatform}`
-      : `${c.company_name} is missing from AI responses for ${gapQueries.length} tested buyer queries`;
-    const compNote = topComp0
-      ? `${topComp0} is appearing ahead of ${c.company_name} in AI responses because of stronger review-platform presence and third-party citations`
-      : `Building third-party citations across review platforms is the primary lever to improve AI recommendation frequency`;
+    // ── Recommendations + roadmap — data-driven JS generation ────────────────
+    // Each action branches on actual audit results: score, gap queries by name,
+    // specific platforms that failed, competitors found, and industry.
+
+    const topGapQuery     = gapQueries[0]?.query || null;
+    const topGapPlatform  = gapQueries[0]?.platform || 'ChatGPT';
+    const gapPlatformList = [...new Set(gapQueries.map(q => q.platform))];
+    const primaryGapP     = gapPlatformList[0] || 'ChatGPT';
+    const secondaryGapP   = gapPlatformList[1] || 'Perplexity';
+    const topComp0        = comps[0] || null;
+    const topComp1        = comps[1] || null;
+    const noCompetitors   = comps.length === 0;
+    const ind             = (c.industry || '').toLowerCase();
+    const isZeroScore     = score === 0;
+    const isLowScore      = score > 0 && score < 30;
+    const isMidScore      = score >= 30 && score < 60;
+    const isHighScore     = score >= 60;
+
+    // Industry-specific directories
+    const industryDirs =
+      (ind.includes('financial') || ind.includes('tax') || ind.includes('accounting') || ind.includes('cpa') || ind.includes('cfp'))
+        ? 'CFP Board directory, AccountingToday, Journal of Accountancy, and Investment News'
+      : (ind.includes('education') || ind.includes('training') || ind.includes('learning') || ind.includes('certification') || ind.includes('exam'))
+        ? 'eLearning Industry, Training Industry, Capterra LMS, and Campus Technology'
+      : (ind.includes('health') || ind.includes('medical') || ind.includes('pharma') || ind.includes('clinical'))
+        ? 'G2 Health, Capterra, HIMSS Media, and Health Affairs'
+      : (ind.includes('legal') || ind.includes('law'))
+        ? 'Martindale-Hubbell, Avvo, the ABA Journal, and Justia'
+      : (ind.includes('saas') || ind.includes('software') || ind.includes('tech') || ind.includes('platform'))
+        ? 'G2, TrustRadius, Capterra, and Product Hunt'
+      : (ind.includes('market') || ind.includes('agency') || ind.includes('consult'))
+        ? 'G2, Clutch.co, Capterra, and Marketing Week'
+      : 'G2, Crunchbase, Capterra, and industry-specific trade publications';
+
+    // Industry-specific publications for PR pitching
+    const industryPubs =
+      (ind.includes('financial') || ind.includes('tax') || ind.includes('accounting') || ind.includes('cpa'))
+        ? 'Journal of Accountancy, AccountingToday, and CPA Practice Advisor'
+      : (ind.includes('education') || ind.includes('training') || ind.includes('learning') || ind.includes('certification'))
+        ? 'Training Magazine, CLO Magazine, and eLearning Industry'
+      : (ind.includes('health') || ind.includes('medical'))
+        ? 'Health Affairs, MedCity News, and STAT News'
+      : (ind.includes('legal') || ind.includes('law'))
+        ? 'the ABA Journal, Law360, and Legal Dive'
+      : (ind.includes('saas') || ind.includes('software') || ind.includes('tech'))
+        ? 'TechCrunch, The Information, and category-specific Substack newsletters'
+      : (ind.includes('market') || ind.includes('agency'))
+        ? 'Marketing Week, Adweek, and MarTech Today'
+      : 'trade publications and newsletters specific to your category buyers';
+
+    // Industry-specific schema types beyond FAQ/Organization
+    const extraSchema =
+      (ind.includes('education') || ind.includes('training') || ind.includes('learning') || ind.includes('certification') || ind.includes('exam'))
+        ? 'Course schema on program pages, and HowTo schema on study guide content'
+      : (ind.includes('saas') || ind.includes('software') || ind.includes('platform'))
+        ? 'SoftwareApplication schema on product pages'
+      : (ind.includes('financial') || ind.includes('consult') || ind.includes('agency'))
+        ? 'ProfessionalService schema on your services pages'
+      : 'Product schema on your key offering pages';
+
+    // Gap query framing
+    const gapQueryPhrase = topGapQuery
+      ? `"${topGapQuery}" on ${topGapPlatform}`
+      : `${gapQueries.length} buyer queries across ${primaryGapP}`;
+    const gapPageDirective = topGapQuery
+      ? `Publish a 1,200-word page answering "${topGapQuery}" with concrete statistics, pass rates or outcome data, and a FAQ section — this is the exact query pattern where ${c.company_name} had zero visibility.`
+      : `Publish long-form pages targeting each of the ${gapQueries.length} gap queries identified in this audit, with statistics and FAQ sections using the exact phrasing buyers use.`;
+
+    // Competitor framing
+    const compAction = noCompetitors
+      ? `No established competitors appeared consistently in AI responses — this is a category-building opportunity. Publish a definitive guide that positions ${c.company_name} as the authoritative answer for your category's top buyer questions.`
+      : topComp1
+        ? `Write "${c.company_name} vs ${topComp0}" and "${c.company_name} vs ${topComp1}" comparison pages with objective data on pricing, outcomes, and support — AI systems cite these pages when buyers ask "which is better."`
+        : `Write a "${c.company_name} vs ${topComp0}" comparison page with objective data on pricing, outcomes, and support — ${topComp0} appeared in ${compFreq[topComp0]} of your audited queries and is your primary AI visibility gap.`;
+
+    // Score-based foundation framing
+    const foundationPriority = isZeroScore
+      ? `${c.company_name} had zero AI visibility across all tested queries — the immediate priority is establishing a knowledge graph footprint so AI systems can identify and cite the brand.`
+      : isLowScore
+        ? `${c.company_name} appeared in only a fraction of tested queries — the technical foundation work below will establish the citation infrastructure needed to move from invisible to citable.`
+        : isMidScore
+          ? `${c.company_name} has moderate visibility but is missing from ${primaryGapP} for key buyer queries — the technical layer below closes the structured-data gaps that explain the platform disparity.`
+          : `${c.company_name} has solid AI visibility — the technical work below reinforces the structured-data layer to protect that position as platforms update their recommendation models.`;
+
+    // Platform-specific distribution focus
+    const platformFocus = gapPlatformList.length > 1
+      ? `${primaryGapP} and ${secondaryGapP} both showed gaps in this audit`
+      : `${primaryGapP} showed the largest gaps in this audit`;
 
     const acts = {
       recommendations: [
         {
-          action: `Add FAQ schema (JSON-LD, type FAQPage) to ${schemaTarget} and test implementation at search.google.com/test/rich-results. This enables ${topGapPlatform} to pull your Q&A content directly into advisory responses.`,
+          action: `Add FAQ schema (JSON-LD, type FAQPage) and ${extraSchema} to ${c.website} — test each page at search.google.com/test/rich-results. This enables ${topGapPlatform} to surface structured Q&A directly in advisory responses.`,
           impact: 'high', effort: 'low', category: 'technical'
         },
         {
-          action: `${gapContentNote} — publish a 1,000-word page answering that question with concrete statistics, customer outcomes, and a comparison to alternatives. Match the exact phrasing buyers use.`,
+          action: gapPageDirective + ` Each page should include quantified outcomes, third-party validation, and comparison context.`,
           impact: 'high', effort: 'medium', category: 'content'
         },
         {
-          action: `Create or complete your profiles on ${reviewDirs}. Fill in current product descriptions, pricing range, and use cases — AI systems weight these directories heavily when recommending vendors.`,
+          action: `Create or complete your profiles on ${industryDirs}. Fill in current product descriptions, pricing, and buyer use cases — ${noCompetitors ? 'AI systems reference these directories when building advisory responses for emerging categories.' : `these are the directories where ${topComp0} builds its AI citation advantage.`}`,
           impact: 'high', effort: 'medium', category: 'distribution'
         },
         {
-          action: `Deploy an llms.txt file at ${c.website}/llms.txt ${llmsTxtNote}. Also add Organization and Product schema markup sitewide and verify in Google's Rich Results Test.`,
+          action: `Deploy ${c.website}/llms.txt listing your 5-7 most important pages with one-line descriptions of what each covers. This file is read directly by AI crawlers to understand your site's content map.`,
           impact: 'medium', effort: 'low', category: 'technical'
         },
         {
-          action: `${compNote}. Publish 2-3 buyer-intent comparison pages (e.g., "${c.company_name} vs [competitor]") with pass rates, pricing, and outcome data that AI systems can cite as evidence.`,
+          action: compAction,
           impact: 'medium', effort: 'medium', category: 'content'
         },
       ],
@@ -792,9 +860,11 @@ function gtag(){dataLayer.push(arguments);}
           days: 'Days 1-30',
           theme: 'Technical Foundation',
           actions: [
-            `Add FAQ and Organization schema markup to ${schemaTarget} — test each page at search.google.com/test/rich-results before publishing.`,
-            `Create ${c.website}/llms.txt listing your 5-7 most important pages with one-line descriptions of what each covers.`,
-            `Claim and fully complete your Crunchbase and Wikidata profiles — these are the structured data sources ChatGPT and Perplexity reference most.`,
+            `${foundationPriority} Start with FAQ schema and ${extraSchema} on ${c.website} — test each implementation at search.google.com/test/rich-results.`,
+            `Create ${c.website}/llms.txt listing your 5-7 most important pages with one-line descriptions. Also claim your Wikidata entry — ChatGPT uses it to verify brand identity.`,
+            isZeroScore || isLowScore
+              ? `Complete your Crunchbase profile and Google Business Profile with current product descriptions and buyer use cases — these are entry-level citation sources AI systems check when a brand has low recognition.`
+              : `Complete your profiles on ${industryDirs.split(',')[0].trim()} and ${industryDirs.split(',')[1]?.trim() || 'Crunchbase'} — these are the specific directories where ${topComp0 || 'category leaders'} maintain their AI citation advantage.`,
           ]
         },
         {
@@ -802,21 +872,19 @@ function gtag(){dataLayer.push(arguments);}
           theme: 'Content and Visibility',
           actions: [
             topGapQuery
-              ? `Publish a long-form page targeting "${topGapQuery}" — include statistics, third-party quotes, and a FAQ section matching how buyers phrase this search.`
-              : `Publish 3 long-form pages targeting the gap queries identified in this audit — include statistics, third-party quotes, and FAQ sections.`,
-            topComp0
-              ? `Write a "${c.company_name} vs ${topComp0}" comparison page with objective data on pricing, outcomes, and support — AI systems cite these pages when buyers ask "which is better."`
-              : `Publish comparison content covering how ${c.company_name} differs from the top alternatives in your category — AI systems cite these pages when buyers research options.`,
-            `Submit to 3-5 industry-specific directories and publications relevant to ${c.industry || 'your category'} — third-party citations are the primary factor AI systems use to rank vendor recommendations.`,
+              ? `Publish a 1,200-word page targeting "${topGapQuery}" with buyer-intent FAQ sections, statistics, and outcome data. ${c.company_name} had zero visibility for this query on ${topGapPlatform} — a well-structured page directly closes this gap.`
+              : `Publish long-form buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit. Use the exact phrasing buyers use and include statistics, outcome data, and FAQ sections.`,
+            compAction,
+            `Submit ${c.company_name} to ${industryDirs} — focus on completing profiles, not just creating them. AI systems weight completeness and recency heavily when ranking vendor citations.`,
           ]
         },
         {
           days: 'Days 61-90',
           theme: 'Distribution and Measurement',
           actions: [
-            `Run a second Citro audit at day 75 and compare Citro Scores — focus re-investment on the platforms (${topGapPlatform}) that showed the largest gaps in this audit.`,
-            `Pitch 2-3 industry publications or newsletters for coverage of ${c.company_name} — AI systems like Perplexity heavily weight recent third-party articles as citation sources.`,
-            `Review which comparison and FAQ pages earned the highest AI visibility, double down on that format, and archive or update any pages with zero improvement.`,
+            `Run a second Citro audit at day 75 and compare Citro Scores — ${platformFocus}, so prioritize platform-specific re-investment there first.`,
+            `Pitch 2-3 original data stories or expert commentary to ${industryPubs} — Perplexity and ChatGPT heavily weight recent third-party articles as citation evidence.`,
+            `Review which gap-query pages and comparison pages earned the highest AI visibility scores, double down on that content format, and update any pages with zero movement.`,
           ]
         }
       ]
