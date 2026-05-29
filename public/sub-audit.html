@@ -1272,6 +1272,7 @@ function gtag(){dataLayer.push(arguments);}
 
     // Run mode: load profile, show setup form (or auto-run on first visit)
     let p = {}; // hoisted so startRunBtn click handler can access it
+    let isEnterprise = false; // hoisted — set after fetch, read by button listeners
 
     // Register all button listeners BEFORE the async fetch so they fire regardless of path.
     // The handlers close over the hoisted variables (p, activePropertyId, etc.) which will
@@ -1398,7 +1399,7 @@ function gtag(){dataLayer.push(arguments);}
       const data = await resp.json();
 
       subscriberEmail = data.email || '';
-      const isEnterprise = data.plan === 'enterprise';
+      isEnterprise = data.plan === 'enterprise'; // assign to hoisted outer let
 
       if (data.subscriptionStatus === 'canceled') {
         document.getElementById('error-title').textContent = 'Subscription required.';
