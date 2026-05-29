@@ -1,115 +1,87 @@
 // api/customer-portal.js
-// Creates a Stripe Customer Portal session so subscribers can manage
-// their subscription, update payment method, or cancel.
-// Called from sub-dashboard.html with a Bearer token.
+// Creates a Stripe Customer Portal session for the authenticated customer.
 
-const crypto = require('crypto');
-const https  = require('https');
+const https = require('https');
 const querystring = require('querystring');
+const crypto = require('crypto');
 
-// ── JWT verification ─────────────────────────────────────────────────────────
-
-function verifyToken(token) {
+function verifyCustomerToken(token) {
+  if (!token) return null;
   try {
+    const { p: payload, s: sig } = JSON.parse(Buffer.from(token, 'base64url').toString());
     const secret = process.env.JWT_SECRET || 'dev-secret-change-me';
-    const decoded = JSON.parse(Buffer.from(token, 'base64url').toString());
-    const { p: payload, s: sig } = decoded;
     const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-    if (sig !== expected) return null;
-    const [, email, exp] = payload.split(':');
-    if (Date.now() > Number(exp)) return null;
-    return email;
-  } catch (e) {
-    return null;
-  }
+    if (!crypto.timingSafeEqual(Buffer.from(sig, 'hex'), Buffer.from(expected, 'hex'))) return null;
+    const parts = payload.split(':');
+    if (parts[0] !== 'customer') return null;
+    if (Date.now() > parseInt(parts[parts.length - 1], 10)) return null;
+    return parts.slice(1, -1).join(':');
+  } catch { return null; }
 }
 
-// ── Upstash helpers ──────────────────────────────────────────────────────────
-
-async function upstashCmd(cmd) {
-  const res = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(cmd),
-  });
-  return res.json();
-}
-
-async function upstashGet(key) {
-  const r = await upstashCmd(['GET', key]);
-  return r.result ? JSON.parse(r.result) : null;
-}
-
-// ── Stripe POST ──────────────────────────────────────────────────────────────
-
-function stripePost(path, params) {
+function stripeRequest(method, path, params) {
   return new Promise((resolve, reject) => {
-    const body = querystring.stringify(params);
+    const body = params ? querystring.stringify(params) : '';
     const options = {
       hostname: 'api.stripe.com',
       path: `/v1${path}`,
-      method: 'POST',
+      method,
       headers: {
-        Authorization: 'Basic ' + Buffer.from(process.env.STRIPE_SECRET_KEY + ':').toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(body),
+        'Authorization': 'Basic ' + Buffer.from(process.env.STRIPE_SECRET_KEY + ':').toString('base64'),
       },
     };
+    if (body) {
+      options.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      options.headers['Content-Length'] = Buffer.byteLength(body);
+    }
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', chunk => (data += chunk));
+      res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try { resolve(JSON.parse(data)); }
         catch (e) { reject(new Error('Invalid Stripe response')); }
       });
     });
     req.on('error', reject);
-    req.write(body);
+    if (body) req.write(body);
     req.end();
   });
 }
-
-// ── Handler ──────────────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
-  if (req.method !== 'POST')    { res.status(405).json({ error: 'Method not allowed' }); return; }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
-  // Auth
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.replace('Bearer ', '').trim();
-  const email = verifyToken(token);
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const email = verifyCustomerToken(token);
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
-  try {
-    // Get subscriber record to find Stripe customer ID
-    const subscriber = await upstashGet(`subscriber:${email}`);
-    if (!subscriber) return res.status(404).json({ error: 'Subscriber not found' });
+  const origin = req.headers.origin || 'https://rootpartners.co';
 
-    const customerId = subscriber.stripeCustomerId;
-    if (!customerId) {
-      return res.status(400).json({ error: 'No billing account found. Please contact support@getcitro.ai' });
+  try {
+    // Look up Stripe customer by email
+    const customers = await stripeRequest('GET', `/customers?email=${encodeURIComponent(email)}&limit=1`);
+    if (!customers.data || customers.data.length === 0) {
+      return res.status(404).json({ error: 'No billing account found for this email. If you purchased with a different address, contact hello@rootpartners.co.' });
     }
 
-    // Create Stripe Customer Portal session
-    const origin = req.headers.origin || 'https://getcitro.ai';
-    const portalSession = await stripePost('/billing_portal/sessions', {
-      customer:   customerId,
-      return_url: `${origin}/sub-dashboard.html`,
+    const customerId = customers.data[0].id;
+
+    // Create portal session
+    const session = await stripeRequest('POST', '/billing_portal/sessions', {
+      customer: customerId,
+      return_url: `${origin}/dashboard.html`,
     });
 
-    if (portalSession.error) {
-      return res.status(400).json({ error: portalSession.error.message });
+    if (session.error) {
+      return res.status(400).json({ error: session.error.message });
     }
 
-    return res.json({ url: portalSession.url });
-
+    res.json({ url: session.url });
   } catch (err) {
     console.error('customer-portal error:', err.message);
     res.status(500).json({ error: 'Could not open billing portal' });
