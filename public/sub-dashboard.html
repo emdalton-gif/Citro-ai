@@ -27,6 +27,7 @@ function gtag(){dataLayer.push(arguments);}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -237,6 +238,30 @@ function gtag(){dataLayer.push(arguments);}
     .prop-runs-list a:last-child { border-bottom: none; }
     .prop-runs-list a:hover { color: var(--accent); }
 
+    /* ── PORTFOLIO SUMMARY ── */
+    .portfolio-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    .ps-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+    .ps-label { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+    .ps-value { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--dark); line-height: 1; }
+    .ps-value.green { color: var(--green); }
+    .ps-value.amber { color: var(--amber); }
+    .ps-value.red { color: var(--red); }
+    .ps-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+    /* ── EXPANDABLE PROPERTY CARDS ── */
+    .property-card { cursor: pointer; }
+    .property-card.expanded { border-color: var(--accent) !important; box-shadow: 0 4px 20px rgba(37,99,235,0.1) !important; }
+    .prop-chevron { position: absolute; top: 16px; right: 40px; color: var(--muted); font-size: 12px; transition: transform 0.2s, color 0.2s; user-select: none; }
+    .property-card.expanded .prop-chevron { transform: rotate(180deg); color: var(--accent); }
+    .prop-detail { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+    .property-card.expanded .prop-detail { display: block; }
+    .prop-chart-wrap { height: 140px; margin-bottom: 16px; position: relative; }
+    .prop-detail-label { font-size: 10px; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
+    .prop-detail-runs a { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--dark); font-size: 13px; }
+    .prop-detail-runs a:last-child { border-bottom: none; }
+    .prop-detail-runs a:hover { color: var(--accent); }
+    .prop-detail-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
     @media (max-width: 700px) {
       .page { padding: 32px 16px; }
       nav { padding: 0 20px; }
@@ -326,6 +351,10 @@ function gtag(){dataLayer.push(arguments);}
 
     <!-- Enterprise properties section (hidden for Professional) -->
     <div id="enterpriseSection" style="display:none">
+      <!-- Portfolio summary -->
+      <div class="section-label" style="margin-bottom:16px;">Portfolio Overview</div>
+      <div class="portfolio-summary" id="portfolioSummary"></div>
+
       <div class="properties-header">
         <div>
           <div class="section-label">Your Properties</div>
@@ -682,7 +711,39 @@ function gtag(){dataLayer.push(arguments);}
 
   // ── ENTERPRISE FUNCTIONS ─────────────────────────────────────────────────
 
+  function renderPortfolioSummary(properties) {
+    const withScores = properties.filter(p => p.lastScore !== null && p.lastScore !== undefined);
+    const avgScore = withScores.length
+      ? Math.round(withScores.reduce((s, p) => s + p.lastScore, 0) / withScores.length)
+      : null;
+    const topProp = withScores.length
+      ? withScores.reduce((a, b) => a.lastScore > b.lastScore ? a : b)
+      : null;
+    const totalRuns = properties.reduce((s, p) => s + (p.runCount || 0), 0);
+
+    const el = document.getElementById('portfolioSummary');
+    el.innerHTML = `
+      <div class="ps-card">
+        <div class="ps-label">Portfolio avg score</div>
+        <div class="ps-value ${avgScore !== null ? scoreClass(avgScore) : ''}">${avgScore !== null ? avgScore + '%' : '—'}</div>
+        <div class="ps-sub">Across ${properties.length} propert${properties.length !== 1 ? 'ies' : 'y'}</div>
+      </div>
+      <div class="ps-card">
+        <div class="ps-label">Top performer</div>
+        <div class="ps-value ${topProp ? scoreClass(topProp.lastScore) : ''}">${topProp ? topProp.lastScore + '%' : '—'}</div>
+        <div class="ps-sub">${topProp ? esc(topProp.name) : 'No runs yet'}</div>
+      </div>
+      <div class="ps-card">
+        <div class="ps-label">Total audits</div>
+        <div class="ps-value">${totalRuns}</div>
+        <div class="ps-sub">All time, all properties</div>
+      </div>
+    `;
+  }
+
   function renderEnterpriseProperties(properties, canceled) {
+    renderPortfolioSummary(properties);
+
     const grid = document.getElementById('propertiesGrid');
     const countNote = document.getElementById('propCountNote');
     countNote.textContent = `${properties.length} of 10 properties`;
@@ -695,7 +756,8 @@ function gtag(){dataLayer.push(arguments);}
       const scClass = scoreClass(sc);
       const lastRunText = prop.lastRunAt ? formatDate(prop.lastRunAt) : 'Never';
       card.innerHTML = `
-        <button class="prop-remove" onclick="removeProperty('${prop.id}', '${esc(prop.name)}')" title="Remove property">×</button>
+        <button class="prop-remove" onclick="event.stopPropagation();removeProperty('${prop.id}', '${esc(prop.name)}')" title="Remove property">×</button>
+        <span class="prop-chevron">▼</span>
         <div class="prop-name">${esc(prop.name)}</div>
         <div class="prop-url">${esc(prop.website)}</div>
         <div class="prop-stats">
@@ -710,16 +772,22 @@ function gtag(){dataLayer.push(arguments);}
             <div class="prop-stat-sub">All time</div>
           </div>
         </div>
-        <div class="prop-actions">
-          ${canceled ? '' : `<a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-primary">Run audit</a>`}
-          ${(prop.runCount > 0) ? `<button class="prop-btn-ghost" onclick="togglePropHistory('${prop.id}')">View history</button>` : ''}
-        </div>
-        <div class="prop-runs-panel" id="prop-history-${prop.id}">
-          <div class="prop-runs-list" id="prop-runs-${prop.id}">
-            <p style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0;">Loading…</p>
+        <!-- Expanded detail panel -->
+        <div class="prop-detail">
+          <div class="prop-detail-label">Score over time</div>
+          <div class="prop-chart-wrap"><canvas class="prop-chart-canvas"></canvas></div>
+          <div class="prop-detail-label" style="margin-top:4px;">Recent runs</div>
+          <div class="prop-detail-runs"><p style="font-size:13px;color:var(--muted);text-align:center;padding:8px 0;">Loading…</p></div>
+          <div class="prop-detail-actions">
+            ${canceled ? '' : `<a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-primary" onclick="event.stopPropagation()">Run audit</a>`}
+            <a href="/sub-audit.html?propertyId=${prop.id}&editPersonas=1" class="prop-btn-ghost" onclick="event.stopPropagation()">Edit personas</a>
+            <a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-ghost" onclick="event.stopPropagation()">View all history →</a>
           </div>
         </div>
       `;
+
+      // Click anywhere on card (except remove button) to expand
+      card.addEventListener('click', () => togglePropertyDetail(prop, card));
       grid.appendChild(card);
     });
 
@@ -742,32 +810,76 @@ function gtag(){dataLayer.push(arguments);}
     }
   }
 
-  async function togglePropHistory(propertyId) {
-    const panel = document.getElementById(`prop-history-${propertyId}`);
-    const list = document.getElementById(`prop-runs-${propertyId}`);
-    const isVisible = panel.style.display === 'block';
-    panel.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible && list.innerHTML.includes('Loading')) {
-      try {
-        const resp = await fetch(`/api/sub-get-property-runs?propertyId=${encodeURIComponent(propertyId)}`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        const data = await resp.json();
-        const runs = data.runs || [];
-        if (runs.length === 0) {
-          list.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0;">No runs yet for this property.</p>';
-        } else {
-          list.innerHTML = runs.slice(0, 10).map(r => {
-            const sc = r.overallScore;
-            return `<a href="/sub-audit.html?runId=${r.runId}">
-              <span>${formatDate(r.createdAt)}</span>
-              <span class="${scoreClass(sc)}" style="font-weight:700">${sc !== null && sc !== undefined ? sc + '%' : '—'}</span>
-            </a>`;
-          }).join('');
-        }
-      } catch(e) {
-        list.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:12px 0;">Could not load run history.</p>';
+  async function togglePropertyDetail(prop, cardEl) {
+    const isExpanded = cardEl.classList.contains('expanded');
+
+    // Collapse all open cards first
+    document.querySelectorAll('.property-card.expanded').forEach(c => c.classList.remove('expanded'));
+    if (isExpanded) return; // was open — just close it
+
+    cardEl.classList.add('expanded');
+
+    const detailEl = cardEl.querySelector('.prop-detail');
+    const chartCanvas = cardEl.querySelector('.prop-chart-canvas');
+    const runsEl = cardEl.querySelector('.prop-detail-runs');
+
+    if (detailEl.dataset.loaded) return; // already fetched
+    detailEl.dataset.loaded = '1';
+
+    try {
+      const resp = await fetch(`/api/sub-get-property-runs?propertyId=${encodeURIComponent(prop.id)}`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await resp.json();
+      const allRuns = data.runs || [];
+
+      if (allRuns.length === 0) {
+        chartCanvas.parentElement.style.display = 'none';
+        runsEl.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:8px 0;">No runs yet for this property.</p>';
+        return;
       }
+
+      // Chart: oldest → newest on x-axis
+      const chartRuns = [...allRuns].reverse();
+      new Chart(chartCanvas.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: chartRuns.map(r => formatDate(r.createdAt)),
+          datasets: [{
+            data: chartRuns.map(r => r.overallScore),
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37,99,235,0.07)',
+            borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: '#2563EB',
+            fill: true,
+            tension: 0.35,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => ctx.parsed.y + '%' }
+          }},
+          scales: {
+            y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#F1F5F9' } },
+            x: { ticks: { font: { size: 11 }, maxRotation: 0, maxTicksLimit: 6 }, grid: { display: false } }
+          }
+        }
+      });
+
+      // Recent runs list (newest first, max 5)
+      runsEl.innerHTML = allRuns.slice(0, 5).map(r => {
+        const sc = r.overallScore;
+        return `<a href="/sub-audit.html?runId=${r.runId}" onclick="event.stopPropagation()">
+          <span>${formatDate(r.createdAt)}</span>
+          <span class="${scoreClass(sc)}" style="font-weight:700">${sc !== null && sc !== undefined ? sc + '%' : '—'}</span>
+        </a>`;
+      }).join('');
+
+    } catch(e) {
+      runsEl.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;">Could not load run history.</p>';
     }
   }
 
@@ -906,6 +1018,14 @@ function gtag(){dataLayer.push(arguments);}
       document.getElementById('dashContent').style.display = 'block';
 
       const isEnterprise = data.plan === 'enterprise';
+
+      // Personalize heading with company name if available
+      const companyName = data.profile?.company_name || data.profile?.name;
+      if (companyName) {
+        const h1 = document.querySelector('.top-row h1');
+        if (h1) h1.textContent = companyName;
+      }
+
       if (isEnterprise) {
         document.getElementById('navPlanTag').textContent = 'Enterprise';
         document.getElementById('runBtn').style.display = 'none'; // Enterprise uses per-property run buttons
