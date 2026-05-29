@@ -655,35 +655,13 @@ function gtag(){dataLayer.push(arguments);}
       });
     } catch (err) { /* non-critical */ }
 
-    // Enterprise: create first property and redirect to its audit page
+    // Enterprise users now have their own onboarding flow (enterprise-confirm.html).
+    // If an enterprise user lands here via the old order.html path, send them to
+    // the dashboard — they can add properties from there. Never call sub-add-property
+    // from this page since it requires the account plan to already be set, creating
+    // a race condition that produces "Enterprise plan required" errors.
     if (sessionData.plan === 'enterprise') {
-      let propData = null;
-      try {
-        const propResp = await fetch('/api/sub-add-property', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${subToken}` },
-          body: JSON.stringify({ ...baseProfile, personas }),
-        });
-        propData = await propResp.json();
-        if (!propResp.ok) throw new Error(propData.error || 'Could not create property');
-      } catch (err) {
-        // Show error in-page so user knows what happened instead of silently going to dashboard
-        btn.disabled = false; btn.textContent = 'Save personas & run my first audit →';
-        const errEl = document.getElementById('personaError');
-        if (errEl) {
-          errEl.textContent = 'Could not save your property: ' + (err.message || 'Unknown error') + '. Please try again or go to your dashboard.';
-          errEl.style.display = 'block';
-          // Add a fallback link to dashboard
-          const dashLink = document.getElementById('personaDashLink');
-          if (dashLink) dashLink.style.display = 'inline';
-        }
-        return;
-      }
-      if (propData.property?.id) {
-        window.location.href = `/sub-audit.html?propertyId=${propData.property.id}`;
-      } else {
-        window.location.href = '/sub-dashboard.html';
-      }
+      window.location.href = '/sub-dashboard.html';
       return;
     }
 
