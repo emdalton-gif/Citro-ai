@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Started — Citro Enterprise</title>
+  <link rel="icon" type="image/png" href="/citro-logo.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:    #0B0F1A;
+      --muted:  #64748B;
+      --border: #E2E8F0;
+      --blue:   #2563EB;
+      --blue-h: #1D4ED8;
+      --error:  #DC2626;
+      --bg:     #F8FAFC;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      background: #0B0F1A;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .nav-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .nav-logo span { color: rgba(255,255,255,0.4); font-weight: 400; }
+    .nav-help {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+    }
+    .nav-help:hover { color: rgba(255,255,255,0.8); }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .step.active { color: var(--ink); font-weight: 600; }
+    .step.done   { color: #16A34A; }
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--border);
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .step.active .step-num {
+      background: var(--ink);
+      color: #fff;
+    }
+    .step.done .step-num {
+      background: #16A34A;
+      color: #fff;
+    }
+    .step-connector {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+      margin: 0 4px;
+      flex-shrink: 0;
+    }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 48px 24px 64px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .card-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.4px;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .card-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    /* ── Form ── */
+    .field { margin-bottom: 18px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      height: 44px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 15px;
+      color: var(--ink);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+    input:focus { border-color: var(--blue); }
+    input.error  { border-color: var(--error); }
+
+    .pw-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* Password strength */
+    .strength-bar {
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.2s, background 0.2s;
+    }
+
+    /* ── Error message ── */
+    .error-msg {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--error);
+      margin-bottom: 18px;
+      display: none;
+    }
+
+    /* ── Submit ── */
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--blue-h); }
+    .btn-primary:disabled { opacity: 0.6; cursor: default; }
+
+    /* ── Footer note ── */
+    .billing-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    .signin-link {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .signin-link a { color: var(--blue); text-decoration: none; font-weight: 500; }
+    .signin-link a:hover { text-decoration: underline; }
+
+    /* Spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+      h1 { font-size: 20px; }
+      .step span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">Citro <span>Enterprise</span></a>
+    <a href="mailto:support@getcitro.ai" class="nav-help">Need help?</a>
+  </nav>
+
+  <div class="progress-bar">
+    <div class="step active" id="step1">
+      <div class="step-num">1</div>
+      <span>Account</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step" id="step2">
+      <div class="step-num">2</div>
+      <span>Payment</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step" id="step3">
+      <div class="step-num">3</div>
+      <span>Setup</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="card">
+      <div class="card-eyebrow">Citro Enterprise · $299/mo</div>
+      <h1>Great, let's get your account set up.</h1>
+      <p class="card-sub">Start with your work email and a password. You'll enter payment on the next screen.</p>
+
+      <div class="error-msg" id="errorMsg"></div>
+
+      <form id="accountForm" novalidate>
+        <div class="field">
+          <label for="email">Work email</label>
+          <input type="email" id="email" name="email" placeholder="you@company.com" autocomplete="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="8 or more characters" autocomplete="new-password" required>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="pw-hint" id="pwHint"></div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">
+          <span id="btnText">Continue to payment →</span>
+          <div class="spinner" id="btnSpinner"></div>
+        </button>
+      </form>
+
+      <p class="billing-note">$299/month · Billed monthly · No setup fee · Cancel anytime</p>
+
+      <hr class="divider">
+
+      <p class="signin-link">Already have an account? <a href="/sub-login.html">Sign in</a></p>
+    </div>
+  </main>
+
+  <script>
+    const emailEl    = document.getElementById('email');
+    const passwordEl = document.getElementById('password');
+    const fillEl     = document.getElementById('strengthFill');
+    const hintEl     = document.getElementById('pwHint');
+    const errorMsg   = document.getElementById('errorMsg');
+    const submitBtn  = document.getElementById('submitBtn');
+    const btnText    = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+
+    // Password strength
+    passwordEl.addEventListener('input', () => {
+      const pw = passwordEl.value;
+      let score = 0;
+      if (pw.length >= 8)  score++;
+      if (pw.length >= 12) score++;
+      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+      if (/\d/.test(pw))   score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+      const levels = [
+        { label: '', color: '#E2E8F0', pct: '0%' },
+        { label: 'Weak',     color: '#EF4444', pct: '25%' },
+        { label: 'Fair',     color: '#F59E0B', pct: '50%' },
+        { label: 'Good',     color: '#3B82F6', pct: '75%' },
+        { label: 'Strong',   color: '#16A34A', pct: '100%' },
+      ];
+      const idx = Math.min(score, 4);
+      const lvl = idx === 0 && pw.length > 0 ? levels[1] : levels[idx];
+      fillEl.style.width      = pw.length === 0 ? '0%' : lvl.pct;
+      fillEl.style.background = lvl.color;
+      hintEl.textContent      = pw.length === 0 ? '' : lvl.label;
+      hintEl.style.color      = lvl.color;
+    });
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+    }
+    function clearError() {
+      errorMsg.style.display = 'none';
+    }
+
+    function setLoading(on) {
+      submitBtn.disabled    = on;
+      btnText.style.display = on ? 'none' : 'flex';
+      btnSpinner.style.display = on ? 'block' : 'none';
+    }
+
+    document.getElementById('accountForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      const email    = emailEl.value.trim();
+      const password = passwordEl.value;
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError('Please enter a valid work email address.');
+        emailEl.focus();
+        return;
+      }
+      if (password.length < 8) {
+        showError('Password must be at least 8 characters.');
+        passwordEl.focus();
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const resp = await fetch('/api/enterprise-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          setLoading(false);
+          return;
+        }
+
+        // Redirect to Stripe
+        window.location.href = data.url;
+
+      } catch (err) {
+        showError('Network error. Please check your connection and try again.');
+        setLoading(false);
+      }
+    });
+  </script>
+
+</body>
+</html>
