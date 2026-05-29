@@ -65,6 +65,7 @@ module.exports = async function handler(req, res) {
         stripeCustomerId: stripeCustomerId || existing.stripeCustomerId,
         stripeSubscriptionId: stripeSubscriptionId || existing.stripeSubscriptionId,
         subscriptionStatus: 'active',
+        plan: plan || existing.plan,
         updatedAt: Date.now(),
       };
       const saves = [upstashSet(`subscriber:${normalized}`, updated)];
