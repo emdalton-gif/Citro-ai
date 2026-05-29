@@ -364,8 +364,8 @@
       <!-- Profile setup -->
       <div id="stateProfile">
         <div class="card-eyebrow">Payment confirmed</div>
-        <h1>Set up your first property.</h1>
-        <p class="card-sub">Tell us about the company you want to track. We'll run your first Citro audit right after.</p>
+        <h1>Set up your dashboard.</h1>
+        <p class="card-sub">Tell us about your company. This builds your account profile — you'll add properties and run audits from your dashboard.</p>
 
         <div class="research-card" id="researchCard">
           <div class="research-card-header">
@@ -421,7 +421,7 @@
           </div>
 
           <button type="submit" class="btn-primary" id="profileBtn">
-            <span id="profileBtnText">Launch my first audit →</span>
+            <span id="profileBtnText">Go to my dashboard →</span>
             <div class="spinner-inline" id="profileSpinner"></div>
           </button>
         </form>
@@ -599,10 +599,10 @@
       const token = subToken || localStorage.getItem('sub_token');
 
       try {
-        // Save profile
+        // Save company profile to account
         await fetch('/api/sub-register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             email: subEmail,
             password: '_noop_update_',
@@ -610,24 +610,7 @@
           }),
         }).catch(() => {});
 
-        // Create first property
-        const propResp = await fetch('/api/sub-add-property', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ ...profile, name: companyName }),
-        });
-        const propData = await propResp.json();
-
-        if (!propResp.ok) {
-          errEl.textContent = propData.error || 'Could not create property. Please try again.';
-          errEl.style.display = 'block';
-          btn.disabled = false;
-          document.getElementById('profileBtnText').style.display = 'inline';
-          document.getElementById('profileSpinner').style.display = 'none';
-          return;
-        }
-
-        // Redirect to dashboard
+        // Redirect to dashboard — properties and audits are added from there
         window.location.href = '/sub-dashboard.html';
 
       } catch (err) {
