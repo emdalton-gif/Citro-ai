@@ -848,24 +848,36 @@ Audit findings:
 - Product: ${c.offer || c.company_name}
 - Buyers: ${buyerCtx}
 
-Rules — every item must follow ALL of these:
-- Specific to this company's actual audit results above — reference real query phrases, real platform names, real competitor names from the data
-- Tell a non-technical marketer exactly what to do: what page to create, what file to deploy, what directory to update, what article to pitch
-- Do NOT write the same advice you would give any company — if a recommendation could apply to any brand, rewrite it to reflect this specific audit
-- Name exact schema types, exact directory names, exact publication names relevant to this industry
-- Each item is 2-3 sentences max
+PHASE RULES — items must match their phase category exactly:
 
-Write ONLY 14 numbered items. No headers, no preamble, no explanation. Format exactly:
-1. [action]
-2. [action]
+Items 1-5 are top recommendations (mix of technical and content).
+Items 6-8 are Days 1-30 TECHNICAL FOUNDATION — only website/code changes a developer or marketer can implement directly on the site: schema markup (specify the exact type and which pages), structured data files like llms.txt, Google tag or entity verification, Knowledge Graph or Wikidata entries, meta tag updates, site speed or crawlability fixes. NO content creation, NO article pitching, NO outreach in items 6-8.
+Items 9-11 are Days 31-60 CONTENT AND VISIBILITY — only new content to create: pages to write, comparison guides, FAQ content, video or case study production. NO technical site changes in items 9-11.
+Items 12-14 are Days 61-90 DISTRIBUTION AND MEASUREMENT — only outreach, PR, directory submissions, link building, and measurement: pitching publications, claiming directory listings, running the next audit, reviewing results. NO technical changes, NO new content creation in items 12-14.
+
+Additional rules:
+- Every item must be specific to this company's actual audit data — reference real query phrases, real platform names, real competitor names
+- Name the exact schema type (e.g. FAQPage, Course, Organization), the exact file (e.g. llms.txt), the exact directory or publication name
+- Each item is 2-3 sentences, written for a non-technical marketer
+- Do NOT wrap any item in quotes or JSON syntax — plain prose only
+
+Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
+1. Plain prose action here.
+2. Plain prose action here.
 ...
-14. [action]`;
+14. Plain prose action here.`;
 
     const rawActs = await callClaude([{ role: 'user', content: actsPrompt }], sys, 2000);
 
     // Parse numbered list — much more reliable than JSON
+    // Also strip any JSON-like "action": "..." wrapper Claude sometimes adds
     const actLines = (rawActs || '').split('\n')
-      .map(l => l.replace(/^\d+\.\s*/, '').trim())
+      .map(l => l
+        .replace(/^\d+\.\s*/, '')           // strip leading number
+        .replace(/^"action"\s*:\s*"?/, '')  // strip "action": prefix if present
+        .replace(/"$/, '')                  // strip trailing quote if present
+        .trim()
+      )
       .filter(l => l.length > 20);
 
     const getAct = (i) => actLines[i] || '';
