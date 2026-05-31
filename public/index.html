@@ -515,7 +515,8 @@ function gtag(){dataLayer.push(arguments);}
       .nav-signin { display: none; }
       .nav-hamburger { display: flex; align-items: center; }
       .hero { padding: 64px 24px 56px; }
-      .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 36px; }
+      .finding-card { order: -1; } /* Show the score card FIRST on mobile */
       .hero-title { font-size: 40px; }
       .trust-bar { padding: 16px 24px; }
       .trust-bar-inner { gap: 20px; }
@@ -801,20 +802,16 @@ function gtag(){dataLayer.push(arguments);}
       <h1 class="hero-title">Your buyers are asking <br>AI who to call. <span class="accent">Are you <br>on the list?</span></h1>
       <p class="hero-sub">Citro shows you where AI is sending your buyers instead of you — and how to change the answer.</p>
       <ul class="hero-bullets">
-        <li>Simulates your real buyers across 7 AI platforms — blind, no brand signaling</li>
-        <li>Reveals which competitors AI recommends instead of you, and why</li>
-        <li>Delivers a prioritized 90-day plan to move your score — results in under 5 minutes</li>
+        <li>See exactly which AI platforms are sending your buyers to competitors — by name</li>
+        <li>Get your Citro Score: a single number that tracks your AI citation rate across 7 platforms</li>
+        <li>Walk away with a specific 90-day plan — not generic advice, built from your actual audit results</li>
       </ul>
       <div class="hero-actions">
-        <a href="/start.html" class="btn-hero">Start Free Trial</a>
-        <a href="/sample-audit.html" class="btn-hero-ghost">
-          See a sample report
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
+        <a href="/start.html" class="btn-hero">Start Free Trial — 7 days free</a>
       </div>
       <div class="hero-testimonial" style="margin-top:22px;padding:16px 20px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:10px;max-width:500px;">
         <p style="font-size:14px;color:rgba(248,250,252,0.75);line-height:1.65;font-style:italic;margin-bottom:10px;">"I ran my Citro and found out two direct competitors were being recommended before us on ChatGPT. The 90-day plan told me exactly why and what to change. Worth it in the first read."</p>
-        <div style="font-size:12px;font-weight:600;color:rgba(248,250,252,0.4);letter-spacing:0.03em;">Celeste Ellis, Marketing Director — EdTech</div>
+        <div style="font-size:12px;font-weight:600;color:rgba(248,250,252,0.4);letter-spacing:0.03em;">Celeste Ellis, Marketing Director — B2B SaaS</div>
       </div>
       <div class="hero-trust-inline">
         <div class="hti-item"><span class="hti-icon">⚡</span> Results in 5 minutes or less</div>
