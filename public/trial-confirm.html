@@ -226,16 +226,40 @@ h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; 
       localStorage.setItem('sub_token', verifyData.token);
       localStorage.setItem('sub_email', verifyData.email || '');
     } catch (e) { /* localStorage blocked — non-fatal */ }
+
     setStep('step-account', 'done');
 
-    // Step 3 — redirect to audit with autorun
+    // Step 3 — fire conversion event, then redirect
     setStep('step-audit', 'active');
     showSuccess();
 
-    // Brief pause so the user sees the success state, then redirect
-    setTimeout(function () {
-      window.location.href = '/sub-audit.html?autorun=1';
-    }, 1200);
+    // Fire GA4 purchase event — deduplicated by sessionId.
+    // Uses event_callback so we wait for the beacon to send before
+    // navigating away. Fallback redirect fires after 3s regardless.
+    var redirected = false;
+    function doRedirect() {
+      if (!redirected) {
+        redirected = true;
+        window.location.href = '/sub-audit.html';
+      }
+    }
+
+    var fireKey = 'ra_trial_' + sessionId;
+    try {
+      if (!sessionStorage.getItem(fireKey) && typeof gtag === 'function') {
+        sessionStorage.setItem(fireKey, '1');
+        gtag('event', 'purchase', {
+          transaction_id: sessionId,
+          value: 119.00,
+          currency: 'USD',
+          items: [{ item_id: 'professional_trial', item_name: 'Citro Professional Trial', price: 119.00, quantity: 1 }],
+          event_callback: doRedirect  // redirect only after beacon is sent
+        });
+      }
+    } catch(e) {}
+
+    // Safety fallback — redirect after 3s even if gtag callback never fires
+    setTimeout(doRedirect, 3000);
   }
 
   // Fire immediately
