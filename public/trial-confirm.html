@@ -10,7 +10,7 @@ function gtag(){dataLayer.push(arguments);}
 })();
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');gtag('config','AW-18148918651');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Starting Your Trial — Citro</title>
@@ -248,6 +248,11 @@ h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; 
     try {
       if (!sessionStorage.getItem(fireKey) && typeof gtag === 'function') {
         sessionStorage.setItem(fireKey, '1');
+        // Enhanced conversions: pass email (gtag hashes it client-side) for better match rates
+        var ecEmail=''; try{ ecEmail=(typeof verifyData!=='undefined'&&verifyData.email)||localStorage.getItem('sub_email')||''; }catch(e){}
+        if(ecEmail){ gtag('set','user_data',{email:ecEmail}); }
+        // Google Ads conversion — Citro Trial Start (primary)
+        gtag('event','conversion',{ send_to:'AW-18148918651/-7MyCNiSr7ccEPuKis5D', transaction_id: sessionId });
         gtag('event', 'purchase', {
           transaction_id: sessionId,
           value: 119.00,
