@@ -399,7 +399,7 @@ function gtag(){dataLayer.push(arguments);}
       <div class="page-sub" id="welcome-sub">Citro audits you've run, accessible anytime.</div>
     </div>
     <div class="header-actions">
-      <a class="btn-primary" href="/order.html?plan=snapshot">
+      <a class="btn-primary" href="/start.html">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         New audit — $299
       </a>
@@ -443,7 +443,7 @@ function gtag(){dataLayer.push(arguments);}
     </div>
     <div class="empty-title">No reports yet</div>
     <div class="empty-sub">Run your first AI Visibility Audit to see how you appear across ChatGPT, Perplexity, Gemini, and four more platforms.</div>
-    <a class="btn-primary" href="/order.html?plan=snapshot">Run your first audit — $299</a>
+    <a class="btn-primary" href="/start.html">Run your first audit — $299</a>
   </div>
 
 </div>
@@ -512,7 +512,7 @@ function gtag(){dataLayer.push(arguments);}
           <div class="audit-info">
             <div class="audit-company">
               ${escHtml(a.companyName)}
-              <span class="plan-pill ${a.plan === 'active' ? 'active' : 'snapshot'}">${a.plan === 'active' ? 'Active' : 'Snapshot'}</span>
+              <span class="plan-pill ${a.plan === 'active' ? 'active' : 'snapshot'}">${a.plan === 'active' ? 'Active' : 'Audit'}</span>
             </div>
             <div class="audit-meta">${a.industry ? escHtml(a.industry) + ' · ' : ''}${formatDate(a.createdAt)}</div>
           </div>
