@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}
+  gtag('consent','default',{analytics_storage:c&&c.a?'granted':'denied',ad_storage:c&&c.m?'granted':'denied',ad_user_data:c&&c.m?'granted':'denied',ad_personalization:c&&c.m?'granted':'denied',wait_for_update:500});
+})();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');gtag('config','AW-18148918651');</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Check Your AI Visibility, Free - Citro</title>
+<meta name="description" content="See where your brand stands across ChatGPT, Perplexity, Gemini and 4 more AI assistants. Free, no credit card, your Citro Score in under a minute.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F8FAFC; --panel:#FFFFFF; --ink:#0F172A; --mid:#475569; --quiet:#94A3B8;
+    --border:rgba(15,23,42,0.10); --accent:#2563EB; --accent-d:#1D4ED8;
+    --green:#059669; --amber:#D97706; --red:#DC2626; --ink-dark:#0B1220;
+    --sans:'Inter',system-ui,sans-serif; --mono:'DM Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:680px;margin:0 auto;padding:0 22px;}
+
+  header{padding:22px 0;}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-0.03em;}
+  .logo span{color:var(--accent);}
+
+  .hero{padding:36px 0 10px;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+  h1{font-size:40px;line-height:1.06;letter-spacing:-0.035em;font-weight:800;margin-bottom:14px;}
+  .sub{font-size:17px;color:var(--mid);max-width:540px;margin-bottom:28px;}
+
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 1px 2px rgba(15,23,42,0.04);}
+  form .field{margin-bottom:14px;}
+  label{display:block;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--quiet);margin-bottom:6px;}
+  input{width:100%;padding:13px 14px;border:1px solid #CBD5E1;border-radius:10px;font-size:15px;font-family:inherit;color:var(--ink);}
+  input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,0.12);}
+  .btn{width:100%;background:var(--accent);color:#fff;border:none;padding:15px;border-radius:10px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;}
+  .btn:hover{background:var(--accent-d);}
+  .btn:disabled{opacity:.6;cursor:default;}
+  .reassure{font-size:13px;color:var(--quiet);margin-top:12px;text-align:center;}
+  .err{color:var(--red);font-size:13px;margin-top:10px;display:none;}
+
+  /* loading */
+  #loading{display:none;text-align:center;padding:42px 0;}
+  .spin{width:34px;height:34px;border:3px solid rgba(37,99,235,0.18);border-top-color:var(--accent);border-radius:50%;margin:0 auto 18px;animation:sp 0.8s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  #loadmsg{font-family:var(--mono);font-size:13px;color:var(--mid);}
+
+  /* result */
+  #result{display:none;}
+  .scorecard{background:var(--ink-dark);color:#F8FAFC;border-radius:16px;padding:28px;margin-bottom:16px;}
+  .sc-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .sc-co{font-size:15px;color:rgba(248,250,252,0.6);font-family:var(--mono);}
+  .sc-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(248,250,252,0.4);}
+  .sc-num{font-size:76px;font-weight:800;line-height:1;letter-spacing:-0.04em;margin:10px 0 2px;}
+  .sc-num small{font-size:30px;font-weight:600;color:rgba(248,250,252,0.3);}
+  .sc-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(248,250,252,0.45);margin-bottom:18px;}
+  .gtrack{height:5px;background:rgba(255,255,255,0.10);border-radius:3px;overflow:hidden;}
+  .gfill{height:5px;border-radius:3px;width:0;transition:width 1s cubic-bezier(.2,.7,.2,1);}
+  .gmark{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:rgba(248,250,252,0.3);margin-top:8px;}
+
+  .findings{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  @media(max-width:560px){.findings{grid-template-columns:1fr;}.sc-num{font-size:60px;}h1{font-size:32px;}}
+  .find{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;}
+  .find .k{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--quiet);margin-bottom:8px;}
+  .find .v{font-size:16px;font-weight:600;}
+  .find.red{border-color:rgba(220,38,38,0.25);background:rgba(220,38,38,0.04);}
+
+  .locked{position:relative;border:1px solid var(--border);border-radius:14px;padding:22px;overflow:hidden;}
+  .locked h3{font-size:17px;font-weight:700;margin-bottom:14px;}
+  .locked ul{list-style:none;}
+  .locked li{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border);color:var(--mid);font-size:15px;}
+  .locked li:first-child{border-top:none;}
+  .lock-ico{width:16px;height:16px;flex:none;color:var(--quiet);}
+  .blurred{filter:blur(3px);opacity:.55;user-select:none;pointer-events:none;}
+  .unlock{margin-top:18px;}
+  .unlock .btn{display:block;text-align:center;}
+  .unlock .note{text-align:center;font-size:13px;color:var(--quiet);margin-top:10px;}
+
+  footer{text-align:center;padding:34px 0 40px;color:var(--quiet);font-size:13px;}
+  footer .pb{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;}
+</style>
+</head>
+<body>
+  <header><div class="wrap"><a href="/" class="logo">Citro<span>.</span></a></div></header>
+
+  <main class="wrap">
+    <!-- INPUT -->
+    <section id="intake" class="hero">
+      <div class="eyebrow">Free AI Visibility Check</div>
+      <h1>Find out if AI recommends you.</h1>
+      <p class="sub">Buyers now ask ChatGPT, Perplexity, Gemini and Claude who to call. See where your brand stands across 7 AI assistants. No credit card, your Citro Score in under a minute.</p>
+      <div class="card">
+        <form id="checkForm">
+          <div class="field">
+            <label for="url">Your website</label>
+            <input id="url" name="url" type="text" placeholder="yourcompany.com" autocomplete="url" required>
+          </div>
+          <div class="field">
+            <label for="email">Work email</label>
+            <input id="email" name="email" type="email" placeholder="you@company.com" autocomplete="email" required>
+          </div>
+          <button class="btn" type="submit" id="submitBtn">Run my free check</button>
+          <div class="err" id="formErr"></div>
+          <p class="reassure">No card. No password. We email your result and how to improve it.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- LOADING -->
+    <section id="loading">
+      <div class="spin"></div>
+      <div id="loadmsg">Reading your site…</div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result">
+      <div class="scorecard">
+        <div class="sc-top">
+          <div class="sc-co" id="rCompany">your brand</div>
+          <div class="sc-tag">Preliminary estimate</div>
+        </div>
+        <div class="sc-num"><span id="rScore">0</span><small>/100</small></div>
+        <div class="sc-label">Citro Score · estimated AI recommendation rate</div>
+        <div class="gtrack"><div class="gfill" id="rFill"></div></div>
+        <div class="gmark"><span>Invisible</span><span>Recommended</span></div>
+      </div>
+
+      <div class="findings">
+        <div class="find"><div class="k">Platforms checked</div><div class="v"><span id="rPlatforms">7</span> AI assistants</div></div>
+        <div class="find red"><div class="k">A competitor AI names instead</div><div class="v" id="rCompetitor">-</div></div>
+      </div>
+      <div class="find red" style="margin-bottom:16px;"><div class="k">A query you are losing</div><div class="v" id="rQuery">-</div></div>
+
+      <div class="locked">
+        <h3>Your full audit is ready to unlock</h3>
+        <ul>
+          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your score on each of the 7 platforms, one by one</li>
+          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> The full list of competitors named ahead of you</li>
+          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Editable buyer personas that query AI the way your buyers do</li>
+          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> A 30 to 90 day plan you can actually ship, built from your site</li>
+          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Score tracking so you can watch it climb</li>
+        </ul>
+        <div class="unlock">
+          <a class="btn" href="/start.html" id="unlockBtn">Start your free trial to unlock the full audit</a>
+          <p class="note">7-day free trial. Cancel anytime.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="pb">POWERED BY ROOTPARTNERS</div>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  var form = document.getElementById('checkForm');
+  var intake = document.getElementById('intake');
+  var loading = document.getElementById('loading');
+  var result = document.getElementById('result');
+  var loadmsg = document.getElementById('loadmsg');
+  var formErr = document.getElementById('formErr');
+  var btn = document.getElementById('submitBtn');
+
+  var msgs = ['Reading your site…','Building a buyer persona…','Asking the AI assistants…','Scoring your visibility…','Finding who beats you…'];
+  var mi = 0, rotor = null;
+
+  function showErr(t){ formErr.textContent = t; formErr.style.display='block'; }
+  function colorFor(s){ return s < 40 ? 'var(--red)' : (s < 70 ? 'var(--amber)' : 'var(--green)'); }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    formErr.style.display='none';
+    var url = document.getElementById('url').value.trim();
+    var email = document.getElementById('email').value.trim();
+    if(!url){ showErr('Please enter your website.'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('Please enter a valid work email.'); return; }
+
+    btn.disabled = true;
+    intake.style.display='none';
+    loading.style.display='block';
+    mi = 0; loadmsg.textContent = msgs[0];
+    rotor = setInterval(function(){ mi = (mi+1) % msgs.length; loadmsg.textContent = msgs[mi]; }, 1600);
+
+    fetch('/api/quick-check', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ url: url, email: email })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      clearInterval(rotor);
+      if(!d || d.ok !== true){
+        loading.style.display='none';
+        intake.style.display='block';
+        btn.disabled = false;
+        showErr((d && d.message) ? d.message : 'We could not complete the check. Please try again.');
+        return;
+      }
+      renderResult(d);
+    })
+    .catch(function(){
+      clearInterval(rotor);
+      loading.style.display='none';
+      intake.style.display='block';
+      btn.disabled = false;
+      showErr('Something went wrong. Please try again.');
+    });
+  });
+
+  function renderResult(d){
+    document.getElementById('rCompany').textContent = d.company || 'your brand';
+    document.getElementById('rPlatforms').textContent = d.platformsTested || 7;
+    document.getElementById('rCompetitor').textContent = d.competitor || 'Established category leaders';
+    document.getElementById('rQuery').textContent = d.losingQuery ? ('"' + d.losingQuery + '"') : 'Category buying questions';
+    var fill = document.getElementById('rFill');
+    fill.style.background = colorFor(d.score);
+    document.querySelector('.sc-num').style.color = colorFor(d.score);
+
+    loading.style.display='none';
+    result.style.display='block';
+
+    // animate number + gauge
+    var target = d.score || 0, cur = 0;
+    var numEl = document.getElementById('rScore');
+    var step = Math.max(1, Math.round(target/40));
+    var anim = setInterval(function(){
+      cur += step; if(cur >= target){ cur = target; clearInterval(anim); }
+      numEl.textContent = cur;
+    }, 22);
+    setTimeout(function(){ fill.style.width = target + '%'; }, 80);
+
+    // GA4 signal - keep Citro Trial Start as the primary Ads conversion; this is observation only
+    try { gtag('event','audit_preview',{ score: d.score, company: d.company }); } catch(e){}
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+})();
+</script>
+</body>
+</html>
