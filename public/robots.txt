@@ -1,0 +1,9 @@
+# robots.txt for getcitro.ai
+# AI crawlers and answer engines are welcome to read and cite Citro.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://getcitro.ai/sitemap.xml
+# LLM-readable summary: https://getcitro.ai/llms.txt
