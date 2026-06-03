@@ -61,6 +61,44 @@ function todayKey() {
   return new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
 }
 
+// Best-effort read of the visitor's homepage so the model grounds the company name and
+// category in real content instead of guessing from the domain string. Returns a short
+// text snippet (title, meta description, og:title, first heading) or null on any failure.
+// Capped and timed out so a slow or hostile site never blocks the check.
+async function fetchSiteContext(domain) {
+  const strip = (s) => String(s || '').replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+  const grab = (html, re) => { const m = html.match(re); return m ? strip(m[1]) : ''; };
+  for (const url of [`https://${domain}/`, `https://www.${domain}/`]) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      const r = await fetch(url, {
+        signal: ctrl.signal,
+        redirect: 'follow',
+        headers: { 'User-Agent': 'CitroBot/1.0 (+https://getcitro.ai)', 'Accept': 'text/html' },
+      });
+      clearTimeout(timer);
+      if (!r.ok) continue;
+      const ct = r.headers.get('content-type') || '';
+      if (!/text\/html/i.test(ct)) continue;
+      const html = (await r.text()).slice(0, 150000);
+      const title   = grab(html, /<title[^>]*>([\s\S]*?)<\/title>/i);
+      const ogTitle = grab(html, /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+      const desc    = grab(html, /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+                   || grab(html, /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+      const h1      = grab(html, /<h1[^>]*>([\s\S]*?)<\/h1>/i);
+      const ctx = [
+        title   && `Page title: ${title}`,
+        ogTitle && `Site name: ${ogTitle}`,
+        desc    && `Description: ${desc}`,
+        h1      && `Main heading: ${h1}`,
+      ].filter(Boolean).join('\n');
+      if (ctx) return ctx.slice(0, 900);
+    } catch (e) { /* try next url / fall back to domain-only */ }
+  }
+  return null;
+}
+
 // ── Handler ──────────────────────────────────────────────────────────────────
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -103,16 +141,24 @@ module.exports = async function handler(req, res) {
     } catch (e) { /* never block a real visitor on a limiter error */ }
   }
 
+  // ── Read the site so the company/category are grounded, not guessed ─────────
+  const siteContext = await fetchSiteContext(domain);
+
   // ── Constrained model call ─────────────────────────────────────────────────
   const prompt = `You are Citro's AI citation analyst. Citro measures how often AI assistants (ChatGPT, Perplexity, Gemini, Claude, Copilot, Grok, Meta AI) recommend a brand when buyers ask for the best option in its category.
 
-Give a PRELIMINARY estimate for the website "${domain}". Base it on what a brand at that domain most likely sells and how visible it plausibly is in AI answers today. Most brands score low because AI assistants name a small set of well-known names. Be realistic and slightly conservative, not flattering.
+Give a PRELIMINARY, directional estimate for the website "${domain}".
+${siteContext
+  ? `Here is content read from their homepage. Use it to identify the actual company name and what they sell. Do not contradict it or invent a different company:\n"""\n${siteContext}\n"""`
+  : `Their homepage could not be read, so infer cautiously from the domain "${domain}" alone. If you are not confident of the company name, use the domain itself rather than inventing a specific organization.`}
+
+Estimate how visible this brand plausibly is in AI answers today. Most brands score low because AI assistants name a small set of well-known leaders. Be realistic and slightly conservative, not flattering.
 
 Return ONLY valid JSON, no markdown, no commentary:
 {
-  "companyName": "best guess at the brand name from the domain",
-  "category": "short phrase for what they likely sell",
-  "score": <integer 0-100, the estimated Citro Score: share of relevant AI queries where this brand is recommended>,
+  "companyName": "the actual brand name${siteContext ? ' from the homepage content above' : ', or the domain if unsure'}",
+  "category": "short phrase for what they sell${siteContext ? ', based on the homepage content' : ''}",
+  "score": <integer 0-100, estimated share of relevant AI queries where this brand is recommended>,
   "competitor": "one well-known competitor in their category that AI assistants are likely to recommend instead",
   "losingQuery": "one realistic buyer question to an AI assistant where this brand is likely NOT named (e.g. 'best CRM for small law firms')"
 }`;
