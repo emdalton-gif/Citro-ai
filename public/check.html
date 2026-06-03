@@ -62,7 +62,8 @@ function gtag(){dataLayer.push(arguments);}
   .sc-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .sc-co{font-size:15px;color:rgba(248,250,252,0.6);font-family:var(--mono);}
   .sc-tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(248,250,252,0.75);background:rgba(248,250,252,0.08);border:1px solid rgba(248,250,252,0.12);padding:5px 11px;border-radius:100px;margin-bottom:16px;}
-  .sc-band{font-size:46px;font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin:8px 0 4px;}
+  .sc-band{font-size:60px;font-weight:800;line-height:1.05;letter-spacing:-0.04em;margin:8px 0 4px;}
+  .sc-band small{font-size:26px;font-weight:600;color:rgba(248,250,252,0.3);margin-left:3px;letter-spacing:-0.02em;}
   .sc-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(248,250,252,0.45);margin-bottom:18px;}
   .sc-frame{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);font-size:12.5px;line-height:1.55;color:rgba(248,250,252,0.55);}
   .gtrack{height:5px;background:rgba(255,255,255,0.10);border-radius:3px;overflow:hidden;}
@@ -128,8 +129,8 @@ function gtag(){dataLayer.push(arguments);}
       <div class="scorecard">
         <div class="sc-tag">Preliminary estimate · directional</div>
         <div class="sc-co" id="rCompany">your brand</div>
-        <div class="sc-band" id="rBand">Low visibility</div>
-        <div class="sc-label" id="rRange">Estimated AI recommendation rate · low range</div>
+        <div class="sc-band"><span id="rBand">0-10</span><small>/100</small></div>
+        <div class="sc-label" id="rRange">Estimated AI recommendation rate · preliminary</div>
         <div class="gtrack"><div class="gfill" id="rFill"></div></div>
         <div class="gmark"><span>Invisible</span><span>Recommended</span></div>
         <div class="sc-frame">A directional read from your public site. Your verified Citro Score is calculated in the full audit, from your company profile and buyer personas querying all 7 platforms.</div>
@@ -178,13 +179,15 @@ function gtag(){dataLayer.push(arguments);}
   var mi = 0, rotor = null;
 
   function showErr(t){ formErr.textContent = t; formErr.style.display='block'; }
-  // Map the preliminary score to a visibility band. We show the band, not a hard number,
-  // because this is a directional read and the verified Citro Score is computed in the audit.
-  function bandFor(s){
-    if (s <= 15) return { label:'Very low visibility', range:'very low range', color:'var(--red)' };
-    if (s <= 35) return { label:'Low visibility',      range:'low range',      color:'var(--red)' };
-    if (s <= 60) return { label:'Moderate visibility', range:'moderate range', color:'var(--amber)' };
-    return            { label:'Strong visibility',  range:'high range',     color:'var(--green)' };
+  // Show the preliminary score as a tight numeric RANGE, not a single number. A range reads
+  // as a real measurement with honest uncertainty, and signals the verified Citro Score
+  // (computed in the full audit) will land somewhere in this band.
+  function scoreReadout(s){
+    var m  = Math.min(8, Math.max(4, Math.round(s * 0.25)));   // +/- 4 to 8 points
+    var lo = Math.max(0, s - m);
+    var hi = Math.min(100, s + m);
+    var color = s <= 35 ? 'var(--red)' : (s <= 60 ? 'var(--amber)' : 'var(--green)');
+    return { range: lo + '-' + hi, color: color };
   }
   // GA4 free-check funnel events: see how many start the check, submit it, complete it, and click through to the trial.
   function trackCheck(name, extra){ try { if (window.gtag) gtag('event', name, Object.assign({ flow: 'free_check' }, extra || {})); } catch(e){} }
@@ -238,13 +241,13 @@ function gtag(){dataLayer.push(arguments);}
     document.getElementById('rQuery').textContent = d.losingQuery ? ('"' + d.losingQuery + '"') : 'Category buying questions';
 
     var score = d.score || 0;
-    var b = bandFor(score);
+    var r = scoreReadout(score);
     var bandEl = document.getElementById('rBand');
     var fill = document.getElementById('rFill');
-    bandEl.textContent = b.label;
-    bandEl.style.color = b.color;
-    fill.style.background = b.color;
-    document.getElementById('rRange').textContent = 'Estimated AI recommendation rate · ' + b.range;
+    bandEl.textContent = r.range;
+    bandEl.style.color = r.color;
+    fill.style.background = r.color;
+    document.getElementById('rRange').textContent = 'Estimated AI recommendation rate · preliminary';
 
     loading.style.display='none';
     result.style.display='block';
