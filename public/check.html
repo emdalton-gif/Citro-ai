@@ -61,16 +61,16 @@ function gtag(){dataLayer.push(arguments);}
   .scorecard{background:var(--ink-dark);color:#F8FAFC;border-radius:16px;padding:28px;margin-bottom:16px;}
   .sc-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .sc-co{font-size:15px;color:rgba(248,250,252,0.6);font-family:var(--mono);}
-  .sc-tag{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(248,250,252,0.4);}
-  .sc-num{font-size:76px;font-weight:800;line-height:1;letter-spacing:-0.04em;margin:10px 0 2px;}
-  .sc-num small{font-size:30px;font-weight:600;color:rgba(248,250,252,0.3);}
+  .sc-tag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(248,250,252,0.75);background:rgba(248,250,252,0.08);border:1px solid rgba(248,250,252,0.12);padding:5px 11px;border-radius:100px;margin-bottom:16px;}
+  .sc-band{font-size:46px;font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin:8px 0 4px;}
   .sc-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(248,250,252,0.45);margin-bottom:18px;}
+  .sc-frame{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);font-size:12.5px;line-height:1.55;color:rgba(248,250,252,0.55);}
   .gtrack{height:5px;background:rgba(255,255,255,0.10);border-radius:3px;overflow:hidden;}
   .gfill{height:5px;border-radius:3px;width:0;transition:width 1s cubic-bezier(.2,.7,.2,1);}
   .gmark{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:rgba(248,250,252,0.3);margin-top:8px;}
 
   .findings{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-  @media(max-width:560px){.findings{grid-template-columns:1fr;}.sc-num{font-size:60px;}h1{font-size:32px;}}
+  @media(max-width:560px){.findings{grid-template-columns:1fr;}.sc-band{font-size:36px;}h1{font-size:32px;}}
   .find{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;}
   .find .k{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--quiet);margin-bottom:8px;}
   .find .v{font-size:16px;font-weight:600;}
@@ -126,14 +126,13 @@ function gtag(){dataLayer.push(arguments);}
     <!-- RESULT -->
     <section id="result">
       <div class="scorecard">
-        <div class="sc-top">
-          <div class="sc-co" id="rCompany">your brand</div>
-          <div class="sc-tag">Preliminary estimate</div>
-        </div>
-        <div class="sc-num"><span id="rScore">0</span><small>/100</small></div>
-        <div class="sc-label">Citro Score · estimated AI recommendation rate</div>
+        <div class="sc-tag">Preliminary estimate · directional</div>
+        <div class="sc-co" id="rCompany">your brand</div>
+        <div class="sc-band" id="rBand">Low visibility</div>
+        <div class="sc-label" id="rRange">Estimated AI recommendation rate · low range</div>
         <div class="gtrack"><div class="gfill" id="rFill"></div></div>
         <div class="gmark"><span>Invisible</span><span>Recommended</span></div>
+        <div class="sc-frame">A directional read from your public site. Your verified Citro Score is calculated in the full audit, from your company profile and buyer personas querying all 7 platforms.</div>
       </div>
 
       <div class="findings">
@@ -179,7 +178,14 @@ function gtag(){dataLayer.push(arguments);}
   var mi = 0, rotor = null;
 
   function showErr(t){ formErr.textContent = t; formErr.style.display='block'; }
-  function colorFor(s){ return s < 40 ? 'var(--red)' : (s < 70 ? 'var(--amber)' : 'var(--green)'); }
+  // Map the preliminary score to a visibility band. We show the band, not a hard number,
+  // because this is a directional read and the verified Citro Score is computed in the audit.
+  function bandFor(s){
+    if (s <= 15) return { label:'Very low visibility', range:'very low range', color:'var(--red)' };
+    if (s <= 35) return { label:'Low visibility',      range:'low range',      color:'var(--red)' };
+    if (s <= 60) return { label:'Moderate visibility', range:'moderate range', color:'var(--amber)' };
+    return            { label:'Strong visibility',  range:'high range',     color:'var(--green)' };
+  }
   // GA4 free-check funnel events: see how many start the check, submit it, complete it, and click through to the trial.
   function trackCheck(name, extra){ try { if (window.gtag) gtag('event', name, Object.assign({ flow: 'free_check' }, extra || {})); } catch(e){} }
 
@@ -230,25 +236,24 @@ function gtag(){dataLayer.push(arguments);}
     document.getElementById('rPlatforms').textContent = d.platformsTested || 7;
     document.getElementById('rCompetitor').textContent = d.competitor || 'Established category leaders';
     document.getElementById('rQuery').textContent = d.losingQuery ? ('"' + d.losingQuery + '"') : 'Category buying questions';
+
+    var score = d.score || 0;
+    var b = bandFor(score);
+    var bandEl = document.getElementById('rBand');
     var fill = document.getElementById('rFill');
-    fill.style.background = colorFor(d.score);
-    document.querySelector('.sc-num').style.color = colorFor(d.score);
+    bandEl.textContent = b.label;
+    bandEl.style.color = b.color;
+    fill.style.background = b.color;
+    document.getElementById('rRange').textContent = 'Estimated AI recommendation rate · ' + b.range;
 
     loading.style.display='none';
     result.style.display='block';
 
-    // animate number + gauge
-    var target = d.score || 0, cur = 0;
-    var numEl = document.getElementById('rScore');
-    var step = Math.max(1, Math.round(target/40));
-    var anim = setInterval(function(){
-      cur += step; if(cur >= target){ cur = target; clearInterval(anim); }
-      numEl.textContent = cur;
-    }, 22);
-    setTimeout(function(){ fill.style.width = target + '%'; }, 80);
+    // gauge fills to the rough position - directional, no hard headline number
+    setTimeout(function(){ fill.style.width = score + '%'; }, 80);
 
     // GA4 signal - keep Citro Trial Start as the primary Ads conversion; this is observation only
-    try { gtag('event','audit_preview',{ score: d.score, company: d.company }); } catch(e){}
+    try { gtag('event','audit_preview',{ score: score, company: d.company }); } catch(e){}
     window.scrollTo({ top:0, behavior:'smooth' });
   }
 
