@@ -1817,5 +1817,19 @@ window._ra_li = function() {
   });
 })();
 </script>
+<script>
+// GA4 homepage CTA tracking: how many visitors click through to the free check vs the trial.
+(function(){
+  function track(name, label){ try { if (window.gtag) gtag('event', name, { label: label, page: 'home' }); } catch(e){} }
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if(!a) return;
+    var href = a.getAttribute('href') || '';
+    var label = (a.innerText || '').trim().slice(0, 40);
+    if (href.indexOf('/check.html') !== -1) track('cta_check_click', label);
+    else if (href.indexOf('/start.html') !== -1) track('cta_trial_click', label);
+  }, true);
+})();
+</script>
 </body>
 </html>
