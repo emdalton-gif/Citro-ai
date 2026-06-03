@@ -272,6 +272,11 @@ function gtag(){dataLayer.push(arguments);}
       padding: 3px 9px; border-radius: 4px;
       background: rgba(239,68,68,0.15); color: #FCA5A5; border: 1px solid rgba(239,68,68,0.2);
     }
+    .fc-tag-neutral {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 9px; border-radius: 4px;
+      background: rgba(255,255,255,0.05); color: rgba(248,250,252,0.5); border: 1px solid rgba(255,255,255,0.1);
+    }
     .fc-finding {
       font-size: 20px; font-weight: 700; line-height: 1.35;
       color: #F8FAFC; margin-bottom: 24px; letter-spacing: -0.02em;
@@ -561,10 +566,14 @@ function gtag(){dataLayer.push(arguments);}
       .nav-links { display: none; }
       .nav-signin { display: none; }
       .nav-hamburger { display: flex; align-items: center; }
-      .hero { padding: 64px 24px 56px; }
-      .hero-inner { grid-template-columns: 1fr; gap: 36px; }
-      .finding-card { order: -1; } /* Show the score card FIRST on mobile */
-      .hero-title { font-size: 40px; }
+      .hero { padding: 44px 22px 52px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+      .finding-card { order: 2; }              /* headline + CTA lead; the proof card follows */
+      .hero-bullets { display: none; }          /* trim density for a cleaner mobile first impression */
+      .hero-testimonial { display: none; }
+      .hero-title { font-size: 38px; }
+      .hero-sub { font-size: 16px; margin-bottom: 26px; }
+      .hero-eyebrow { margin-bottom: 20px; }
       .trust-bar { padding: 16px 24px; }
       .trust-bar-inner { gap: 20px; }
       .social-proof { padding: 40px 24px; }
@@ -873,16 +882,8 @@ function gtag(){dataLayer.push(arguments);}
     <!-- FINDING CARD -->
     <div class="finding-card">
       <div class="fc-header">
-        <div class="fc-label">
-          Strategic Finding
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="fc-live">
-            <div class="fc-live-dot"></div>
-            <span class="fc-live-text">Live analysis</span>
-          </div>
-          <div class="fc-tag">Action required</div>
-        </div>
+        <div class="fc-label">Sample finding</div>
+        <div class="fc-tag-neutral">Example report</div>
       </div>
       <div class="fc-finding">AI agents are sending your buyers to competitors.</div>
       <div class="fc-stats">
@@ -897,7 +898,7 @@ function gtag(){dataLayer.push(arguments);}
         </div>
       </div>
       <div class="fc-projection">
-        <div class="fc-proj-label">90-day score projection</div>
+        <div class="fc-proj-label">Sample 90-day projection</div>
         <div class="fc-proj-row">
           <div class="fc-proj-box">
             <div class="fc-proj-num">19%</div>
