@@ -180,6 +180,8 @@ function gtag(){dataLayer.push(arguments);}
 
   function showErr(t){ formErr.textContent = t; formErr.style.display='block'; }
   function colorFor(s){ return s < 40 ? 'var(--red)' : (s < 70 ? 'var(--amber)' : 'var(--green)'); }
+  // GA4 free-check funnel events: see how many start the check, submit it, complete it, and click through to the trial.
+  function trackCheck(name, extra){ try { if (window.gtag) gtag('event', name, Object.assign({ flow: 'free_check' }, extra || {})); } catch(e){} }
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
@@ -188,6 +190,8 @@ function gtag(){dataLayer.push(arguments);}
     var email = document.getElementById('email').value.trim();
     if(!url){ showErr('Please enter your website.'); return; }
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showErr('Please enter a valid work email.'); return; }
+
+    trackCheck('check_submit');
 
     btn.disabled = true;
     intake.style.display='none';
@@ -206,6 +210,7 @@ function gtag(){dataLayer.push(arguments);}
         loading.style.display='none';
         intake.style.display='block';
         btn.disabled = false;
+        trackCheck('check_blocked', { reason: (d && d.reason) || 'error' });
         showErr((d && d.message) ? d.message : 'We could not complete the check. Please try again.');
         return;
       }
@@ -246,6 +251,13 @@ function gtag(){dataLayer.push(arguments);}
     try { gtag('event','audit_preview',{ score: d.score, company: d.company }); } catch(e){}
     window.scrollTo({ top:0, behavior:'smooth' });
   }
+
+  // Track the click from the free result through to the trial (the key handoff to signup).
+  var unlock = document.getElementById('unlockBtn');
+  if (unlock) unlock.addEventListener('click', function(){ trackCheck('check_unlock_click'); });
+
+  // Visitor reached the free check page.
+  trackCheck('check_start');
 })();
 </script>
 </body>
