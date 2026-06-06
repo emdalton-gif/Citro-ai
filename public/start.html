@@ -226,17 +226,17 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="ps-line" id="ps-line-1"></div>
     <div class="ps" id="ps-2">
       <div class="ps-dot pending" id="ps-dot-2">2</div>
-      <span class="ps-label pending" id="ps-label-2">Account</span>
+      <span class="ps-label pending" id="ps-label-2">Your Business</span>
     </div>
     <div class="ps-line" id="ps-line-2"></div>
     <div class="ps" id="ps-3">
       <div class="ps-dot pending" id="ps-dot-3">3</div>
-      <span class="ps-label pending" id="ps-label-3">Your Business</span>
+      <span class="ps-label pending" id="ps-label-3">Buyers</span>
     </div>
     <div class="ps-line" id="ps-line-3"></div>
     <div class="ps" id="ps-4">
       <div class="ps-dot pending" id="ps-dot-4">4</div>
-      <span class="ps-label pending" id="ps-label-4">Buyers</span>
+      <span class="ps-label pending" id="ps-label-4">Password</span>
     </div>
     <div class="ps-line" id="ps-line-4"></div>
     <div class="ps" id="ps-5">
@@ -269,7 +269,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="stripe-row" style="margin-top:20px;">
       <span class="stripe-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Card collected at Step 5 — no charge today
+        Card entered at the last step. No charge for 7 days.
       </span>
     </div>
   </div>
@@ -291,15 +291,11 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       <input type="password" id="f-password" placeholder="At least 8 characters" autocomplete="new-password" oninput="updatePwStrength()" />
       <div class="pw-bar-wrap"><div class="pw-bar" id="pw-bar"></div></div>
     </div>
-    <div class="field">
-      <label for="f-password2">Confirm password</label>
-      <input type="password" id="f-password2" placeholder="Repeat your password" autocomplete="new-password" />
-    </div>
     <button class="btn-primary" onclick="goStep3()">
       Continue
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </button>
-    <button class="btn-ghost" onclick="goStep(1)">← Back</button>
+    <button class="btn-ghost" onclick="goStep(3)">← Back</button>
   </div>
 
   <!-- ── STEP 3: BUSINESS PROFILE ── -->
@@ -330,7 +326,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         Look up my business
       </button>
-      <button class="btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn-ghost" onclick="goStep(1)">← Back</button>
     </div>
 
     <!-- Phase B: loading -->
@@ -376,7 +372,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
         </div>
       </div>
       <button class="btn-primary" onclick="confirmProfile()">
-        This looks right — continue
+        This looks right, continue
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
       <button class="btn-ghost" onclick="resetToStep3a()">← Edit business details</button>
@@ -405,10 +401,10 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
         Want to add more personas? You can do this in your dashboard after running your first audit.
       </p>
       <button class="btn-primary" onclick="goStep5()">
-        These look right — continue
+        These look right, continue
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
-      <button class="btn-ghost" onclick="goStep(3)">← Back</button>
+      <button class="btn-ghost" onclick="goStep(2)">← Back</button>
     </div>
     <div class="global-error" id="err-4-load" style="margin-top:16px;"></div>
   </div>
@@ -459,7 +455,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="global-error" id="err-5"></div>
     <button class="btn-primary green" id="start-trial-btn" onclick="startTrial()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span id="start-trial-label">Start Free Trial — Enter Payment</span>
+      <span id="start-trial-label">Start Free Trial, Enter Payment</span>
     </button>
     <button class="btn-ghost" onclick="goStep(4)">← Back</button>
 
@@ -503,10 +499,14 @@ function trackTrial(name, step) {
 }
 
 // ── STEP NAVIGATION ──
-function goStep(n) {
+// Visual position (1..5) -> panel id. Password (panel step-2) now comes AFTER the
+// business and persona steps, right before the card, so it is no longer a wall before
+// the visitor has seen any value. The payment backend is unchanged.
+const STEP_ORDER = { 1: 'step-1', 2: 'step-3', 3: 'step-4', 4: 'step-2', 5: 'step-5' };
+function goStep(pos) {
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('step-' + n).classList.add('active');
-  updateProgress(n);
+  document.getElementById(STEP_ORDER[pos] || ('step-' + pos)).classList.add('active');
+  updateProgress(pos);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -535,8 +535,8 @@ function goStep2() {
   }
   state.email = email;
   document.getElementById('email-display-2').textContent = email;
-  goStep(2);
-  trackTrial('trial_step2_account', 2);
+  goStep(2); // -> Your Business
+  trackTrial('trial_step3_business', 2);
 }
 
 // ── PASSWORD STRENGTH ──
@@ -554,23 +554,22 @@ function updatePwStrength() {
   bar.style.background = color;
 }
 
-// ── STEP 2 → 3 ──
+// ── PASSWORD (now the 4th visual step) → card ──
 function goStep3() {
   const pw  = document.getElementById('f-password').value;
-  const pw2 = document.getElementById('f-password2').value;
   const err = document.getElementById('err-2');
   err.classList.remove('show');
   if (pw.length < 8) {
     err.textContent = 'Password must be at least 8 characters.';
     err.classList.add('show'); return;
   }
-  if (pw !== pw2) {
-    err.textContent = 'Passwords do not match.';
-    err.classList.add('show'); return;
-  }
   state.password = pw;
-  goStep(3);
-  trackTrial('trial_step3_business', 3);
+  // Populate the final-step summary, then go to the card.
+  document.getElementById('ts-email').textContent    = state.email;
+  document.getElementById('ts-biz').textContent      = state.bizName;
+  document.getElementById('ts-personas').textContent = state.personas.length + ' buyer personas configured';
+  goStep(5); // -> Start Trial (card)
+  trackTrial('trial_step5_payment', 5);
 }
 
 // ── RESEARCH ──
@@ -663,8 +662,8 @@ async function confirmProfile() {
   state.profile.website = state.bizUrl;
   state.profile.specific_product = state.bizProduct;
 
-  goStep(4);
-  trackTrial('trial_step4_personas', 4);
+  goStep(3); // -> Buyers
+  trackTrial('trial_step4_personas', 3);
   generatePersonas();
 }
 
@@ -774,13 +773,11 @@ function renderPersonas() {
   document.getElementById('personas-content').style.display = 'block';
 }
 
-// ── STEP 4 → 5 ──
+// ── BUYERS → PASSWORD (4th visual step) ──
 function goStep5() {
-  document.getElementById('ts-email').textContent   = state.email;
-  document.getElementById('ts-biz').textContent     = state.bizName;
-  document.getElementById('ts-personas').textContent = state.personas.length + ' buyer personas configured';
-  goStep(5);
-  trackTrial('trial_step5_payment', 5);
+  document.getElementById('email-display-2').textContent = state.email;
+  goStep(4); // -> Password
+  trackTrial('trial_step_password', 4);
 }
 
 // ── START TRIAL ──
@@ -819,7 +816,7 @@ async function startTrial() {
 
   } catch(e) {
     btn.disabled = false;
-    label.textContent = 'Start Free Trial — Enter Payment';
+    label.textContent = 'Start Free Trial, Enter Payment';
     err.textContent = e.message;
     err.classList.add('show');
   }
@@ -834,6 +831,17 @@ document.addEventListener('keydown', function(e) {
   if (id === 'step-1') goStep2();
   else if (id === 'step-2') goStep3();
 });
+
+// Pre-fill from the free check so the visitor does not re-enter what we already know.
+(function prefillFromCheck(){
+  try {
+    var q = new URLSearchParams(window.location.search);
+    var em = q.get('em'), co = q.get('co'), url = q.get('url');
+    if (em) { var e = document.getElementById('f-email');    if (e) e.value = em; }
+    if (co) { var b = document.getElementById('f-biz-name');  if (b) b.value = co; }
+    if (url){ var u = document.getElementById('f-biz-url');   if (u && !u.value) u.value = url; }
+  } catch (e) {}
+})();
 
 // Fire once on load: visitor has entered the trial flow (step 1).
 trackTrial('trial_step1_start', 1);
