@@ -252,6 +252,21 @@ function gtag(){dataLayer.push(arguments);}
     loading.style.display='none';
     result.style.display='block';
 
+    // Carry what we already know into the trial so the visitor does not start over.
+    // start.html reads em/co/url and pre-fills the email and business fields.
+    try {
+      var _u  = (document.getElementById('url')   || {}).value || '';
+      var _em = (document.getElementById('email') || {}).value || '';
+      var _ub = document.getElementById('unlockBtn');
+      if (_ub) {
+        var qs = '/start.html?from=check'
+          + (_em ? '&em=' + encodeURIComponent(_em) : '')
+          + (d.company ? '&co=' + encodeURIComponent(d.company) : '')
+          + (_u ? '&url=' + encodeURIComponent(_u) : '');
+        _ub.setAttribute('href', qs);
+      }
+    } catch (e) {}
+
     // gauge fills to the rough position - directional, no hard headline number
     setTimeout(function(){ fill.style.width = score + '%'; }, 80);
 
