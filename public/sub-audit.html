@@ -833,41 +833,43 @@ function gtag(){dataLayer.push(arguments);}
       : `${primaryGapP} showed the largest gaps`;
 
     // ── Claude call: 14 numbered plain-text items (no JSON — can't break parsing) ──
-    // Items 1-5: standalone recommendations
-    // Items 6-8: Days 1-30 technical foundation actions
-    // Items 9-11: Days 31-60 content and visibility actions
-    // Items 12-14: Days 61-90 distribution and measurement actions
-    const actsPrompt = `Write 14 numbered action items for a Citro AI visibility audit report for ${c.company_name} (${c.website}).
+    // Items 1-5: top-5 executive shortlist (start this week)
+    // Items 6-15: Days 1-30  — prioritized mix of ~10 actions
+    // Items 16-25: Days 31-60 — prioritized mix of ~10 actions
+    // Items 26-35: Days 61-90 — prioritized mix of ~10 actions (incl. re-audit + measurement)
+    const actsPrompt = `Write 35 numbered action items for a Citro AI visibility audit report for ${c.company_name} (${c.website}). These must be substantial, high-impact moves a real team can execute — not generic advice.
 
 Audit findings:
 - Citro Score: ${score}% — ${isZeroScore ? 'zero visibility, brand not mentioned in any AI response' : isLowScore ? 'low visibility, appeared in only a fraction of queries' : isMidScore ? 'moderate visibility with platform gaps' : 'strong visibility, focus on defending position'}
 - Platforms with gaps: ${gapPlatformList.join(', ') || 'ChatGPT, Perplexity'}
-- Queries with no visibility: ${gapQueries.slice(0,3).map(q => `"${q.query}" on ${q.platform}`).join('; ') || 'multiple queries'}
+- Queries with no visibility: ${gapQueries.slice(0,5).map(q => `"${q.query}" on ${q.platform}`).join('; ') || 'multiple queries'}
 - Competitors in AI results: ${comps.slice(0,4).join(', ') || 'none detected — category underrepresented'}
 - Industry: ${c.industry || 'not specified'}
 - Product: ${c.offer || c.company_name}
 - Buyers: ${buyerCtx}
 
-PHASE RULES — items must match their phase category exactly:
+STRUCTURE:
+- Items 1-5: the five single highest-impact moves to start this week — the executive shortlist. Mix of types. NO effort tag on these five.
+- Items 6-15: DAYS 1-30. The ten highest-impact actions overall, ordered most-impactful first. Each 30-day cycle must be a PRIORITIZED MIX across the three lever types (technical/site changes, content creation, and distribution/authority building) — do NOT batch all of one type together. Expand the plan beyond the top 5; do not merely restate items 1-5.
+- Items 16-25: DAYS 31-60. The next ten actions, same prioritized mix of types.
+- Items 26-35: DAYS 61-90. The final ten, same mix, and include re-running the Citro audit and measuring score movement among these.
 
-Items 1-5 are top recommendations (mix of technical and content).
-Items 6-8 are Days 1-30 TECHNICAL FOUNDATION — only website/code changes a developer or marketer can implement directly on the site: schema markup (specify the exact type and which pages), structured data files like llms.txt, Google tag or entity verification, Knowledge Graph or Wikidata entries, meta tag updates, site speed or crawlability fixes. NO content creation, NO article pitching, NO outreach in items 6-8.
-Items 9-11 are Days 31-60 CONTENT AND VISIBILITY — only new content to create: pages to write, comparison guides, FAQ content, video or case study production. NO technical site changes in items 9-11.
-Items 12-14 are Days 61-90 DISTRIBUTION AND MEASUREMENT — only outreach, PR, directory submissions, link building, and measurement: pitching publications, claiming directory listings, running the next audit, reviewing results. NO technical changes, NO new content creation in items 12-14.
+QUALITY BAR — this is the entire point. A real customer called a thin plan "mediocre and not quite actionable." Do not repeat that mistake:
+- Every item must be specific to THIS company's real audit data: reference the actual query phrases, real platform names, and real competitor names from the findings above.
+- Name the exact thing to do: the exact schema type (e.g. FAQPage, Organization, Product), the exact file (e.g. llms.txt), the exact review site or directory (e.g. G2, Capterra, TrustRadius), the exact publication or roundup to pitch, the exact comparison page to write (e.g. "${c.company_name} vs ${comps[0] || 'top competitor'}").
+- Every item must state WHY it moves the Citro Score — which gap, platform, or competitor advantage it closes.
+- Each item must be a genuine lever that shifts AI visibility. No filler, no vague "improve your SEO," no duplicates, no busywork.
+- Items 6-35 each END with a tag in EXACTLY this format: (Effort: low, ~2 hours) or (Effort: medium, ~1 day) or (Effort: high, ~1 week). Items 1-5 get NO tag.
+- 2-4 sentences each, written for a capable but non-technical marketer.
+- Plain prose only. No headers, no preamble, no JSON, no quotes around items.
 
-Additional rules:
-- Every item must be specific to this company's actual audit data — reference real query phrases, real platform names, real competitor names
-- Name the exact schema type (e.g. FAQPage, Course, Organization), the exact file (e.g. llms.txt), the exact directory or publication name
-- Each item is 2-3 sentences, written for a non-technical marketer
-- Do NOT wrap any item in quotes or JSON syntax — plain prose only
-
-Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
+Write ONLY 35 numbered items. Format:
 1. Plain prose action here.
 2. Plain prose action here.
 ...
-14. Plain prose action here.`;
+35. Plain prose action here (Effort: medium, ~1 day).`;
 
-    const rawActs = await callClaude([{ role: 'user', content: actsPrompt }], sys, 2000);
+    const rawActs = await callClaude([{ role: 'user', content: actsPrompt }], sys, 4000);
 
     // Parse numbered list — much more reliable than JSON
     // Also strip any JSON-like "action": "..." wrapper Claude sometimes adds
@@ -881,10 +883,11 @@ Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
       .filter(l => l.length > 20);
 
     const getAct = (i) => actLines[i] || '';
+    const rangeActs = (a, b) => { const o = []; for (let i = a; i <= b; i++) { if (getAct(i)) o.push(getAct(i)); } return o; };
 
-    // Impact/effort/category mapping for recommendations (items 0-4)
-    const impactMap  = ['high','high','high','medium','medium'];
-    const effortMap  = ['low','medium','medium','low','medium'];
+    // Impact/effort/category mapping for the top-5 recommendations (items 0-4)
+    const impactMap  = ['high','high','high','high','medium'];
+    const effortMap  = ['low','medium','low','medium','medium'];
     const catMap     = ['technical','content','distribution','technical','content'];
 
     const acts = {
@@ -894,10 +897,11 @@ Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
         effort: effortMap[i],
         category: catMap[i],
       })).filter(r => r.action),
+      // 90-day plan: three 30-day cycles, each a prioritized mix of ~10 substantial actions.
       roadmap_phases: [
-        { days: 'Days 1-30',  theme: 'Technical Foundation',       actions: [getAct(5), getAct(6), getAct(7)].filter(Boolean) },
-        { days: 'Days 31-60', theme: 'Content and Visibility',      actions: [getAct(8), getAct(9), getAct(10)].filter(Boolean) },
-        { days: 'Days 61-90', theme: 'Distribution and Measurement',actions: [getAct(11), getAct(12), getAct(13)].filter(Boolean) },
+        { days: 'Days 1-30',  theme: 'Highest-impact moves',      actions: rangeActs(5, 14) },
+        { days: 'Days 31-60', theme: 'Build on the foundation',   actions: rangeActs(15, 24) },
+        { days: 'Days 61-90', theme: 'Compound gains and measure', actions: rangeActs(25, 34) },
       ]
     };
 
