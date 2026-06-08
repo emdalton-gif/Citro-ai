@@ -368,6 +368,12 @@ function gtag(){dataLayer.push(arguments);}
       <span class="billing-text">Manage your subscription, update payment method, or cancel.</span>
       <a href="#" class="billing-link" id="billingPortalLink">Billing portal →</a>
     </div>
+    <div class="billing-text" style="margin-top:10px;">
+      Need help or want to cancel? Email <a href="mailto:support@getcitro.ai" class="billing-link">support@getcitro.ai</a> and we'll take care of it the same day.
+    </div>
+    <div id="billingHelp" style="display:none;margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:rgba(0,0,0,0.03);font-size:14px;line-height:1.55;">
+      We couldn't open the billing portal automatically. To change or cancel your subscription, email <a href="mailto:support@getcitro.ai?subject=Billing%20help%3A%20cancel%20or%20change" class="billing-link">support@getcitro.ai</a> and we'll handle it right away.
+    </div>
 
   </div>
 </div>
@@ -435,21 +441,39 @@ function gtag(){dataLayer.push(arguments);}
     window.location.href = '/sub-login.html';
   });
 
-  // Billing portal
+  // Billing portal — must NEVER fail silently. If Stripe can't open the portal,
+  // surface a clear support path so a subscriber is never stranded.
   document.getElementById('billingPortalLink').addEventListener('click', async (e) => {
     e.preventDefault();
+    const link = e.currentTarget;
+    const original = link.textContent;
+    link.textContent = 'Opening…';
+    link.style.pointerEvents = 'none';
     try {
       const resp = await fetch('/api/customer-portal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ email }),
       });
-      const data = await resp.json();
-      if (data.url) window.location.href = data.url;
+      let data = {};
+      try { data = await resp.json(); } catch (_) {}
+      if (resp.ok && data.url) {
+        window.location.href = data.url;
+        return; // leave the button in its loading state during navigation
+      }
+      showBillingHelp();
     } catch (err) {
-      alert('Could not open billing portal. Please contact support@rootpartners.co');
+      showBillingHelp();
     }
+    link.textContent = original;
+    link.style.pointerEvents = '';
   });
+
+  function showBillingHelp() {
+    const box = document.getElementById('billingHelp');
+    if (box) { box.style.display = 'block'; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    else { alert('We could not open the billing portal. To change or cancel your subscription, email support@getcitro.ai and we will handle it right away.'); }
+  }
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -704,7 +728,7 @@ function gtag(){dataLayer.push(arguments);}
       btn.disabled = false;
       btn.textContent = 'Save personas';
       fb.className = 'persona-feedback err';
-      fb.textContent = '⚠ Could not save. Please try again or contact support@rootpartners.co.';
+      fb.textContent = '⚠ Could not save. Please try again or contact support@getcitro.ai.';
       fb.style.display = 'block';
     }
   }
