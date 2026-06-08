@@ -861,7 +861,7 @@ These ten must be a PRIORITIZED MIX across the three lever types (technical/site
 ${qualityBar}
 - End EACH item with a tag in EXACTLY this format: (Effort: low, ~2 hours) or (Effort: medium, ~1 day) or (Effort: high, ~1 week).
 
-Write ONLY 10 numbered items, plain prose.`;
+Return ONLY a JSON array of exactly 10 strings and nothing else — no prose before or after, no objects, no keys like "action" or "why". Each string is one complete, self-contained action (2-4 sentences) that includes why it moves the Citro Score and ENDS with the effort tag. Example: ["Add FAQPage schema to your pricing page so Perplexity can cite your Q&A directly, closing the gap on the query where a competitor currently answers. (Effort: low, ~2 hours)", "..."]`;
 
     const recsPrompt = `Write the 5 single highest-impact actions ${c.company_name} (${c.website}) should start THIS WEEK to improve how often AI assistants recommend them.
 
@@ -870,12 +870,30 @@ ${findings}
 ${qualityBar}
 These five are the executive shortlist — a mix of types, ordered most-impactful first. NO effort tag.
 
-Write ONLY 5 numbered items, plain prose.`;
+Return ONLY a JSON array of exactly 5 strings and nothing else — no prose before or after, no objects, no keys. Each string is one complete, self-contained action (2-4 sentences) that includes why it matters. Example: ["Publish a comparison page targeting the exact query where a named competitor wins, structured with Organization schema so AI assistants can cite it.", "..."]`;
 
-    const parseItems = (raw, n) => (raw || '').split('\n')
-      .map(l => l.replace(/^\d+[.)]\s*/, '').replace(/^"action"\s*:\s*"?/, '').replace(/"$/, '').trim())
-      .filter(l => l.length > 20)
-      .slice(0, n);
+    // Robust parser: handles a JSON array of strings, a JSON array of {action, why} objects,
+    // a wrapper object containing an array, or a plain numbered list. Drops JSON scaffolding.
+    const parseItems = (raw, n) => {
+      if (!raw) return [];
+      let arr = null;
+      const m = raw.match(/\[[\s\S]*\]/);
+      if (m) { try { const j = JSON.parse(m[0]); if (Array.isArray(j)) arr = j; } catch (e) {} }
+      if (!arr) {
+        arr = raw.split('\n')
+          .map(l => l.replace(/^\s*\d+[.)]\s*/, '').replace(/^[\-*]\s*/, '').trim())
+          .filter(l => l.length > 20 && !/^[\[\]{}]/.test(l) && !/^"?[a-z0-9_]+"?\s*:/i.test(l));
+      }
+      return arr
+        .map(x => (typeof x === 'string'
+          ? x
+          : (x && typeof x === 'object'
+              ? [x.action || x.item || x.text || '', x.why_it_moves_score || x.why || ''].filter(Boolean).join(' ')
+              : '')))
+        .map(s => String(s).replace(/^["'\s]+|["',\s]+$/g, '').trim())
+        .filter(s => s.length > 20)
+        .slice(0, n);
+    };
 
     const genItems = async (instruction, n, maxTok) => {
       try { return parseItems(await callClaude([{ role: 'user', content: instruction }], sys, maxTok), n); }
