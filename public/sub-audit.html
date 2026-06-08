@@ -560,7 +560,7 @@ function gtag(){dataLayer.push(arguments);}
 <!-- ERROR SCREEN -->
 <div id="screen-error">
   <h2 id="error-title">Something went wrong.</h2>
-  <p id="error-body">We encountered an error running your audit. Please try again or contact support@rootpartners.co.</p>
+  <p id="error-body">We encountered an error running your audit. Please try again or contact support@getcitro.ai.</p>
   <a href="/sub-dashboard.html" class="back-btn" style="margin-top:24px;">← Back to dashboard</a>
 </div>
 
@@ -1095,7 +1095,7 @@ Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
       console.error('Audit error:', err);
       hide('screen-loading');
       document.getElementById('error-title').textContent = 'Audit failed.';
-      document.getElementById('error-body').textContent = `Error: ${err.message}. Please try again or contact support@rootpartners.co`;
+      document.getElementById('error-body').textContent = `Error: ${err.message}. Please try again or contact support@getcitro.ai`;
       flex('screen-error');
     }
   }
@@ -1270,7 +1270,7 @@ Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
         setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
       } else throw new Error();
     } catch {
-      saveStatus.innerHTML = '⚠ Still failing. Please contact support@rootpartners.co.';
+      saveStatus.innerHTML = '⚠ Still failing. Please contact support@getcitro.ai.';
     }
   }
 
@@ -1561,7 +1561,7 @@ Write ONLY 14 numbered items. No headers, no preamble, no JSON. Format:
         websiteGroup.classList.add('field-locked');
         document.getElementById('f-name').readOnly = true;
         document.getElementById('f-website').readOnly = true;
-        const supportLink = 'mailto:support@rootpartners.co?subject=Profile%20change%20request';
+        const supportLink = 'mailto:support@getcitro.ai?subject=Profile%20change%20request';
         nameGroup.insertAdjacentHTML('beforeend', `<span class="lock-note">🔒 Locked to this subscription. <a href="${supportLink}">Contact support to change.</a></span>`);
         websiteGroup.insertAdjacentHTML('beforeend', `<span class="lock-note">🔒 Locked to this subscription. <a href="${supportLink}">Contact support to change.</a></span>`);
       }
