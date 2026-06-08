@@ -308,7 +308,7 @@ function gtag(){dataLayer.push(arguments);}
     <!-- Error state -->
     <div id="stateError" style="display:none;">
       <p style="font-size:18px;font-weight:700;margin-bottom:12px;">Something went wrong.</p>
-      <p style="font-size:14px;color:var(--muted);line-height:1.65;" id="errorStateMsg">We couldn't confirm your subscription. Please contact support@rootpartners.co with your order details.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.65;" id="errorStateMsg">We couldn't confirm your subscription. Please contact support@getcitro.ai with your order details.</p>
     </div>
 
   </div>
@@ -330,7 +330,7 @@ function gtag(){dataLayer.push(arguments);}
   }
 
   async function init() {
-    if (!sessionId) { showFatalError('No session ID found. Please contact support@rootpartners.co.'); return; }
+    if (!sessionId) { showFatalError('No session ID found. Please contact support@getcitro.ai.'); return; }
     try {
       const resp = await fetch('/api/sub-verify', {
         method: 'POST',
