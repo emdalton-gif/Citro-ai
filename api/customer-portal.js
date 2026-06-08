@@ -59,7 +59,7 @@ module.exports = async function handler(req, res) {
     // Look up Stripe customer by email
     const customers = await stripeRequest('GET', `/customers?email=${encodeURIComponent(email)}&limit=1`);
     if (!customers.data || customers.data.length === 0) {
-      return res.status(404).json({ error: 'No billing account found for this email. If you purchased with a different address, contact hello@rootpartners.co.' });
+      return res.status(404).json({ error: 'No billing account found for this email. If you purchased with a different address, contact support@getcitro.ai.' });
     }
     const customerId = customers.data[0].id;
     // Create portal session
