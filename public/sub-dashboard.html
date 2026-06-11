@@ -194,7 +194,9 @@ function gtag(){dataLayer.push(arguments);}
     .property-card:hover { border-color: rgba(37,99,235,0.2); box-shadow: 0 2px 14px rgba(37,99,235,0.06); }
     .prop-remove { position: absolute; top: 14px; right: 14px; background: none; border: none; cursor: pointer; color: #CBD5E1; font-size: 16px; line-height: 1; padding: 2px 6px; border-radius: 4px; transition: color 0.15s, background 0.15s; }
     .prop-remove:hover { color: var(--red); background: var(--red-bg); }
-    .prop-name { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; padding-right: 28px; }
+    .prop-rename { position: absolute; top: 14px; right: 42px; background: none; border: none; cursor: pointer; color: #CBD5E1; font-size: 13px; line-height: 1; padding: 3px 6px; border-radius: 4px; transition: color 0.15s, background 0.15s; }
+    .prop-rename:hover { color: var(--accent); background: rgba(37,99,235,0.08); }
+    .prop-name { font-size: 16px; font-weight: 700; color: var(--dark); margin-bottom: 4px; padding-right: 56px; }
     .prop-url { font-size: 12px; color: var(--muted); margin-bottom: 16px; font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .prop-stats { display: flex; gap: 16px; margin-bottom: 20px; }
     .prop-stat { flex: 1; }
@@ -773,7 +775,9 @@ function gtag(){dataLayer.push(arguments);}
     countNote.textContent = `${properties.length} of 10 properties`;
     grid.innerHTML = '';
 
+    _propNames = {};
     properties.forEach(prop => {
+      _propNames[prop.id] = prop.name;
       const card = document.createElement('div');
       card.className = 'property-card';
       const sc = prop.lastScore;
@@ -781,6 +785,7 @@ function gtag(){dataLayer.push(arguments);}
       const lastRunText = prop.lastRunAt ? formatDate(prop.lastRunAt) : 'Never';
       card.innerHTML = `
         <button class="prop-remove" onclick="event.stopPropagation();removeProperty('${prop.id}', '${esc(prop.name)}')" title="Remove property">×</button>
+        <button class="prop-rename" onclick="event.stopPropagation();renameProperty('${prop.id}')" title="Rename property">✎</button>
         <span class="prop-chevron">▼</span>
         <div class="prop-name">${esc(prop.name)}</div>
         <div class="prop-url">${esc(prop.website)}</div>
@@ -904,6 +909,29 @@ function gtag(){dataLayer.push(arguments);}
 
     } catch(e) {
       runsEl.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;">Could not load run history.</p>';
+    }
+  }
+
+  let _propNames = {};
+
+  async function renameProperty(propertyId) {
+    const current = _propNames[propertyId] || '';
+    const input = prompt('Rename this property:', current);
+    if (input === null) return;
+    const newName = input.trim();
+    if (!newName || newName === current) return;
+    if (newName.length > 60) { alert('Name must be 60 characters or fewer.'); return; }
+    try {
+      const resp = await fetch('/api/sub-rename-property', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ propertyId, name: newName }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Could not rename property');
+      renderEnterpriseProperties(data.properties || [], false);
+    } catch(e) {
+      alert('Could not rename property: ' + e.message);
     }
   }
 
