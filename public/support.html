@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Citro Consent Mode v2 -->
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;
+  try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}
+  gtag('consent','default',{
+    analytics_storage: c&&c.a ? 'granted' : 'denied',
+    ad_storage:        c&&c.m ? 'granted' : 'denied',
+    ad_user_data:      c&&c.m ? 'granted' : 'denied',
+    ad_personalization:c&&c.m ? 'granted' : 'denied',
+    wait_for_update: 500
+  });
+})();
+</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-9LYVMPB7R3');</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support | Citro</title>
+  <meta name="description" content="Get help with your Citro account, billing, or Citro Score report. Real humans, same business day replies." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F5F0E8; --surface: #FAF7F2; --ink: #2C2318; --ink-2: #3D3228;
+      --mid: #6B5D4F; --quiet: #9E8E7E; --border: rgba(44,35,24,0.12);
+      --terra: #8B4A2A;
+      --serif: 'Playfair Display', Georgia, serif;
+      --sans: 'Inter', system-ui, sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+    nav { background: rgba(10,15,28,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo img { height: 36px; width: auto; display: block; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 72px 32px 100px; }
+    .page-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--terra); margin-bottom: 14px; }
+    .page-title { font-family: var(--serif); font-size: 42px; font-weight: 700; color: var(--ink); margin-bottom: 10px; }
+    .page-sub { font-size: 16px; color: var(--mid); line-height: 1.7; margin-bottom: 48px; }
+    h2 { font-family: var(--serif); font-size: 22px; font-weight: 700; color: var(--ink); margin: 48px 0 14px; }
+    p { font-size: 15px; color: var(--mid); line-height: 1.8; margin-bottom: 16px; }
+    ul { margin: 0 0 16px 0; padding-left: 24px; }
+    li { font-size: 15px; color: var(--mid); line-height: 1.8; margin-bottom: 6px; }
+    a { color: var(--terra); text-decoration: underline; text-underline-offset: 3px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 28px 30px; margin-bottom: 18px; }
+    .card h3 { font-family: var(--serif); font-size: 19px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+    .card p { margin-bottom: 8px; }
+    .card p:last-child { margin-bottom: 0; }
+    .email-big { font-family: var(--mono); font-size: 17px; }
+    footer { border-top: 1px solid var(--border); padding: 36px 48px; background: var(--surface); }
+    .footer-inner { max-width: 760px; margin: 0 auto; display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+    .footer-inner a { font-size: 13px; color: var(--mid); text-decoration: none; }
+    .footer-inner a:hover { color: var(--ink); }
+    .footer-copy { font-size: 13px; color: var(--quiet); margin-left: auto; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/"><img src="/citro-logo.png" alt="Citro"></a>
+</nav>
+
+<div class="wrap">
+  <div class="page-eyebrow">Support</div>
+  <div class="page-title">How can we help?</div>
+  <div class="page-sub">Every message is read and answered by a real person on our team, not a bot or a ticket queue. You will hear back the same business day.</div>
+
+  <div class="card">
+    <h3>Email us</h3>
+    <p><a class="email-big" href="mailto:support@getcitro.ai">support@getcitro.ai</a></p>
+    <p>Billing questions, technical issues, account access, or anything about your Citro Score report. We reply the same business day, Monday through Friday.</p>
+  </div>
+
+  <div class="card">
+    <h3>Manage your billing</h3>
+    <p>Update your payment method, view invoices, or cancel your subscription anytime from your dashboard. No phone calls, no retention scripts.</p>
+    <p><a href="/signin.html">Sign in</a> and select Manage billing. If the billing portal ever fails to open, email us and we will handle it directly.</p>
+  </div>
+
+  <div class="card">
+    <h3>Questions about your results</h3>
+    <p>Want a walkthrough of your Citro Score or your 90-day plan? We are glad to get on a short call and go through it together. Email us with a couple of times that work for you.</p>
+  </div>
+
+  <h2>Help us resolve things faster</h2>
+  <p>When you write in, include the email address on your account, your company domain, and a short description of what you expected versus what happened. Screenshots help. With those three things, most issues are resolved in a single reply.</p>
+
+  <h2>Refunds and re-runs</h2>
+  <p>If a technical failure prevents your report from being delivered, we will re-run your audit at no charge. Subscriptions can be canceled anytime and you keep access through the end of your billing period. Full details are in our <a href="/terms.html">Terms of Service</a>.</p>
+
+  <h2>New to Citro?</h2>
+  <p>Run your free Citro check at <a href="/check.html">getcitro.ai/check</a> to see where your brand stands in AI recommendations. No card required.</p>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <a href="/">Citro</a>
+    <a href="/support.html">Support</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <span class="footer-copy">© 2026 RootPartners LLC</span>
+  </div>
+</footer>
+
+</body>
+</html>
