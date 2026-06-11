@@ -5,8 +5,8 @@
 window.dataLayer=window.dataLayer||[];
 function gtag(){dataLayer.push(arguments);}
 (function(){
-  var c=null;try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}
-  gtag('consent','default',{analytics_storage:c&&c.a?'granted':'denied',ad_storage:c&&c.m?'granted':'denied',ad_user_data:c&&c.m?'granted':'denied',ad_personalization:c&&c.m?'granted':'denied',wait_for_update:500});
+  var c=null;try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}var eea=true;try{eea=((Intl.DateTimeFormat().resolvedOptions().timeZone)||'').indexOf('Europe/')===0;}catch(e){}
+  gtag('consent','default',{analytics_storage:(c?!!c.a:!eea)?'granted':'denied',ad_storage:(c?!!c.m:!eea)?'granted':'denied',ad_user_data:(c?!!c.m:!eea)?'granted':'denied',ad_personalization:(c?!!c.m:!eea)?'granted':'denied',wait_for_update:500});
 })();
 </script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
