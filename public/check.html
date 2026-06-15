@@ -50,6 +50,12 @@ function gtag(){dataLayer.push(arguments);}
   .reassure{font-size:13px;color:var(--quiet);margin-top:12px;text-align:center;}
   .err{color:var(--red);font-size:13px;margin-top:10px;display:none;}
 
+  .getlist{margin-top:20px;display:grid;gap:11px;}
+  .getlist .gl-h{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--quiet);margin-bottom:2px;}
+  .getitem{display:flex;gap:11px;align-items:flex-start;font-size:14.5px;color:var(--mid);}
+  .gi-n{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:0.04em;padding-top:2px;flex:none;}
+  .trustline{margin-top:16px;font-size:12.5px;color:var(--quiet);text-align:center;line-height:1.5;}
+
   /* loading */
   #loading{display:none;text-align:center;padding:42px 0;}
   .spin{width:34px;height:34px;border:3px solid rgba(37,99,235,0.18);border-top-color:var(--accent);border-radius:50%;margin:0 auto 18px;animation:sp 0.8s linear infinite;}
@@ -113,9 +119,17 @@ function gtag(){dataLayer.push(arguments);}
           </div>
           <button class="btn" type="submit" id="submitBtn">Run my free check</button>
           <div class="err" id="formErr"></div>
-          <p class="reassure">No card. No password. We email your result and how to improve it.</p>
+          <p class="reassure">No card. No password. Your score appears on screen, with the full breakdown emailed.</p>
         </form>
       </div>
+
+      <div class="getlist">
+        <div class="gl-h">What you get back</div>
+        <div class="getitem"><span class="gi-n">01</span> Your Citro Score across all 7 AI assistants</div>
+        <div class="getitem"><span class="gi-n">02</span> The competitor AI recommends instead of you</div>
+        <div class="getitem"><span class="gi-n">03</span> A high-intent buying query you are losing</div>
+      </div>
+      <p class="trustline">We query ChatGPT, Perplexity, Gemini, Claude and 3 more the way your buyers do. Built by RootPartners.</p>
     </section>
 
     <!-- LOADING -->
