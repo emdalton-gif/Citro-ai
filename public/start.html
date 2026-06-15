@@ -269,7 +269,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="stripe-row" style="margin-top:20px;">
       <span class="stripe-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        No card to start. Full access for 7 days.
+        Card entered at the last step. No charge for 7 days.
       </span>
     </div>
   </div>
@@ -415,7 +415,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
     <h1 class="step-title">You're all set — let's start your free trial.</h1>
-    <p class="step-sub">Review what we've set up, then start your trial with no card required. You won't be charged for 7 days.</p>
+    <p class="step-sub">Review what we've set up, then enter your payment details to begin. You won't be charged for 7 days.</p>
 
     <!-- Summary -->
     <div class="trial-summary" id="trial-summary-block">
@@ -448,14 +448,14 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="trial-callout">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
       <div class="trial-callout-text">
-        <strong>7-day free trial, no card required.</strong> Start right now and explore your full audit. We'll remind you before day 7, and you add a card only if you want to keep going. Cancel any time, no charge, no questions.
+        <strong>7-day free trial.</strong> Your card is saved securely by Stripe but won't be charged until day 8. Cancel any time before then from your dashboard — no charge, no questions.
       </div>
     </div>
 
     <div class="global-error" id="err-5"></div>
     <button class="btn-primary green" id="start-trial-btn" onclick="startTrial()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span id="start-trial-label">Start My Free Trial</span>
+      <span id="start-trial-label">Start Free Trial, Enter Payment</span>
     </button>
     <button class="btn-ghost" onclick="goStep(4)">← Back</button>
 
@@ -466,7 +466,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       </span>
       <span class="stripe-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        No credit card required to start
+        Card encrypted — never stored on our servers
       </span>
       <span class="stripe-item">
         Cancel anytime before day 8
@@ -811,12 +811,12 @@ async function startTrial() {
 
     // Store email so trial-confirm.html can use it
     sessionStorage.setItem('trial_email', state.email);
-    label.textContent = 'Starting your trial…';
+    label.textContent = 'Redirecting to secure payment…';
     window.location.href = data.url;
 
   } catch(e) {
     btn.disabled = false;
-    label.textContent = 'Start My Free Trial';
+    label.textContent = 'Start Free Trial, Enter Payment';
     err.textContent = e.message;
     err.classList.add('show');
   }
