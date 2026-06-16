@@ -20,7 +20,7 @@ const IP_DAILY_CAP     = 10;   // checks per IP per day
 const DOMAIN_DAILY_CAP = 5;    // checks per target domain per day
 const GLOBAL_DAILY_CAP = 250;  // total checks per day (spend ceiling)
 const DAY_SECONDS      = 86400;
-const MAX_TOKENS       = 700;
+const MAX_TOKENS       = 1200;
 
 // ── Upstash REST helpers (same pattern as start-trial.js) ───────────────────────
 function upstashEnabled() {
@@ -152,16 +152,22 @@ ${siteContext
   ? `Here is content read from their homepage. Use it to identify the actual company name and what they sell. Do not contradict it or invent a different company:\n"""\n${siteContext}\n"""`
   : `Their homepage could not be read, so infer cautiously from the domain "${domain}" alone. If you are not confident of the company name, use the domain itself rather than inventing a specific organization.`}
 
-Estimate how visible this brand plausibly is in AI answers today. Most brands score low because AI assistants name a small set of well-known leaders. Be realistic and slightly conservative, not flattering.
+Estimate how visible this brand plausibly is in AI answers today by simulating real buyer questions. Most brands are named in only a few, because assistants name a small set of well-known leaders. Be realistic and slightly conservative, not flattering.
+
+Do this:
+1. Identify the company name and a short category phrase${siteContext ? ' from the homepage content above' : ', using the domain if unsure'}.
+2. Write 8 distinct, realistic high-intent buyer questions someone would ask an AI assistant when choosing a provider in this specific category (for example "best CRM for small law firms"). Make them specific to this category, not generic.
+3. For EACH question, judge conservatively whether today's mainstream AI assistants would actually name or recommend THIS brand in their answer (true or false), and name the single brand they would most likely recommend for that question.
 
 Return ONLY valid JSON, no markdown, no commentary:
 {
-  "companyName": "the actual brand name${siteContext ? ' from the homepage content above' : ', or the domain if unsure'}",
+  "companyName": "the brand name${siteContext ? ' from the homepage content above' : ', or the domain if unsure'}",
   "category": "short phrase for what they sell${siteContext ? ', based on the homepage content' : ''}",
-  "score": <integer 0-100, estimated share of relevant AI queries where this brand is recommended>,
-  "competitor": "one well-known competitor in their category that AI assistants are likely to recommend instead",
-  "losingQuery": "one realistic buyer question to an AI assistant where this brand is likely NOT named (e.g. 'best CRM for small law firms')"
-}`;
+  "queries": [
+    { "q": "the buyer question", "named": true, "topPick": "brand most likely recommended for this question" }
+  ]
+}
+Include exactly 8 objects in the "queries" array.`;
 
   const body = JSON.stringify({
     model: 'claude-haiku-4-5-20251001',
@@ -192,8 +198,24 @@ Return ONLY valid JSON, no markdown, no commentary:
           const match = text.match(/\{[\s\S]*\}/);
           const data = match ? JSON.parse(match[0]) : {};
 
-          let score = parseInt(data.score, 10);
-          if (isNaN(score)) score = 0;
+          let queries = Array.isArray(data.queries)
+            ? data.queries.filter((x) => x && typeof x.q === 'string')
+            : [];
+          let score, competitor = '', losingQuery = '';
+          if (queries.length) {
+            const namedCount = queries.filter((x) => x.named === true).length;
+            score = Math.round((100 * namedCount) / queries.length);
+            const lost = queries.filter((x) => x.named !== true);
+            losingQuery = (lost[0] && lost[0].q) || '';
+            const tally = {};
+            lost.forEach((x) => { const t = String(x.topPick || '').trim(); if (t) tally[t] = (tally[t] || 0) + 1; });
+            competitor = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0] || '';
+          } else {
+            score = parseInt(data.score, 10);
+            if (isNaN(score)) score = 0;
+            competitor = data.competitor || '';
+            losingQuery = data.losingQuery || '';
+          }
           score = Math.max(0, Math.min(100, score));
 
           const result = {
@@ -202,8 +224,8 @@ Return ONLY valid JSON, no markdown, no commentary:
             category: data.category || '',
             score,
             platformsTested: 7,
-            competitor: data.competitor || '',
-            losingQuery: data.losingQuery || '',
+            competitor,
+            losingQuery,
             preliminary: true,
           };
 
