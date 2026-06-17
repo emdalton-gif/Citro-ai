@@ -70,8 +70,23 @@ module.exports = async function handler(req, res) {
 
         const isEnterprise = account.plan === 'enterprise';
         let properties = [];
+        let runCount = 0, lastRunAt = null, lastScore = null;
         if (isEnterprise) {
           properties = (await upstashGet(`subscriber-properties:${email}`)) || [];
+          for (const p of properties) {
+            runCount += (p.runCount || 0);
+            if (p.lastRunAt && (!lastRunAt || new Date(p.lastRunAt).getTime() > new Date(lastRunAt).getTime())) {
+              lastRunAt = p.lastRunAt;
+              lastScore = (p.lastScore != null ? p.lastScore : null);
+            }
+          }
+        } else {
+          const runs = (await upstashGet(`subscriber-runs:${email}`)) || [];
+          runCount = runs.length;
+          if (runs.length) {
+            lastRunAt = runs[0].createdAt || null;
+            lastScore = (runs[0].overallScore != null ? runs[0].overallScore : null);
+          }
         }
 
         return {
@@ -79,8 +94,9 @@ module.exports = async function handler(req, res) {
           plan: account.plan || 'professional',
           status: account.status || 'active',
           createdAt: account.createdAt || null,
-          runCount: account.runCount || 0,
-          lastRunAt: account.lastRunAt || null,
+          runCount,
+          lastRunAt,
+          lastScore,
           company: account.company || null,
           website: account.website || null,
           // Enterprise-specific
