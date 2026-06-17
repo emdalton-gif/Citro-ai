@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Citro — Customer Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F8FAFC; --panel:#FFFFFF; --ink:#0F172A; --mid:#475569; --quiet:#94A3B8;
+    --border:rgba(15,23,42,0.10); --accent:#2563EB; --green:#059669; --amber:#D97706; --red:#DC2626;
+    --sans:'Inter',system-ui,sans-serif; --mono:'DM Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 22px 60px;}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;}
+  h1{font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+  .logo span{color:var(--accent);}
+  .sub{color:var(--mid);font-size:14px;margin-bottom:22px;}
+  .actions a,.actions button{font-family:inherit;font-size:13px;color:var(--mid);background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;text-decoration:none;}
+  .actions button:hover,.actions a:hover{border-color:var(--accent);color:var(--accent);}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:22px;}
+  .kpi{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
+  .kpi .k{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--quiet);margin-bottom:6px;}
+  .kpi .v{font-size:26px;font-weight:800;letter-spacing:-0.02em;}
+
+  .section-h{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--mid);margin:24px 0 10px;}
+  .attn{background:rgba(220,38,38,0.04);border:1px solid rgba(220,38,38,0.25);border-radius:12px;padding:14px 16px;margin-bottom:6px;}
+  .attn .row{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:5px 0;border-top:1px solid rgba(220,38,38,0.12);}
+  .attn .row:first-of-type{border-top:none;}
+
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+  th{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--quiet);text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);}
+  td{font-size:14px;padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .co{font-weight:600;}
+  .email{font-size:12px;color:var(--quiet);}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:0.04em;text-transform:uppercase;padding:3px 8px;border-radius:100px;}
+  .pill.ent{background:rgba(37,99,235,0.10);color:var(--accent);}
+  .pill.pro{background:rgba(71,85,105,0.10);color:var(--mid);}
+  .pill.active{background:rgba(5,150,105,0.10);color:var(--green);}
+  .pill.other{background:rgba(217,119,6,0.10);color:var(--amber);}
+  .stale{color:var(--red);font-weight:600;}
+  .fresh{color:var(--green);}
+  .props-btn{font-family:var(--mono);font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0;}
+  .props{margin-top:8px;border-left:2px solid var(--border);padding-left:12px;display:none;}
+  .props.open{display:block;}
+  .props .p{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--mid);padding:3px 0;}
+  #msg{color:var(--mid);font-size:14px;padding:20px 0;}
+  .err{color:var(--red);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1 class="logo">Citro<span>.</span> Customer Report</h1>
+      <div class="actions">
+        <button onclick="load()">Refresh</button>
+        <a href="/admin.html">Admin</a>
+        <button onclick="logout()">Log out</button>
+      </div>
+    </div>
+    <div class="sub" id="updated">Loading customer usage…</div>
+
+    <div class="kpis" id="kpis"></div>
+    <div id="attnWrap"></div>
+    <div class="section-h">All customers <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--quiet);">(most recently active first)</span></div>
+    <div id="tableWrap"><div id="msg">Loading…</div></div>
+  </div>
+
+<script>
+  const TOKEN = localStorage.getItem('admin_token');
+  if (!TOKEN) location.href = '/admin-login.html';
+
+  function logout(){ localStorage.removeItem('admin_token'); location.href = '/admin-login.html'; }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function daysSince(iso){ if(!iso) return null; const t=new Date(iso).getTime(); if(isNaN(t)) return null; return Math.floor((Date.now()-t)/86400000); }
+  function rel(iso){ const d=daysSince(iso); if(d===null) return 'never'; if(d<=0) return 'today'; if(d===1) return '1 day ago'; return d+' days ago'; }
+  function joined(iso){ if(!iso) return '—'; const d=new Date(iso); return isNaN(d)?'—':d.toLocaleDateString(); }
+
+  async function load(){
+    document.getElementById('updated').textContent = 'Loading customer usage…';
+    let data;
+    try {
+      const res = await fetch('/api/admin-subscribers', { headers: { 'Authorization': 'Bearer ' + TOKEN } });
+      if (res.status === 401) { logout(); return; }
+      if (!res.ok) throw new Error('Server returned ' + res.status);
+      data = await res.json();
+    } catch (e) {
+      document.getElementById('msg').innerHTML = '<span class="err">Could not load data: ' + esc(e.message) + '</span>';
+      return;
+    }
+    render(data);
+  }
+
+  function render(data){
+    const subs = (data.subscribers || []).slice();
+    const totalRuns = subs.reduce((s,x)=>s+(x.runCount||0),0);
+    const active7  = subs.filter(x=>{const d=daysSince(x.lastRunAt); return d!==null && d<=7;}).length;
+    const active30 = subs.filter(x=>{const d=daysSince(x.lastRunAt); return d!==null && d<=30;}).length;
+
+    const kpis = [
+      ['Total customers', data.total ?? subs.length],
+      ['Enterprise', data.enterprise ?? subs.filter(s=>s.plan==='enterprise').length],
+      ['Professional', data.professional ?? subs.filter(s=>s.plan==='professional').length],
+      ['Active last 7 days', active7],
+      ['Active last 30 days', active30],
+      ['Total audits run', totalRuns],
+    ];
+    document.getElementById('kpis').innerHTML = kpis.map(([k,v])=>
+      `<div class="kpi"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`).join('');
+
+    // Needs attention: active paying customers quiet 14+ days, or never ran but joined 3+ days ago
+    const quiet = subs.filter(x=>{
+      if (x.status !== 'active') return false;
+      const dRun = daysSince(x.lastRunAt);
+      const dJoin = daysSince(x.createdAt);
+      if (dRun === null) return (dJoin === null ? false : dJoin >= 3);
+      return dRun > 14;
+    });
+    const attnWrap = document.getElementById('attnWrap');
+    if (quiet.length){
+      attnWrap.innerHTML = '<div class="section-h" style="color:var(--red);">Needs attention — active customers gone quiet</div><div class="attn">' +
+        quiet.map(x=>`<div class="row"><span>${esc(x.company||x.email)} <span class="email">${esc(x.plan)}</span></span><span class="stale">${x.lastRunAt? 'last run '+rel(x.lastRunAt) : 'never run · joined '+rel(x.createdAt)}</span></div>`).join('') +
+        '</div>';
+    } else { attnWrap.innerHTML = ''; }
+
+    if (!subs.length){ document.getElementById('tableWrap').innerHTML = '<div id="msg">No customers yet.</div>'; document.getElementById('updated').textContent='Updated '+new Date().toLocaleString(); return; }
+
+    let rows = '';
+    subs.forEach((x,i)=>{
+      const dRun = daysSince(x.lastRunAt);
+      const lastCls = (dRun!==null && dRun<=7) ? 'fresh' : ((dRun===null || dRun>14) ? 'stale' : '');
+      const planPill = x.plan==='enterprise' ? '<span class="pill ent">Enterprise</span>' : '<span class="pill pro">Professional</span>';
+      const statusPill = x.status==='active' ? '<span class="pill active">active</span>' : '<span class="pill other">'+esc(x.status)+'</span>';
+      const score = (x.properties && x.properties.length)
+        ? '—'
+        : (x.lastScore!=null ? esc(x.lastScore)+'%' : (x.score!=null? esc(x.score)+'%':'—'));
+      let propsHtml = '';
+      if (x.properties && x.properties.length){
+        propsHtml = `<button class="props-btn" onclick="document.getElementById('pp${i}').classList.toggle('open')">▸ ${x.properties.length} propert${x.properties.length===1?'y':'ies'}</button>` +
+          `<div class="props" id="pp${i}">` + x.properties.map(p=>
+            `<div class="p"><span>${esc(p.name||p.website||'property')}</span><span>${p.runCount||0} runs · ${p.lastScore!=null?esc(p.lastScore)+'%':'—'} · ${p.lastRunAt?rel(p.lastRunAt):'never'}</span></div>`
+          ).join('') + `</div>`;
+      }
+      rows += `<tr>
+        <td><div class="co">${esc(x.company||x.email)}</div><div class="email">${esc(x.email)}</div>${propsHtml}</td>
+        <td>${planPill}</td>
+        <td>${statusPill}</td>
+        <td class="num">${esc(x.runCount||0)}</td>
+        <td class="${lastCls}">${rel(x.lastRunAt)}</td>
+        <td class="num">${score}</td>
+        <td>${joined(x.createdAt)}</td>
+      </tr>`;
+    });
+    document.getElementById('tableWrap').innerHTML =
+      `<table><thead><tr><th>Customer</th><th>Plan</th><th>Status</th><th class="num">Runs</th><th>Last active</th><th class="num">Last score</th><th>Joined</th></tr></thead><tbody>${rows}</tbody></table>`;
+    document.getElementById('updated').textContent = 'Updated ' + new Date().toLocaleString();
+  }
+
+  load();
+</script>
+</body>
+</html>
