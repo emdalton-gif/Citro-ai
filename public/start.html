@@ -255,8 +255,8 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="step-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
     </div>
-    <h1 class="step-title">Let's see what AI tells your buyers.</h1>
-    <p class="step-sub">Enter your business email to create your account and start your 7-day trial. Next you'll set the buyer personas and the questions they ask AI.</p>
+    <h1 class="step-title">Start your 7-day free trial.</h1>
+    <p class="step-sub">Citro builds the buyer personas for your business, asks the questions they put to AI, and shows where you stand across all 7 assistants, with a 90-day plan to climb. Enter your business email to begin. No charge today.</p>
     <div class="global-error" id="err-1"></div>
     <div class="field">
       <label for="f-email">Business email</label>
@@ -269,7 +269,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="stripe-row" style="margin-top:20px;">
       <span class="stripe-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Card entered at the last step. No charge for 7 days.
+        No charge today. 7 days free, then $119/mo. Cancel anytime.
       </span>
     </div>
   </div>
@@ -415,7 +415,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
     <h1 class="step-title">You're all set — let's start your free trial.</h1>
-    <p class="step-sub">Review what we've set up, then enter your payment details to begin. You won't be charged for 7 days.</p>
+    <p class="step-sub">Review what we set up, then add your card to start your trial. No charge today, nothing until day 8.</p>
 
     <!-- Summary -->
     <div class="trial-summary" id="trial-summary-block">
@@ -448,14 +448,14 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="trial-callout">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
       <div class="trial-callout-text">
-        <strong>7-day free trial.</strong> Your card is saved securely by Stripe but won't be charged until day 8. Cancel any time before then from your dashboard — no charge, no questions.
+        <strong>7 days free, then $119/month.</strong> A temporary $1 authorization confirms your card and is refunded right away. Nothing is charged until day 8, and you can cancel any time before then from your dashboard, no charge, no questions.
       </div>
     </div>
 
     <div class="global-error" id="err-5"></div>
     <button class="btn-primary green" id="start-trial-btn" onclick="startTrial()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span id="start-trial-label">Start Free Trial, Enter Payment</span>
+      <span id="start-trial-label">Start My 7-Day Free Trial</span>
     </button>
     <button class="btn-ghost" onclick="goStep(4)">← Back</button>
 
@@ -816,7 +816,7 @@ async function startTrial() {
 
   } catch(e) {
     btn.disabled = false;
-    label.textContent = 'Start Free Trial, Enter Payment';
+    label.textContent = 'Start My 7-Day Free Trial';
     err.textContent = e.message;
     err.classList.add('show');
   }
