@@ -27,6 +27,7 @@ function gtag(){dataLayer.push(arguments);}
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -381,7 +382,7 @@ function gtag(){dataLayer.push(arguments);}
 
     <!-- File upload -->
     <div class="upload-zone" id="auditUploadZone">
-      <input type="file" id="auditPersonaFile" accept=".pdf,.pptx,.docx,.csv,.txt" />
+      <input type="file" id="auditPersonaFile" accept="application/pdf,.pdf,.pptx,.docx,.csv,.txt" />
       <div class="upload-zone-icon">📄</div>
       <div class="upload-zone-title">Already have your personas documented?</div>
       <div class="upload-zone-hint">Upload a PDF, PPTX, DOCX, or CSV — we'll extract them automatically</div>
@@ -1633,6 +1634,24 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
     return texts.join('\n\n').slice(0, 40000);
   }
 
+  // Extracts selectable text from a PDF in the browser (pdf.js), so large PDFs
+  // never have to be sent to the server. First 50 pages, capped at 40k chars.
+  async function extractPdfText(file) {
+    if (typeof pdfjsLib === 'undefined') throw new Error('PDF parser not loaded');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({ data: buf }).promise;
+    const pages = Math.min(doc.numPages, 50);
+    const texts = [];
+    for (let i = 1; i <= pages; i++) {
+      const page = await doc.getPage(i);
+      const tc = await page.getTextContent();
+      const t = tc.items.map(it => it.str).join(' ').replace(/\s+/g, ' ').trim();
+      if (t) texts.push(t);
+    }
+    return texts.join('\n\n').slice(0, 40000);
+  }
+
   function parsePersonasFromRaw(raw) {
     const cleaned = raw.replace(/```json|```/g, '').trim();
     const s = cleaned.indexOf('['), e = cleaned.lastIndexOf(']');
@@ -1645,6 +1664,19 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
   async function parsePersonaFile(file) {
     const ext = file.name.split('.').pop().toLowerCase();
     if (ext === 'pdf') {
+      // Text-first: extract in the browser and send only the text. The old path
+      // sent the whole file as base64, which the server rejects above ~3 MB (413).
+      let pdfText = '';
+      try { pdfText = await extractPdfText(file); } catch (e) { pdfText = ''; }
+      if (pdfText.length >= 200) {
+        const raw = await callClaude([{ role: 'user', content: PERSONA_EXTRACT_PROMPT + '\n\nDocument text:\n' + pdfText }], null, 2000);
+        return parsePersonasFromRaw(raw);
+      }
+      // Little or no selectable text: likely a scanned or image-only PDF.
+      // Sending the file itself only works under the server's request-size cap.
+      if (file.size > 3 * 1024 * 1024) {
+        throw new Error('This PDF has no readable text and is too large to process. Export a text-based PDF, or upload a DOCX, PPTX, or CSV instead.');
+      }
       const b64 = await fileToBase64(file);
       const raw = await callClaude([{ role: 'user', content: [
         { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } },
