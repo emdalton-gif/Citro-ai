@@ -285,15 +285,23 @@ function gtag(){dataLayer.push(arguments);}
 
     /* ── PRINT ── */
     @page {
-      margin: 0.6in 0.75in 0.5in;
-      /* Suppresses browser-generated about:blank footer */
+      size: letter;
+      /* Zero page margin is what suppresses the browser-generated header
+         (date + document title) and footer (URL + page number). Any non-zero
+         margin gives Chrome/Safari room to draw them. Real margins are put
+         back below with padding on .wrap. */
+      margin: 0;
     }
     @media print {
       nav, .back-btn, .run-btn, button, #save-status, .nav-back { display: none !important; }
+      /* Cookie consent banner and its modal are position:fixed, so they land
+         on top of whatever page they fall on. Never print them. */
+      #ra-cb-wrap, #ra-cb, #ra-modal-overlay, #ra-modal { display: none !important; }
       #screen-results { display: block !important; }
-      .wrap { max-width: 100%; padding: 0 16px; }
+      html, body { margin: 0 !important; padding: 0 !important; }
+      .wrap { max-width: 100% !important; margin: 0 !important; padding: 0.5in 0.65in !important; }
       .score-strip { background: #0B0F1A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .result-section { break-inside: avoid; }
+      .result-section { break-inside: avoid; page-break-inside: avoid; margin-bottom: 0.3in; }
       body { background: white; }
       /* Clean Citro print footer */
       body::after {
