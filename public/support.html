@@ -25,19 +25,24 @@ function gtag(){dataLayer.push(arguments);}
   <title>Support | Citro</title>
   <meta name="description" content="Get help with your Citro account, billing, or Citro Score report. Real humans, same business day replies." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Mono:wght@400;500&family=Archivo:wght@500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #F5F0E8; --surface: #FAF7F2; --ink: #2C2318; --ink-2: #3D3228;
-      --mid: #6B5D4F; --quiet: #9E8E7E; --border: rgba(44,35,24,0.12);
-      --terra: #8B4A2A;
+      --bg: #E9F3F6; --surface: #F2F8FA; --ink: #07202B; --ink-2: #123545;
+      --mid: #48626E; --quiet: #54707C; --border: rgba(7,32,43,0.12);
+      --terra: #026F8B;
       --serif: 'Playfair Display', Georgia, serif;
       --sans: 'Inter', system-ui, sans-serif;
+      --display:     'Archivo', 'Inter', system-ui, sans-serif;
+      --on-accent:   #04222E;
+      --accent-soft: #8FE3F6;
+      --accent-d2:   #026F8B;
       --mono: 'DM Mono', monospace;
     }
+    h1, h2, h3, h4, h5, h6 { font-family: var(--display); letter-spacing: -0.025em; }
     body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
-    nav { background: rgba(10,15,28,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+    nav { background: rgba(7,32,43,0.97); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 48px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
     .nav-logo { text-decoration: none; display: flex; align-items: center; }
     .nav-logo img { height: 36px; width: auto; display: block; }
     .wrap { max-width: 760px; margin: 0 auto; padding: 72px 32px 100px; }
@@ -59,6 +64,30 @@ function gtag(){dataLayer.push(arguments);}
     .footer-inner a { font-size: 13px; color: var(--mid); text-decoration: none; }
     .footer-inner a:hover { color: var(--ink); }
     .footer-copy { font-size: 13px; color: var(--quiet); margin-left: auto; }
+    /* --- contrast corrections ------------------------------------------- */
+    /* accent-coloured links sit on light grounds; use the darker accent */
+    .diff-intro a, .signin-link a, .new-link a, .rp-cta-row a,
+    .article-wrap a, .lead a, .body-copy a { color: var(--accent-d2); }
+    /* anything FILLED with the accent takes dark ink, children included */
+    .cta-block, .cta-block *, .hero-cta, .hero-cta *, .btn-primary, .btn-primary *,
+    .btn, .btn *, .stepnum, .stepnum *, .step-num, .step-num *,
+    .verdict-cta, .verdict-cta *, .ra-btn-accept, .ra-save-btn { color: #04222E; }
+    /* the deficit glyph was a shade light against white */
+    .cross { color: #C63A22; }
+    /* --- final contrast pass --------------------------------------------- */
+    /* element selectors inside an accent-filled block out-specify ".block *" */
+    .cta-block h2, .cta-block h3, .cta-block h4, .cta-block p, .cta-block a,
+    .hero-cta h3, .hero-cta p { color: #04222E; }
+    /* small accent labels that the first sweep missed */
+    .card-eyebrow, .gi-n, .unlock-note, .stat-cap { color: var(--accent-d2); }
+    /* deficit figures need to clear 3:1 against white */
+    .rp-score-pct, .rp-hbar-name, .rp-comp-you { color: #E8452A; }
+    /* the cookie banner sits on a dark ground; its muted text needs to be light */
+    .ra-btn-reject, #ra-cb .ra-cb-text, #ra-cb small, #ra-modal .ra-muted { color: #B9D2DB; }
+    .rp-brand-tag { color: var(--accent-d2); }
+
+
+
   </style>
 </head>
 <body>
