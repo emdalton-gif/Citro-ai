@@ -33,17 +33,17 @@ function sendResetEmail(toEmail, resetUrl) {
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;">
-  <div style="max-width:520px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E2E8F0;">
-    <div style="background:#0B0F1A;padding:28px 36px;">
-      <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:800;color:#2563EB;">ACE</span>
+<body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
+  <div style="max-width:520px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
+    <div style="background:#07202B;padding:28px 36px;">
+      <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:800;color:#00BDE7;">ACE</span>
       <span style="font-size:13px;color:rgba(255,255,255,0.4);margin-left:12px;">Active Optimization</span>
     </div>
     <div style="padding:36px;">
-      <p style="font-size:20px;font-weight:700;color:#0B0F1A;margin:0 0 12px;">Reset your password</p>
-      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 28px;">We received a request to reset the password for your Citro account. Click the button below to choose a new password. This link expires in 1 hour.</p>
-      <a href="${resetUrl}" style="display:inline-block;background:#2563EB;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">Reset password →</a>
-      <p style="font-size:13px;color:#94A3B8;line-height:1.7;margin:0;">If you didn't request this, you can safely ignore this email — your password won't change.<br><br>Questions? Reply to this email or contact <a href="mailto:support@rootpartners.co" style="color:#2563EB;">support@rootpartners.co</a></p>
+      <p style="font-size:20px;font-weight:700;color:#07202B;margin:0 0 12px;">Reset your password</p>
+      <p style="font-size:15px;color:#48626E;line-height:1.7;margin:0 0 28px;">We received a request to reset the password for your Citro account. Click the button below to choose a new password. This link expires in 1 hour.</p>
+      <a href="${resetUrl}" style="display:inline-block;background:#00BDE7;color:#04222E;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">Reset password →</a>
+      <p style="font-size:13px;color:#7E959F;line-height:1.7;margin:0;">If you didn't request this, you can safely ignore this email — your password won't change.<br><br>Questions? Reply to this email or contact <a href="mailto:support@rootpartners.co" style="color:#00BDE7;">support@rootpartners.co</a></p>
     </div>
   </div>
 </body>
