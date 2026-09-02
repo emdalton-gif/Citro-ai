@@ -45,24 +45,24 @@ function sendRunCompleteEmail(toEmail, companyName, runId, overallScore) {
   if (!apiKey) return Promise.resolve();
 
   const resultUrl = `https://getcitro.ai/sub-dashboard.html`;
-  const scoreColor = overallScore < 40 ? '#DC2626' : overallScore < 65 ? '#D97706' : '#059669';
+  const scoreColor = overallScore < 40 ? '#E8452A' : overallScore < 65 ? '#C97A12' : '#026F8B';
 
   const html = `
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;">
-  <div style="max-width:540px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E2E8F0;">
-    <div style="background:#0B0F1A;padding:28px 36px;">
-      <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:800;color:#2563EB;">ACE</span>
+<body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
+  <div style="max-width:540px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
+    <div style="background:#07202B;padding:28px 36px;">
+      <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:800;color:#00BDE7;">ACE</span>
       <span style="font-size:13px;color:rgba(255,255,255,0.4);margin-left:12px;">Active Optimization</span>
     </div>
     <div style="padding:36px;">
-      <p style="font-size:20px;font-weight:700;color:#0B0F1A;margin:0 0 8px;">Your audit is ready${companyName ? ` — ${companyName}` : ''}.</p>
-      ${overallScore !== undefined ? `<p style="font-size:14px;color:#64748B;margin:0 0 24px;">Citro Score: <strong style="color:${scoreColor};font-size:18px;">${overallScore}%</strong></p>` : '<div style="margin-bottom:24px;"></div>'}
-      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 24px;">Your latest Citro report has finished running. Log in to your dashboard to view the full results, compare with previous runs, and see what changed.</p>
-      <a href="${resultUrl}" style="display:inline-block;background:#2563EB;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">View Results →</a>
-      <p style="font-size:13px;color:#94A3B8;line-height:1.7;margin:0;">Questions? Reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#2563EB;">support@rootpartners.co</a></p>
+      <p style="font-size:20px;font-weight:700;color:#07202B;margin:0 0 8px;">Your audit is ready${companyName ? ` — ${companyName}` : ''}.</p>
+      ${overallScore !== undefined ? `<p style="font-size:14px;color:#48626E;margin:0 0 24px;">Citro Score: <strong style="color:${scoreColor};font-size:18px;">${overallScore}%</strong></p>` : '<div style="margin-bottom:24px;"></div>'}
+      <p style="font-size:15px;color:#48626E;line-height:1.7;margin:0 0 24px;">Your latest Citro report has finished running. Log in to your dashboard to view the full results, compare with previous runs, and see what changed.</p>
+      <a href="${resultUrl}" style="display:inline-block;background:#00BDE7;color:#04222E;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">View Results →</a>
+      <p style="font-size:13px;color:#7E959F;line-height:1.7;margin:0;">Questions? Reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#00BDE7;">support@rootpartners.co</a></p>
     </div>
   </div>
 </body>
