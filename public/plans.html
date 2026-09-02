@@ -25,38 +25,43 @@ function gtag(){dataLayer.push(arguments);}
 <title>Plans & Pricing | Citro — AI Citation Intelligence</title>
 <meta name="description" content="See Citro's plans. Start with a 7-day free trial of Citro Professional to track your AI visibility, or scale to Enterprise across up to 10 brands." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:          #F8FAFC;
+    --bg:          #F2F8FA;
     --surface:     #FFFFFF;
-    --surface-2:   #F1F5F9;
-    --ink:         #0F172A;
-    --ink-2:       #1E293B;
-    --mid:         #64748B;
-    --quiet:       #94A3B8;
-    --border:      rgba(15,23,42,0.08);
-    --accent:      #2563EB;
-    --accent-d:    #1D4ED8;
-    --accent-light:rgba(37,99,235,0.08);
-    --accent-ring: rgba(37,99,235,0.18);
-    --green:       #059669;
-    --green-bg:    rgba(5,150,105,0.08);
-    --green-ring:  rgba(5,150,105,0.2);
+    --surface-2:   #E9F3F6;
+    --ink:         #07202B;
+    --ink-2:       #123545;
+    --mid:         #48626E;
+    --quiet:       #54707C;
+    --border:      rgba(7,32,43,0.08);
+    --accent:      #00BDE7;
+    --accent-d:    #026F8B;
+    --accent-light:rgba(0,189,231,0.08);
+    --accent-ring: rgba(0,189,231,0.18);
+    --green:       #026F8B;
+    --green-bg:    rgba(2,111,139,0.08);
+    --green-ring:  rgba(2,111,139,0.2);
     --sans:        'Inter', system-ui, sans-serif;
+      --display:     'Archivo', 'Inter', system-ui, sans-serif;
+      --on-accent:   #04222E;
+      --accent-soft: #8FE3F6;
+      --accent-d2:   #026F8B;
     --radius:      12px;
   }
 
   html { scroll-behavior: smooth; }
+    h1, h2, h3, h4, h5, h6 { font-family: var(--display); letter-spacing: -0.025em; }
   body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
 
   /* ── NAV ── */
   nav {
     position: sticky; top: 0; z-index: 100;
-    background: rgba(248,250,252,0.95); backdrop-filter: blur(20px);
+    background: rgba(242,248,250,0.95); backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     padding: 0 48px; height: 64px;
     display: flex; align-items: center; justify-content: space-between;
@@ -65,7 +70,7 @@ function gtag(){dataLayer.push(arguments);}
   .nav-right { display: flex; align-items: center; gap: 16px; }
   .nav-link { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; transition: color 0.15s; }
   .nav-link:hover { color: var(--ink); }
-  .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; }
+  .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; transition: background 0.15s; }
   .nav-cta:hover { background: var(--ink-2); }
 
   /* ── HERO ── */
@@ -79,7 +84,7 @@ function gtag(){dataLayer.push(arguments);}
     display: inline-flex; align-items: center; gap: 6px;
     background: var(--accent-light); border: 1px solid var(--accent-ring);
     border-radius: 100px; padding: 5px 14px;
-    font-size: 12px; font-weight: 600; color: var(--accent); letter-spacing: 0.04em;
+    font-size: 12px; font-weight: 600; color: var(--accent-d2); letter-spacing: 0.04em;
     text-transform: uppercase; margin-bottom: 24px;
   }
   .hero-title {
@@ -117,22 +122,22 @@ function gtag(){dataLayer.push(arguments);}
     position: relative;
     transition: box-shadow 0.2s;
   }
-  .plan-card:hover { box-shadow: 0 4px 20px rgba(15,23,42,0.08); }
+  .plan-card:hover { box-shadow: 0 4px 20px rgba(7,32,43,0.08); }
 
   /* Hero card — Professional */
   .plan-card.hero-plan {
     border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(37,99,235,0.12);
+    box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(0,189,231,0.12);
     padding: 36px 28px;
   }
-  .plan-card.hero-plan:hover { box-shadow: 0 0 0 1px var(--accent), 0 12px 40px rgba(37,99,235,0.18); }
+  .plan-card.hero-plan:hover { box-shadow: 0 0 0 1px var(--accent), 0 12px 40px rgba(0,189,231,0.18); }
 
   .plan-badge {
     display: inline-block; font-size: 11px; font-weight: 700;
     letter-spacing: 0.07em; text-transform: uppercase;
     padding: 3px 10px; border-radius: 20px; margin-bottom: 20px;
   }
-  .plan-badge.popular { background: var(--accent); color: #fff; }
+  .plan-badge.popular { background:var(--accent);color:#04222E; }
   .plan-badge.entry { background: var(--surface-2); color: var(--mid); border: 1px solid var(--border); }
   .plan-badge.scale { background: var(--ink); color: #fff; }
 
@@ -164,12 +169,12 @@ function gtag(){dataLayer.push(arguments);}
 
   .plan-cta {
     display: block; width: 100%; padding: 13px 20px;
-    border-radius: 8px; font-family: var(--sans);
+    border-radius: 999px; font-family: var(--sans);
     font-size: 15px; font-weight: 600; text-align: center;
     text-decoration: none; cursor: pointer; border: none;
     transition: all 0.15s; letter-spacing: -0.1px;
   }
-  .plan-cta.primary { background: var(--accent); color: #fff; }
+  .plan-cta.primary { background:var(--accent);color:#04222E; }
   .plan-cta.primary:hover { background: var(--accent-d); }
   .plan-cta.secondary { background: var(--ink); color: #fff; }
   .plan-cta.secondary:hover { background: var(--ink-2); }
@@ -199,7 +204,7 @@ function gtag(){dataLayer.push(arguments);}
   .compare-table tr:last-child td { border-bottom: none; }
   .check { color: var(--green); font-size: 16px; }
   .dash { color: var(--quiet); }
-  .col-hero { background: rgba(37,99,235,0.03); }
+  .col-hero { background: rgba(0,189,231,0.03); }
 
   /* ── FAQ ── */
   .faq-section { max-width: 680px; margin: 0 auto; padding: 0 24px 96px; }
@@ -246,6 +251,35 @@ function gtag(){dataLayer.push(arguments);}
     footer { padding: 24px 20px; flex-direction: column; align-items: flex-start; }
     .trust-strip { gap: 16px; }
   }
+    /* dark ink on any surface filled with the accent */
+    .plan-badge.popular, .plan-badge.popular * { color: #04222E; }
+    .plan-cta.primary, .plan-cta.primary * { color: #04222E; }
+    .ra-btn-accept, .ra-btn-accept * { color: #04222E; }
+    /* --- contrast corrections ------------------------------------------- */
+    /* accent-coloured links sit on light grounds; use the darker accent */
+    .diff-intro a, .signin-link a, .new-link a, .rp-cta-row a,
+    .article-wrap a, .lead a, .body-copy a { color: var(--accent-d2); }
+    /* anything FILLED with the accent takes dark ink, children included */
+    .cta-block, .cta-block *, .hero-cta, .hero-cta *, .btn-primary, .btn-primary *,
+    .btn, .btn *, .stepnum, .stepnum *, .step-num, .step-num *,
+    .verdict-cta, .verdict-cta *, .ra-btn-accept, .ra-save-btn { color: #04222E; }
+    /* the deficit glyph was a shade light against white */
+    .cross { color: #C63A22; }
+    /* --- final contrast pass --------------------------------------------- */
+    /* element selectors inside an accent-filled block out-specify ".block *" */
+    .cta-block h2, .cta-block h3, .cta-block h4, .cta-block p, .cta-block a,
+    .hero-cta h3, .hero-cta p { color: #04222E; }
+    /* small accent labels that the first sweep missed */
+    .card-eyebrow, .gi-n, .unlock-note, .stat-cap { color: var(--accent-d2); }
+    /* deficit figures need to clear 3:1 against white */
+    .rp-score-pct, .rp-hbar-name, .rp-comp-you { color: #E8452A; }
+    /* the cookie banner sits on a dark ground; its muted text needs to be light */
+    .ra-btn-reject, #ra-cb .ra-cb-text, #ra-cb small, #ra-modal .ra-muted { color: #B9D2DB; }
+    .rp-brand-tag { color: var(--accent-d2); }
+
+
+
+
 </style>
 </head>
 <body>
@@ -533,14 +567,14 @@ function toggleFaq(el) {
 <style>
 #ra-cb-wrap{position:fixed;bottom:0;left:0;right:0;z-index:99999;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
 #ra-cb-wrap.ra-cb-show{transform:translateY(0);}
-#ra-cb{background:#0F172A;border-top:2px solid #2563EB;padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+#ra-cb{background:#07202B;border-top:2px solid #00BDE7;padding:20px 24px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
 #ra-cb-text{flex:1;min-width:220px;}
-#ra-cb-title{font-size:14px;font-weight:600;color:#F8FAFC;margin:0 0 4px;}
-#ra-cb-desc{font-size:12px;color:#94A3B8;margin:0;line-height:1.5;}
-#ra-cb-desc a{color:#60A5FA;text-decoration:none;}
+#ra-cb-title{font-size:14px;font-weight:600;color:#F2F8FA;margin:0 0 4px;}
+#ra-cb-desc{font-size:12px;color:#54707C;margin:0;line-height:1.5;}
+#ra-cb-desc a{color:#4FD8F5;text-decoration:none;}
 #ra-cb-btns{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.ra-btn-accept{background:#2563EB;color:#fff;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
-.ra-btn-reject{background:transparent;color:#94A3B8;border:1px solid #334155;border-radius:6px;padding:9px 16px;font-size:13px;cursor:pointer;}
+.ra-btn-accept{background:#00BDE7;color:#04222E;border:none;border-radius:6px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;}
+.ra-btn-reject{background:transparent;color:#B9D2DB;border:1px solid #24505F;border-radius:6px;padding:9px 16px;font-size:13px;cursor:pointer;}
 </style>
 <div id="ra-cb-wrap">
   <div id="ra-cb">
