@@ -57,16 +57,16 @@ function sendPaymentFailedEmail(toEmail) {
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#F8FAFC;font-family:Inter,system-ui,sans-serif;">
-  <div style="max-width:540px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E2E8F0;">
-    <div style="background:#0B0F1A;padding:28px 36px;">
+<body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
+  <div style="max-width:540px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
+    <div style="background:#07202B;padding:28px 36px;">
       <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:400;color:rgba(255,255,255,0.5);">ACE</span>
     </div>
     <div style="padding:36px;">
-      <p style="font-size:20px;font-weight:700;color:#0B0F1A;margin:0 0 16px;">Payment issue with your subscription</p>
-      <p style="font-size:15px;color:#64748B;line-height:1.7;margin:0 0 16px;">We couldn't process your most recent Active Optimization payment. Your account is still active while we retry, but please update your payment method to avoid any interruption.</p>
-      <a href="https://getcitro.ai/sub-dashboard.html" style="display:inline-block;background:#2563EB;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">Update Payment Method →</a>
-      <p style="font-size:13px;color:#94A3B8;line-height:1.7;margin:0;">If you need help, reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#2563EB;">support@rootpartners.co</a></p>
+      <p style="font-size:20px;font-weight:700;color:#07202B;margin:0 0 16px;">Payment issue with your subscription</p>
+      <p style="font-size:15px;color:#48626E;line-height:1.7;margin:0 0 16px;">We couldn't process your most recent Active Optimization payment. Your account is still active while we retry, but please update your payment method to avoid any interruption.</p>
+      <a href="https://getcitro.ai/sub-dashboard.html" style="display:inline-block;background:#00BDE7;color:#04222E;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">Update Payment Method →</a>
+      <p style="font-size:13px;color:#7E959F;line-height:1.7;margin:0;">If you need help, reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#00BDE7;">support@rootpartners.co</a></p>
     </div>
   </div>
 </body>
