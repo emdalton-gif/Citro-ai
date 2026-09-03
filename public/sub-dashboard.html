@@ -992,7 +992,7 @@ function gtag(){dataLayer.push(arguments);}
           <div class="prop-detail-actions">
             ${canceled ? '' : `<a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-primary" onclick="event.stopPropagation()">Run audit</a>`}
             <a href="/sub-audit.html?propertyId=${prop.id}&editPersonas=1" class="prop-btn-ghost" onclick="event.stopPropagation()">Edit personas</a>
-            <a href="/sub-audit.html?propertyId=${prop.id}" class="prop-btn-ghost" onclick="event.stopPropagation()">View all history →</a>
+            <button type="button" class="prop-btn-ghost prop-history-toggle" style="display:none" onclick="event.stopPropagation()">View all history</button>
           </div>
         </div>
       `;
@@ -1080,14 +1080,33 @@ function gtag(){dataLayer.push(arguments);}
         }
       });
 
-      // Recent runs list (newest first, max 5)
-      runsEl.innerHTML = allRuns.slice(0, 5).map(r => {
-        const sc = r.overallScore;
-        return `<a href="/sub-audit.html?runId=${r.runId}" onclick="event.stopPropagation()">
-          <span>${formatDate(r.createdAt)}</span>
-          <span class="${scoreClass(sc)}" style="font-weight:700">${sc !== null && sc !== undefined ? sc + '%' : '—'}</span>
-        </a>`;
-      }).join('');
+      // Runs list. Shows the 5 most recent; the toggle below reveals the rest.
+      const SHORT = 5;
+      const renderRuns = (all) => {
+        const list = all ? allRuns : allRuns.slice(0, SHORT);
+        runsEl.innerHTML = list.map(r => {
+          const sc = r.overallScore;
+          return `<a href="/sub-audit.html?runId=${r.runId}" onclick="event.stopPropagation()">
+            <span>${formatDate(r.createdAt)}</span>
+            <span class="${scoreClass(sc)}" style="font-weight:700">${sc !== null && sc !== undefined ? sc + '%' : '—'}</span>
+          </a>`;
+        }).join('');
+      };
+      renderRuns(false);
+
+      // Only offer the toggle when there is actually more to see.
+      const histBtn = cardEl.querySelector('.prop-history-toggle');
+      if (histBtn && allRuns.length > SHORT) {
+        let expanded = false;
+        histBtn.textContent = `View all ${allRuns.length} runs`;
+        histBtn.style.display = '';
+        histBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          expanded = !expanded;
+          renderRuns(expanded);
+          histBtn.textContent = expanded ? 'Show fewer runs' : `View all ${allRuns.length} runs`;
+        });
+      }
 
     } catch(e) {
       runsEl.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;">Could not load run history.</p>';
