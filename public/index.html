@@ -842,6 +842,34 @@ function gtag(){dataLayer.push(arguments);}
     .rp-section .section-title { color: #F2F8FA; }
     .rp-section .section-sub                             { color: #9FBDC8; }
     .rp-section .section-label { color: var(--accent); }
+
+    /* --- evidence band: real audit output ------------------------------- */
+    .evidence-section { background: var(--bg); padding: 96px 24px; border-top: 1px solid var(--border); }
+    .ev-lede { font-size: 17px; line-height: 1.7; color: var(--mid); max-width: 62ch; margin: 0 0 40px; }
+    .ev-stats { margin: 0 0 22px; }
+    .ev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .ev-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 26px 24px 22px; }
+    .ev-h { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); margin: 0; }
+    .ev-sub { font-size: 13px; color: var(--mid); margin: 6px 0 20px; }
+    .ev-chart { display: flex; flex-direction: column; gap: 9px; }
+    .ev-row { display: grid; grid-template-columns: minmax(96px,1.15fr) 2fr 34px; align-items: center; gap: 12px; }
+    .ev-name { font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ev-name.ev-zero { color: var(--mid); }
+    .ev-track { height: 9px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+    .ev-fill { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+    .ev-fill-gap { background: var(--coral, #FF6A4D); }
+    .ev-val { font-size: 12.5px; font-family: var(--mono); color: var(--mid); text-align: right; font-variant-numeric: tabular-nums; }
+    .ev-note { font-size: 13px; line-height: 1.6; color: var(--mid); margin: 20px 0 0; padding-top: 16px; border-top: 1px solid var(--border); }
+    .ev-shot { margin: 22px 0 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); }
+    .ev-shot figcaption { font-size: 13.5px; line-height: 1.6; color: var(--mid); padding: 16px 24px 20px; }
+    .ev-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin-top: 34px; }
+    .ev-ghost { font-size: 15px; font-weight: 600; color: var(--accent-d2); text-decoration: none; border-bottom: 1px solid rgba(2,111,139,0.35); padding-bottom: 2px; }
+    .ev-ghost:hover { border-bottom-color: var(--accent-d2); }
+    @media (max-width: 860px) {
+      .evidence-section { padding: 64px 20px; }
+      .ev-grid { grid-template-columns: 1fr; }
+      .ev-row { grid-template-columns: minmax(88px,1fr) 1.6fr 32px; }
+    }
     /* --- final contrast pass --------------------------------------------- */
     /* element selectors inside an accent-filled block out-specify ".block *" */
     .cta-block h2, .cta-block h3, .cta-block h4, .cta-block p, .cta-block a,
@@ -929,45 +957,19 @@ function gtag(){dataLayer.push(arguments);}
     </div>
 
     <!-- REPORT CARD (mock of the actual produced report) -->
-    <div class="finding-card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-        <div style="display:flex;align-items:center;gap:9px;">
-          <div style="width:24px;height:24px;border-radius:7px;background:#00BDE7;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;">C</div>
-          <div style="font-size:14px;font-weight:700;color:#F2F8FA;letter-spacing:-0.2px;">Your Citro Report</div>
-        </div>
-        <div style="font-size:10px;font-family:monospace;letter-spacing:0.12em;text-transform:uppercase;color:rgba(242,248,250,0.5);border:1px solid rgba(242,248,250,0.16);border-radius:6px;padding:4px 9px;">Example</div>
-      </div>
-
-      <!-- SCORE (magnified) -->
-      <div style="background:rgba(0,189,231,0.09);border:1px solid rgba(96,165,250,0.28);border-radius:16px;padding:22px;margin-bottom:16px;">
-        <div style="font-size:11px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4FD8F5;margin-bottom:8px;">Your Citro Score</div>
-        <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
-          <div style="font-size:68px;line-height:0.9;font-weight:800;color:#fff;letter-spacing:-3px;">19<span style="font-size:27px;color:rgba(242,248,250,0.5);font-weight:700;letter-spacing:0;">/100</span></div>
-          <div style="font-size:12px;font-weight:700;color:#FFB3A1;background:rgba(255,106,77,0.14);border-radius:100px;padding:4px 11px;margin-bottom:8px;">Bottom 25% in your category</div>
-        </div>
-        <div style="font-size:13px;color:rgba(242,248,250,0.72);margin-top:12px;line-height:1.55;">AI recommended a competitor first in 3 of 4 buyer simulations. 0 unprompted mentions of you across 7 platforms.</div>
-      </div>
-
-      <!-- 90-DAY PLAN (magnified) -->
-      <div style="background:rgba(242,248,250,0.03);border:1px solid rgba(242,248,250,0.09);border-radius:16px;padding:20px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;">
-          <div style="font-size:11px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;color:rgba(242,248,250,0.6);">Your 90-day plan</div>
-          <div style="font-size:13px;font-weight:800;color:#4FD8F5;">Score 19 → 42</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:11px;">
-          <div style="display:flex;align-items:center;gap:11px;font-size:13px;color:rgba(242,248,250,0.88);"><span style="width:19px;height:19px;border-radius:6px;background:#00BDE7;color:var(--on-accent);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">1</span>Fix the 6 pages AI can't cite<span style="margin-left:auto;font-size:11px;color:rgba(242,248,250,0.45);white-space:nowrap;">Days 1-30</span></div>
-          <div style="display:flex;align-items:center;gap:11px;font-size:13px;color:rgba(242,248,250,0.88);"><span style="width:19px;height:19px;border-radius:6px;background:#00BDE7;color:var(--on-accent);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">2</span>Publish the 3 answers buyers ask AI<span style="margin-left:auto;font-size:11px;color:rgba(242,248,250,0.45);white-space:nowrap;">Days 30-60</span></div>
-          <div style="display:flex;align-items:center;gap:11px;font-size:13px;color:rgba(242,248,250,0.88);"><span style="width:19px;height:19px;border-radius:6px;background:#00BDE7;color:var(--on-accent);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none;">3</span>Re-score and prove the lift<span style="margin-left:auto;font-size:11px;color:rgba(242,248,250,0.45);white-space:nowrap;">Day 90</span></div>
-        </div>
-        <div style="margin-top:16px;">
-          <div style="height:9px;border-radius:100px;background:rgba(242,248,250,0.08);overflow:hidden;position:relative;">
-            <div style="position:absolute;left:0;top:0;height:100%;width:19%;background:rgba(242,248,250,0.28);"></div>
-            <div style="position:absolute;left:19%;top:0;height:100%;width:23%;background:#4FD8F5;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:7px;font-size:10px;color:rgba(242,248,250,0.45);"><span>Today · 19</span><span style="color:#4FD8F5;font-weight:700;">Day 90 target · 42</span></div>
-        </div>
-      </div>
-    </div>
+    <figure class="finding-card" style="margin:0;">
+      <figcaption style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;">
+        <span style="display:flex;align-items:center;gap:9px;">
+          <span style="width:24px;height:24px;border-radius:7px;background:#00BDE7;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#04222E;">C</span>
+          <span style="font-size:14px;font-weight:700;color:#F2F8FA;letter-spacing:-0.2px;">A real Citro report</span>
+        </span>
+        <span style="font-size:10px;font-family:var(--mono);letter-spacing:0.12em;text-transform:uppercase;color:rgba(242,248,250,0.55);border:1px solid rgba(242,248,250,0.16);border-radius:999px;padding:4px 10px;white-space:nowrap;">Sept 2026</span>
+      </figcaption>
+      <img src="/report-score.png" width="1200" height="287" loading="eager" decoding="async"
+           alt="Citro report header: a 6% Citro Score labelled low visibility, alongside 0 high-visibility queries of 8, an average rank of 4.3 when mentioned, and 7 platforms tested across 9 queries."
+           style="display:block;width:100%;height:auto;border-radius:12px;border:1px solid rgba(242,248,250,0.10);">
+      <p style="font-size:12.5px;line-height:1.6;color:rgba(242,248,250,0.62);margin:14px 0 0;">Actual output from a September 2026 audit. Company name withheld.</p>
+    </figure>
   </div>
 </div>
 
@@ -1036,28 +1038,62 @@ function gtag(){dataLayer.push(arguments);}
 </div>
 
 <!-- SOCIAL PROOF -->
-<div class="social-proof">
-  <div class="sp-inner">
-    <div class="sp-label">What Citro does</div>
-    <div class="sp-grid">
-      <div class="sp-item">
-        <div class="sp-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00BDE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
+<!-- WHAT THE REPORT SHOWS — real audit output -->
+<div class="evidence-section" id="what-you-get">
+  <div class="section-inner">
+    <div class="section-label">What the report actually shows</div>
+    <div class="section-title" style="margin-bottom:14px">Every query. Every platform.<br>Every competitor named ahead of you.</div>
+    <p class="ev-lede">Below is real output from a September 2026 audit, with the company name withheld. Nothing here is a mockup.</p>
+
+    <figure class="ev-stats">
+      <img src="/report-stats.png" width="1400" height="240" loading="lazy" decoding="async"
+           alt="Three report metrics: 0 high-visibility queries of 8 organic, an average rank of 4.3 when mentioned across 3 mentions, and 7 platforms tested across 9 queries."
+           style="display:block;width:100%;height:auto;">
+    </figure>
+
+    <div class="ev-grid">
+      <div class="ev-card">
+        <h3 class="ev-h">Who AI recommends instead of you</h3>
+        <p class="ev-sub">Times each brand was named across 9 buyer queries</p>
+        <div class="ev-chart">
+          <div class="ev-row"><span class="ev-name">Fisdap</span><span class="ev-track"><span class="ev-fill" style="width:77.8%"></span></span><span class="ev-val">7</span></div>
+          <div class="ev-row"><span class="ev-name">EMT National Training</span><span class="ev-track"><span class="ev-fill" style="width:55.6%"></span></span><span class="ev-val">5</span></div>
+          <div class="ev-row"><span class="ev-name">Pocket Prep</span><span class="ev-track"><span class="ev-fill" style="width:55.6%"></span></span><span class="ev-val">5</span></div>
+          <div class="ev-row"><span class="ev-name">Limmer Education</span><span class="ev-track"><span class="ev-fill" style="width:33.3%"></span></span><span class="ev-val">3</span></div>
+          <div class="ev-row"><span class="ev-name">EMS Testing</span><span class="ev-track"><span class="ev-fill" style="width:22.2%"></span></span><span class="ev-val">2</span></div>
+          <div class="ev-row"><span class="ev-name">Kaplan EMT Prep</span><span class="ev-track"><span class="ev-fill" style="width:11.1%"></span></span><span class="ev-val">1</span></div>
+          <div class="ev-row"><span class="ev-name">Union Test Prep</span><span class="ev-track"><span class="ev-fill" style="width:11.1%"></span></span><span class="ev-val">1</span></div>
+          <div class="ev-row"><span class="ev-name">MedicTests</span><span class="ev-track"><span class="ev-fill" style="width:11.1%"></span></span><span class="ev-val">1</span></div>
         </div>
-        <div class="sp-text">Builds editable buyer personas specific to your company, then asks AI the questions those buyers actually ask. Simulation of real buyers, not keyword monitoring.</div>
       </div>
-      <div class="sp-item">
-        <div class="sp-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00BDE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+
+      <div class="ev-card">
+        <h3 class="ev-h">Your visibility by AI platform</h3>
+        <p class="ev-sub">Share of queries where the brand appeared at all</p>
+        <div class="ev-chart">
+          <div class="ev-row"><span class="ev-name">Perplexity</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:25%"></span></span><span class="ev-val">25%</span></div>
+          <div class="ev-row"><span class="ev-name">Google Gemini</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:25%"></span></span><span class="ev-val">25%</span></div>
+          <div class="ev-row"><span class="ev-name ev-zero">ChatGPT</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:1.2%"></span></span><span class="ev-val">0%</span></div>
+          <div class="ev-row"><span class="ev-name ev-zero">Claude</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:1.2%"></span></span><span class="ev-val">0%</span></div>
+          <div class="ev-row"><span class="ev-name ev-zero">Microsoft Copilot</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:1.2%"></span></span><span class="ev-val">0%</span></div>
+          <div class="ev-row"><span class="ev-name ev-zero">Grok</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:1.2%"></span></span><span class="ev-val">0%</span></div>
+          <div class="ev-row"><span class="ev-name ev-zero">Meta AI</span><span class="ev-track"><span class="ev-fill ev-fill-gap" style="width:1.2%"></span></span><span class="ev-val">0%</span></div>
         </div>
-        <div class="sp-text">Scores where you rank and get recommended across all 7 platforms (ChatGPT, Perplexity, Gemini, Claude, Copilot, Meta AI, Grok), head to head against your named competitors.</div>
+        <p class="ev-note">Absent from five of seven platforms. This is the gap most brands do not know they have.</p>
       </div>
-      <div class="sp-item">
-        <div class="sp-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00BDE7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        </div>
-        <div class="sp-text">Hands back a build plan drawn from your own website, code, and market, sequenced over 30 to 90 days to move your score. A plan you can ship, not a checklist.</div>
-      </div>
+    </div>
+
+    <figure class="ev-shot">
+      <img src="/report-cards.png" width="1400" height="429" loading="lazy" decoding="async"
+           alt="Competitive analysis section of a Citro report explaining that Fisdap, EMT National Training and Pocket Prep lead AI recommendations because of review platform presence, citation volume and structured data coverage."
+           style="display:block;width:100%;height:auto;">
+      <figcaption>The report names who is winning and explains why, then hands back a 90-day plan built from your own site and market.</figcaption>
+    </figure>
+
+    <div class="ev-cta">
+      <a href="/start.html" class="btn-hero">Build your report free</a>
+      <a href="/sample-audit.html" class="ev-ghost">See a full sample report</a>
     </div>
   </div>
 </div>
@@ -1172,71 +1208,6 @@ function gtag(){dataLayer.push(arguments);}
 
 
 <!-- BUYER PERSONAS -->
-<div class="persona-section">
-  <div class="persona-hd">
-    <div class="persona-label">Synthetic buyer simulation</div>
-    <div class="persona-title">We don't check your brand.<br>We simulate your buyers.</div>
-    <p class="persona-sub">Every audit constructs personas based on your actual market — their role, company size, buying stage, and the exact queries they run. Here's what that looks like.</p>
-  </div>
-  <div class="persona-grid">
-
-    <div class="persona-card">
-      <div class="pc-header">
-        <div class="pc-avatar">👤</div>
-        <div class="pc-identity">
-          <div class="pc-role">Director of Demand Gen</div>
-          <div class="pc-company">Series B SaaS · 220 employees<br>Evaluating vendors for Q3 budget</div>
-        </div>
-      </div>
-      <div class="pc-query-wrap">
-        <div class="pc-query-label">Query run across 7 AI platforms</div>
-        <div class="pc-query-bubble">"What are the best [category] platforms for a fast-growing B2B company? Looking for something that integrates with Salesforce."</div>
-      </div>
-      <div class="pc-footer">
-        <span class="pc-result-label">Your brand in response:</span>
-        <span class="pc-result-val missing">Not mentioned</span>
-      </div>
-    </div>
-
-    <div class="persona-card">
-      <div class="pc-header">
-        <div class="pc-avatar">👤</div>
-        <div class="pc-identity">
-          <div class="pc-role">VP of Marketing</div>
-          <div class="pc-company">Enterprise Financial Services · F500<br>Running a formal vendor evaluation</div>
-        </div>
-      </div>
-      <div class="pc-query-wrap">
-        <div class="pc-query-label">Query run across 7 AI platforms</div>
-        <div class="pc-query-bubble">"Which [category] vendors do Fortune 500 companies use? Need enterprise security compliance and dedicated support."</div>
-      </div>
-      <div class="pc-footer">
-        <span class="pc-result-label">Your brand in response:</span>
-        <span class="pc-result-val">Competitor named first</span>
-      </div>
-    </div>
-
-    <div class="persona-card">
-      <div class="pc-header">
-        <div class="pc-avatar">👤</div>
-        <div class="pc-identity">
-          <div class="pc-role">Founder / CEO</div>
-          <div class="pc-company">Pre-revenue startup · 12 employees<br>Researching before first sales push</div>
-        </div>
-      </div>
-      <div class="pc-query-wrap">
-        <div class="pc-query-label">Query run across 7 AI platforms</div>
-        <div class="pc-query-bubble">"What's the best [category] tool for an early-stage startup? What do other founders recommend in 2026?"</div>
-      </div>
-      <div class="pc-footer">
-        <span class="pc-result-label">Your brand in response:</span>
-        <span class="pc-result-val missing">Not mentioned</span>
-      </div>
-    </div>
-
-  </div>
-  <div class="persona-callout">Personas are constructed fresh for every audit, based on your company and your actual buyers, and they are yours to see, edit, and evolve.</div>
-</div>
 
 <!-- WHO THIS IS FOR -->
 <div class="for-section">
@@ -1257,34 +1228,6 @@ function gtag(){dataLayer.push(arguments);}
 </div>
 
 <!-- WHAT YOU GET -->
-<div class="deliverables-section">
-  <div style="max-width:1120px;margin:0 auto;">
-    <div class="section-label">What's included</div>
-    <div class="section-title">Everything you need to<br>compete in AI search.</div>
-  </div>
-  <div class="deliverables">
-    <div class="deliverable">
-      <div class="del-icon">◎</div>
-      <div class="del-title">Citro Score</div>
-      <div class="del-desc">A weighted score (0–100%) measuring how prominently your brand appears across all platforms and query types — benchmarked against your named competitors.</div>
-    </div>
-    <div class="deliverable">
-      <div class="del-icon">◈</div>
-      <div class="del-title">Synthetic Buyer Simulations</div>
-      <div class="del-desc">Buyer personas that simulate your exact buyer actively researching your category — blind, with no brand signaling, across multiple buying stages.</div>
-    </div>
-    <div class="deliverable">
-      <div class="del-icon">◇</div>
-      <div class="del-title">Competitive Intelligence</div>
-      <div class="del-desc">See exactly which competitors AI recommends instead of you, how often, and why — including structural analysis of what gives them the advantage.</div>
-    </div>
-    <div class="deliverable">
-      <div class="del-icon">◉</div>
-      <div class="del-title">90-Day Action Roadmap</div>
-      <div class="del-desc">A build plan drawn from your actual website, code, and market, sequenced across content, technical, and distribution with effort and impact ratings. Specific enough to assign and ship, not a generic checklist.</div>
-    </div>
-  </div>
-</div>
 
 <!-- FAQ -->
 <div class="faq-section">
@@ -1343,142 +1286,6 @@ function gtag(){dataLayer.push(arguments);}
 </div>
 
 <!-- SAMPLE REPORT PREVIEW -->
-<div class="section rp-section">
-  <div class="section-inner">
-    <div class="section-label">What you get</div>
-    <div class="section-title">Here's exactly what your Citro looks like</div>
-    <p class="section-sub">Your score, a platform-by-platform breakdown, who's beating you and why, and a prioritized 90-day plan — delivered in under 5 minutes.</p>
-
-    <div class="rp-window">
-      <!-- Header -->
-      <div class="rp-head">
-        <div>
-          <div class="rp-brand-tag">Citro</div>
-          <div class="rp-co-name">Your Company</div>
-          <div class="rp-date-line">Citro Audit · May 2026</div>
-        </div>
-        <div class="rp-score-pill">
-          <span class="rp-score-pct">11%</span>
-          <span class="rp-score-lbl">Citro Score</span>
-        </div>
-      </div>
-
-      <!-- Key finding -->
-      <div class="rp-kf">
-        <div class="rp-kf-label">KEY FINDING</div>
-        <p class="rp-kf-text">Your Company is absent from 8 of 10 AI advisory queries in your category — ceding direct sales opportunities to Competitor A, Competitor B, and Competitor C.</p>
-      </div>
-
-      <!-- Charts row -->
-      <div class="rp-charts-row">
-        <!-- Score overview -->
-        <div class="rp-chart-card">
-          <div class="rp-chart-title">SCORE OVERVIEW</div>
-          <div class="rp-donut-wrap">
-            <svg viewBox="0 0 120 120" width="110" height="110">
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#D7E7ED" stroke-width="14"/>
-              <circle cx="60" cy="60" r="45" fill="none" stroke="#FF6A4D" stroke-width="14" stroke-dasharray="31.1 251.6" stroke-linecap="round" transform="rotate(-90 60 60)"/>
-              <text x="60" y="55" text-anchor="middle" font-size="21" font-weight="700" fill="#FF6A4D">11%</text>
-              <text x="60" y="69" text-anchor="middle" font-size="9" fill="#54707C">score</text>
-            </svg>
-          </div>
-          <div class="rp-score-lines">
-            <div class="rp-score-line"><span>Current</span><strong style="color:#C63A22">11%</strong></div>
-            <div class="rp-score-line"><span>Projected</span><strong style="color:#026F8B">48%</strong></div>
-          </div>
-          <p class="rp-score-note">With structured schema and targeted AI-optimized content, you can realistically reach a 48% Citro score within 90 days by closing the most critical content and technical gaps.</p>
-        </div>
-
-        <!-- Platform bar chart -->
-        <div class="rp-chart-card">
-          <div class="rp-chart-title">QUERY RESULTS BY PLATFORM</div>
-          <div class="rp-vbars" style="align-items:flex-end;height:100px;">
-            <div class="rp-vbar-col">
-              <div class="rp-vbar-stack" style="height:72px;">
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-              </div>
-              <div class="rp-vbar-lbl">Perplexity</div>
-            </div>
-            <div class="rp-vbar-col">
-              <div class="rp-vbar-stack" style="height:72px;">
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-                <div class="rp-vbar-seg" style="height:24px;background:#FF9366;"></div>
-              </div>
-              <div class="rp-vbar-lbl">Google Gemini</div>
-            </div>
-            <div class="rp-vbar-col">
-              <div class="rp-vbar-stack" style="height:72px;">
-                <div class="rp-vbar-seg" style="height:24px;background:#FF6A4D;"></div>
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-              </div>
-              <div class="rp-vbar-lbl">ChatGPT</div>
-            </div>
-            <div class="rp-vbar-col">
-              <div class="rp-vbar-stack" style="height:72px;"></div>
-              <div class="rp-vbar-lbl">Claude</div>
-            </div>
-            <div class="rp-vbar-col">
-              <div class="rp-vbar-stack" style="height:72px;">
-                <div class="rp-vbar-seg" style="height:24px;background:#D7E7ED;"></div>
-              </div>
-              <div class="rp-vbar-lbl">MS Copilot</div>
-            </div>
-          </div>
-          <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;">
-            <span style="font-size:10px;color:#48626E;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;background:#026F8B;border-radius:2px;"></span>High</span>
-            <span style="font-size:10px;color:#48626E;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;background:#FF9366;border-radius:2px;"></span>Medium</span>
-            <span style="font-size:10px;color:#48626E;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;background:#FF6A4D;border-radius:2px;"></span>Low</span>
-            <span style="font-size:10px;color:#48626E;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;background:#D7E7ED;border-radius:2px;"></span>None</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Competitor mentions -->
-      <div class="rp-comp-section">
-        <div class="rp-chart-title">COMPETITOR MENTIONS</div>
-        <div class="rp-hbars">
-          <div class="rp-hbar-row"><div class="rp-hbar-name">Competitor A</div><div class="rp-hbar-track"><div class="rp-hbar-fill" style="width:100%;"></div></div></div>
-          <div class="rp-hbar-row"><div class="rp-hbar-name">Competitor B</div><div class="rp-hbar-track"><div class="rp-hbar-fill" style="width:82%;"></div></div></div>
-          <div class="rp-hbar-row"><div class="rp-hbar-name">Competitor C</div><div class="rp-hbar-track"><div class="rp-hbar-fill" style="width:67%;"></div></div></div>
-          <div class="rp-hbar-row"><div class="rp-hbar-name">Competitor D</div><div class="rp-hbar-track"><div class="rp-hbar-fill" style="width:50%;"></div></div></div>
-          <div class="rp-hbar-row"><div class="rp-hbar-name" style="color:#FF6A4D;font-weight:600;">Your Company</div><div class="rp-hbar-track"><div class="rp-hbar-fill you" style="width:18%;"></div></div></div>
-        </div>
-      </div>
-
-      <!-- 90-day roadmap -->
-      <div class="rp-roadmap">
-        <div class="rp-rm-col">
-          <div class="rp-rm-phase">DAYS 1–30</div>
-          <div class="rp-rm-title">Technical Foundation</div>
-          <div class="rp-rm-item">Deploy structured schema markup across core pages</div>
-          <div class="rp-rm-item">Publish llms.txt and canonical brand brief</div>
-          <div class="rp-rm-item">Consolidate site architecture for AI crawler clarity</div>
-        </div>
-        <div class="rp-rm-col">
-          <div class="rp-rm-phase">DAYS 31–60</div>
-          <div class="rp-rm-title">Content and Visibility</div>
-          <div class="rp-rm-item">Publish AI-optimized comparison and FAQ pages</div>
-          <div class="rp-rm-item">Create buyer-intent landing pages for high-absence queries</div>
-          <div class="rp-rm-item">Target the three competitor queries you're losing most</div>
-        </div>
-        <div class="rp-rm-col">
-          <div class="rp-rm-phase">DAYS 61–90</div>
-          <div class="rp-rm-title">Distribution and Measurement</div>
-          <div class="rp-rm-item">Syndicate citations to third-party review sources</div>
-          <div class="rp-rm-item">Launch structured affiliate and partner content</div>
-          <div class="rp-rm-item">Implement Citro score tracking across all query categories</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="rp-cta-row">
-      <a href="/sample-audit.html" style="color:var(--accent);font-weight:600;text-decoration:none;font-size:15px;">See the full sample report →</a>
-    </div>
-  </div>
-</div>
 
 <!-- PRICING -->
 <div class="section" id="pricing">
