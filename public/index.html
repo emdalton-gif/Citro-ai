@@ -574,7 +574,8 @@ function gtag(){dataLayer.push(arguments);}
       .hero { padding: 44px 22px 52px; }
       .hero-inner { grid-template-columns: 1fr; gap: 32px; }
       .finding-card { order: 2; }              /* headline + CTA lead; the proof card follows */
-      .hero-bullets { display: none; }          /* trim density for a cleaner mobile first impression */
+      .hero-bullets { display: flex; gap: 8px; margin-bottom: 26px; }
+      .hero-bullets li { font-size: 15px; }          /* trim density for a cleaner mobile first impression */
       .hero-testimonial { display: none; }
       .hero-title { font-size: 38px; }
       .hero-sub { font-size: 16px; margin-bottom: 26px; }
@@ -843,6 +844,57 @@ function gtag(){dataLayer.push(arguments);}
     .rp-section .section-sub                             { color: #9FBDC8; }
     .rp-section .section-label { color: var(--accent); }
 
+
+    /* --- hero visual: layered, light-on-dark, fills the column ------------ */
+    .hero { background:
+        radial-gradient(1100px 620px at 74% 42%, rgba(0,189,231,0.14), transparent 62%),
+        linear-gradient(158deg, #0B2A38 0%, #07202B 52%, #051A23 100%) !important;
+      padding: 84px 56px 80px !important; }
+    .hero-inner { max-width: 1200px !important; grid-template-columns: 1.08fr 1fr !important; gap: 60px !important; }
+    .hero-title { font-size: 54px; text-wrap: balance; }
+    .hero-sub { margin-bottom: 26px; }
+    .hero-bullets { margin-bottom: 30px; }
+
+    .hero-visual { position: relative; padding: 22px 0 168px 0; }
+    .hv-main { margin: 0; background: #FFFFFF; border-radius: 16px; padding: 16px 16px 18px;
+      box-shadow: 0 34px 78px -30px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.25);
+      transform: translateX(9%); }
+    .hv-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 2px 4px 13px; }
+    .hv-brand { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; color: #07202B; letter-spacing: -0.01em; }
+    .hv-dot { width: 21px; height: 21px; border-radius: 6px; background: #00BDE7; color: #04222E;
+      font-size: 11.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+    .hv-date { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #54707C; border: 1px solid #D7E7ED; border-radius: 999px; padding: 4px 9px; white-space: nowrap; }
+    .hv-img { display: block; width: 100%; height: auto; border-radius: 10px; }
+
+    /* the floating panel clears the card's lower edge instead of covering it */
+    .hv-float { position: absolute; left: 0; bottom: 0; width: 76%;
+      background: #FFFFFF; border-radius: 14px; padding: 17px 19px 15px;
+      box-shadow: 0 36px 84px -26px rgba(0,0,0,0.88), 0 2px 8px rgba(0,0,0,0.3); }
+    .hv-float-h { font-size: 13px; font-weight: 700; color: #07202B; letter-spacing: -0.01em; margin-bottom: 12px; }
+    .hv-row { display: grid; grid-template-columns: 96px 1fr 30px; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .hv-row:last-child { margin-bottom: 0; }
+    .hv-n { font-size: 11.5px; color: #24505F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hv-t { height: 7px; border-radius: 999px; background: #E9F3F6; overflow: hidden; }
+    .hv-f { display: block; height: 100%; border-radius: 999px; background: #FF6A4D; }
+    .hv-v { font-family: var(--mono); font-size: 10.5px; color: #54707C; text-align: right; font-variant-numeric: tabular-nums; }
+
+    /* the chip rides the card's top edge, clear of the score */
+    .hv-chip { position: absolute; left: 2%; top: 6px; z-index: 3;
+      background: #07202B; color: #F2F8FA; border: 1px solid rgba(0,189,231,0.4);
+      border-radius: 999px; padding: 9px 17px; font-size: 12.5px; letter-spacing: -0.01em;
+      box-shadow: 0 20px 44px -14px rgba(0,0,0,0.9); white-space: nowrap; }
+    .hv-chip strong { color: #00BDE7; font-weight: 800; }
+
+    @media (max-width: 1180px) { .hero-title { font-size: 46px; } .hv-chip { font-size: 11.5px; padding: 8px 14px; } }
+    @media (max-width: 960px) {
+      .hero-inner { grid-template-columns: 1fr !important; gap: 30px !important; }
+      .hero { padding: 44px 22px 56px !important; }
+      .hero-visual { padding: 26px 0 0; }
+      .hv-main { transform: none; }
+      .hv-float { position: static; width: auto; margin-top: 14px; }
+      .hv-chip { left: 0; top: 0; }
+    }
     /* --- evidence band: real audit output ------------------------------- */
     .evidence-section { background: var(--bg); padding: 96px 24px; border-top: 1px solid var(--border); }
     .ev-lede { font-size: 17px; line-height: 1.7; color: var(--mid); max-width: 62ch; margin: 0 0 40px; }
@@ -926,7 +978,7 @@ function gtag(){dataLayer.push(arguments);}
         <span class="hero-eyebrow-dot"></span>
         AI citation intelligence, built for marketers
       </div>
-      <h1 class="hero-title">See what AI tells <br>your buyers.<br><span class="accent">Then be the brand<br>it recommends.</span></h1>
+      <h1 class="hero-title">See what AI tells <br>your buyers. <br><span class="accent">Then be the brand <br>it recommends.</span></h1>
       <p class="hero-sub">Not a generic visibility score. The real picture:</p>
       <ul class="hero-bullets">
         <li>Your real buyers, asking AI what they actually ask</li>
@@ -938,38 +990,33 @@ function gtag(){dataLayer.push(arguments);}
         <a href="/sample-audit.html" class="btn-hero-ghost">See a sample report</a>
       </div>
       <div class="hero-nocard" style="margin-top:12px;font-size:13px;color:rgba(242,248,250,0.55);font-weight:500;">7-day free trial. No charge today. Cancel anytime.</div>
-      <div class="hero-platforms" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;align-items:center;">
-        <span style="font-size:12px;color:rgba(242,248,250,0.45);font-weight:600;letter-spacing:0.03em;">Checks all 7:</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">ChatGPT</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">Perplexity</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">Gemini</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">Claude</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">Copilot</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">Meta AI</span>
-        <span style="font-size:12px;color:rgba(242,248,250,0.82);background:rgba(242,248,250,0.06);border:1px solid rgba(242,248,250,0.13);border-radius:100px;padding:4px 11px;">Grok</span>
-      </div>
-      <div class="hero-trust-inline">
-        <div class="hti-item"><span class="hti-icon">⚡</span> Results in 5 minutes or less</div>
-        <div class="hti-item"><span class="hti-icon">🔒</span> No calls, no setup</div>
-        <div class="hti-item"><span class="hti-icon">📊</span> 7 platforms, 1 report</div>
-        <div class="hti-item"><span class="hti-icon">✓</span> Edit or upload your own personas</div>
-      </div>
     </div>
 
     <!-- REPORT CARD (mock of the actual produced report) -->
-    <figure class="finding-card" style="margin:0;">
-      <figcaption style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;">
-        <span style="display:flex;align-items:center;gap:9px;">
-          <span style="width:24px;height:24px;border-radius:7px;background:#00BDE7;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#04222E;">C</span>
-          <span style="font-size:14px;font-weight:700;color:#F2F8FA;letter-spacing:-0.2px;">A real Citro report</span>
-        </span>
-        <span style="font-size:10px;font-family:var(--mono);letter-spacing:0.12em;text-transform:uppercase;color:rgba(242,248,250,0.55);border:1px solid rgba(242,248,250,0.16);border-radius:999px;padding:4px 10px;white-space:nowrap;">Sept 2026</span>
-      </figcaption>
-      <img src="/report-score.png" width="1200" height="287" loading="eager" decoding="async"
-           alt="Citro report header: a 6% Citro Score labelled low visibility, alongside 0 high-visibility queries of 8, an average rank of 4.3 when mentioned, and 7 platforms tested across 9 queries."
-           style="display:block;width:100%;height:auto;border-radius:12px;border:1px solid rgba(242,248,250,0.10);">
-      <p style="font-size:12.5px;line-height:1.6;color:rgba(242,248,250,0.62);margin:14px 0 0;">Actual output from a September 2026 audit. Company name withheld.</p>
-    </figure>
+    <div class="hero-visual">
+      <figure class="hv-main">
+        <figcaption class="hv-head">
+          <span class="hv-brand"><span class="hv-dot">C</span> A real Citro report</span>
+          <span class="hv-date">Sept 2026</span>
+        </figcaption>
+        <img src="/report-score.png" width="1200" height="287" fetchpriority="high" decoding="async"
+             alt="Citro report score panel showing a 6% Citro Score, marked low visibility, below the competitive threshold."
+             class="hv-img">
+      </figure>
+
+      <div class="hv-float">
+        <div class="hv-float-h">Visibility by AI platform</div>
+          <div class="hv-row"><span class="hv-n">Perplexity</span><span class="hv-t"><span class="hv-f" style="width:25%"></span></span><span class="hv-v">25%</span></div>
+          <div class="hv-row"><span class="hv-n">Google Gemini</span><span class="hv-t"><span class="hv-f" style="width:25%"></span></span><span class="hv-v">25%</span></div>
+          <div class="hv-row"><span class="hv-n">ChatGPT</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
+          <div class="hv-row"><span class="hv-n">Claude</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
+          <div class="hv-row"><span class="hv-n">Microsoft Copilot</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
+          <div class="hv-row"><span class="hv-n">Grok</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
+          <div class="hv-row"><span class="hv-n">Meta AI</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
+      </div>
+
+      <div class="hv-chip"><strong>5 of 7</strong> platforms never mention them</div>
+    </div>
   </div>
 </div>
 
