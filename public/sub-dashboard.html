@@ -130,6 +130,35 @@ function gtag(){dataLayer.push(arguments);}
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* BILLING LINK */
+
+    /* --- account strip ---------------------------------------------------- */
+    .acct-strip { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 20px;
+      background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px 22px; margin: -20px 0 36px; }
+    .acct-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.11em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+    .acct-value { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600;
+      color: var(--ink); letter-spacing: -0.01em; min-height: 24px; overflow-wrap: anywhere; }
+    .acct-edit { background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+      font-size: 12.5px; font-weight: 500; color: var(--accent-d2, #026F8B);
+      border-bottom: 1px solid rgba(2,111,139,0.35); }
+    .acct-edit:hover { border-bottom-color: currentColor; }
+    .acct-note { font-size: 12.5px; line-height: 1.55; color: var(--muted); margin-top: 6px; }
+    .acct-edit-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .acct-edit-form input { flex: 1 1 150px; min-width: 0; font: inherit; font-size: 14px; font-weight: 500;
+      padding: 7px 10px; border: 1px solid var(--border); border-radius: 7px; background: #fff; color: var(--ink); }
+    .acct-edit-form input:focus-visible { outline: 2px solid var(--accent, #00BDE7); outline-offset: 1px; }
+    .acct-save { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 14px; border: 0;
+      border-radius: 999px; background: var(--accent, #00BDE7); color: #04222E; cursor: pointer; }
+    .acct-save[disabled] { opacity: 0.55; cursor: default; }
+    .acct-cancel { font: inherit; font-size: 13px; font-weight: 500; padding: 7px 10px; border: 0;
+      background: none; color: var(--muted); cursor: pointer; }
+    .acct-msg { font-size: 12.5px; margin-top: 7px; min-height: 1em; }
+    .acct-msg.err { color: #C63A22; }
+    .acct-msg.ok { color: var(--accent-d2, #026F8B); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    @media (max-width: 760px) { .acct-strip { grid-template-columns: 1fr; gap: 18px; margin-top: -8px; } }
     .billing-row { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     .billing-text { font-size: 14px; color: var(--muted); }
     .billing-link { font-size: 14px; color: var(--accent); text-decoration: none; font-weight: 500; }
@@ -349,6 +378,38 @@ function gtag(){dataLayer.push(arguments);}
       <a href="/sub-audit.html" class="run-btn" id="runBtn">+ Run new audit</a>
     </div>
 
+    <!-- Account strip: company name, sign-in email, plan, billing -->
+    <div class="acct-strip">
+      <div class="acct-field">
+        <div class="acct-label">Account name</div>
+        <div class="acct-value" id="acctNameRow">
+          <span id="acctNameText">—</span>
+          <button type="button" class="acct-edit" id="acctNameEdit" aria-label="Edit account name">Edit</button>
+        </div>
+        <form class="acct-edit-form" id="acctNameForm" hidden>
+          <label class="sr-only" for="acctNameInput">Account name</label>
+          <input id="acctNameInput" type="text" maxlength="60" autocomplete="organization">
+          <button type="submit" class="acct-save" id="acctNameSave">Save</button>
+          <button type="button" class="acct-cancel" id="acctNameCancel">Cancel</button>
+        </form>
+        <div class="acct-msg" id="acctNameMsg" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="acct-field">
+        <div class="acct-label">Sign-in email</div>
+        <div class="acct-value"><span id="acctEmailText">—</span></div>
+        <div class="acct-note">To change this, email
+          <a href="mailto:support@getcitro.ai?subject=Change%20account%20email" class="billing-link">support@getcitro.ai</a>.
+          It keys your audit history, so we move it for you.</div>
+      </div>
+
+      <div class="acct-field">
+        <div class="acct-label">Plan</div>
+        <div class="acct-value"><span id="acctPlanText">—</span></div>
+        <div class="acct-note"><a href="#" class="billing-link" id="billingPortalLink">Billing portal &rarr;</a></div>
+      </div>
+    </div>
+
     <div class="stats-row" id="statsRow">
       <div class="stat-card">
         <div class="stat-label">Total runs</div>
@@ -406,8 +467,7 @@ function gtag(){dataLayer.push(arguments);}
     </div>
 
     <div class="billing-row">
-      <span class="billing-text">Manage your subscription, update payment method, or cancel.</span>
-      <a href="#" class="billing-link" id="billingPortalLink">Billing portal →</a>
+      <span class="billing-text">Manage your subscription, update payment method, or cancel from the billing portal above.</span>
     </div>
     <div class="billing-text" style="margin-top:10px;">
       Need help or want to cancel? Email <a href="mailto:support@getcitro.ai" class="billing-link">support@getcitro.ai</a> and we'll take care of it the same day.
@@ -481,6 +541,57 @@ function gtag(){dataLayer.push(arguments);}
     localStorage.removeItem('sub_email');
     window.location.href = '/sub-login.html';
   });
+
+
+  // ---- account strip -----------------------------------------------------
+  // Company name is editable; email is not (it keys every Redis record and the
+  // Stripe customer, so a change is a migration and goes through support).
+  (function accountStrip() {
+    const row = document.getElementById('acctNameRow');
+    const form = document.getElementById('acctNameForm');
+    const text = document.getElementById('acctNameText');
+    const input = document.getElementById('acctNameInput');
+    const save = document.getElementById('acctNameSave');
+    const msg = document.getElementById('acctNameMsg');
+    if (!row || !form) return;
+
+    function show(kind, note) { msg.className = 'acct-msg ' + (kind || ''); msg.textContent = note || ''; }
+    function open() {
+      input.value = (text.textContent || '').trim() === '—' ? '' : text.textContent.trim();
+      row.hidden = true; form.hidden = false; show(); input.focus(); input.select();
+    }
+    function close() { form.hidden = true; row.hidden = false; }
+
+    document.getElementById('acctNameEdit').addEventListener('click', open);
+    document.getElementById('acctNameCancel').addEventListener('click', () => { close(); show(); });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); show(); } });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const value = input.value.trim().replace(/\s+/g, ' ');
+      if (!value) { show('err', 'Enter an account name.'); return; }
+      if (value.length > 60) { show('err', 'Keep it to 60 characters or fewer.'); return; }
+      save.disabled = true; save.textContent = 'Saving…'; show();
+      try {
+        const resp = await fetch('/api/sub-update-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ companyName: value }),
+        });
+        const out = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(out.error || 'Could not save that.');
+        text.textContent = out.companyName;
+        const h1 = document.querySelector('.top-row h1');
+        if (h1) h1.textContent = out.companyName;
+        close(); show('ok', 'Saved.');
+        setTimeout(() => show(), 2600);
+      } catch (err) {
+        show('err', err.message + ' Try again, or email support@getcitro.ai.');
+      } finally {
+        save.disabled = false; save.textContent = 'Save';
+      }
+    });
+  })();
 
   // Billing portal — must NEVER fail silently. If Stripe can't open the portal,
   // surface a clear support path so a subscriber is never stranded.
@@ -1165,7 +1276,21 @@ function gtag(){dataLayer.push(arguments);}
       // For Enterprise: use the account-level profile (set during onboarding),
       // NOT a property name. Properties have their own names on their tiles.
       const companyName = data.profile?.company_name || data.profile?.name;
-      if (companyName && !isEnterprise) {
+      const nameWasChosen = data.profile?.company_name_set === true;
+
+      // Fill the account strip
+      const acctNameText = document.getElementById('acctNameText');
+      if (acctNameText) acctNameText.textContent = companyName || 'Not set';
+      const acctEmailText = document.getElementById('acctEmailText');
+      if (acctEmailText) acctEmailText.textContent = data.email || email || '—';
+      const acctPlanText = document.getElementById('acctPlanText');
+      if (acctPlanText) acctPlanText.textContent = isEnterprise ? 'Enterprise' : 'Professional';
+
+      if (companyName && nameWasChosen) {
+        // The subscriber set this deliberately, so it always wins
+        const h1 = document.querySelector('.top-row h1');
+        if (h1) h1.textContent = companyName;
+      } else if (companyName && !isEnterprise) {
         // Professional: show their company name as the heading
         const h1 = document.querySelector('.top-row h1');
         if (h1) h1.textContent = companyName;
