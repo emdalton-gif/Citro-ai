@@ -315,11 +315,15 @@ function gtag(){dataLayer.push(arguments);}
     /* ── PRINT ── */
     @page {
       size: letter;
-      /* Zero page margin is what suppresses the browser-generated header
-         (date + document title) and footer (URL + page number). Any non-zero
-         margin gives Chrome/Safari room to draw them. Real margins are put
-         back below with padding on .wrap. */
-      margin: 0;
+      /* Margins have to live HERE, not as padding on .wrap. Padding on one
+         tall element is applied once at its start and once at its end, so
+         with margin:0 every page between the first and the last had zero
+         top and bottom margin and the text ran straight off the paper.
+         Trade-off: a non-zero margin gives the browser room to draw its own
+         header/footer if the reader has that checkbox ticked in the print
+         dialog. Unticking it is one click; text sliced by the page edge on
+         every interior page is not fixable by the reader. */
+      margin: 0.5in 0.6in 0.55in 0.6in;
     }
     @media print {
       nav, .back-btn, .run-btn, button, #save-status, .nav-back,
@@ -334,9 +338,58 @@ function gtag(){dataLayer.push(arguments);}
       #ra-cb-wrap, #ra-cb, #ra-modal-overlay, #ra-modal { display: none !important; }
       #screen-results { display: block !important; }
       html, body { margin: 0 !important; padding: 0 !important; }
-      .wrap { max-width: 100% !important; margin: 0 !important; padding: 0.5in 0.65in !important; }
+      .wrap { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
       .score-strip { background: #07202B !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .result-section { break-inside: avoid; page-break-inside: avoid; margin-bottom: 0.3in; }
+
+      /* ── PAGINATION ────────────────────────────────────────────────────
+         Sections used to carry break-inside:avoid. Two failure modes came
+         out of that. A section that merely didn't FIT in the space left on
+         a page jumped whole to the next one, leaving the bottom third of
+         pages 1-3 empty. And a section TALLER than a page (Recommendations,
+         the 90-day roadmap) could not honour the rule at all, so it
+         fragmented wherever the page happened to end — mid-sentence,
+         mid-row — and left an almost entirely blank page behind it.
+         Sections now flow freely; the small items INSIDE them are what
+         stays whole. */
+      .result-section {
+        break-inside: auto; page-break-inside: auto;
+        margin-bottom: 0.26in;
+        /* a card outline can't survive a page break: the browser draws the
+           border only at the first and last fragment, so a section spanning
+           two pages prints as two open-ended boxes. A rule above the
+           heading reads as a divider and breaks cleanly. */
+        background: transparent; border: none; border-radius: 0;
+        padding: 0.2in 0 0 0; border-top: 1px solid #D7E7ED;
+      }
+      /* headings never sit alone at the foot of a page */
+      .rs-label, .rs-title, .roadmap-days, .roadmap-theme, .results-header {
+        break-after: avoid; page-break-after: avoid;
+      }
+      /* the atoms — short blocks that must never be sliced */
+      .comp-card, .qb-item, .chart-row, .metric-card,
+      .finding-card, .projection-card, .score-strip, .roadmap-action {
+        break-inside: avoid; page-break-inside: avoid;
+      }
+      /* A recommendation runs a third of a page on its own, so forcing it to
+         stay whole just moves the gap rather than removing it. Let the prose
+         break like prose and keep the tag row with the last of its text. */
+      .rec-item { break-inside: auto; page-break-inside: auto; }
+      .rec-tags { break-before: avoid; page-break-before: avoid; }
+      .rs-body, .rs-body p, .qb-insight, .rec-action { orphans: 3; widows: 3; }
+
+      /* The roadmap is three side-by-side columns on screen. Across a page
+         break the columns desynchronise and each is sliced independently,
+         which is how one phase ended up finishing six pages after its own
+         heading. Printed, the three phases stack in order. */
+      .roadmap-phases { display: block !important; }
+      .roadmap-phase {
+        break-inside: auto; page-break-inside: auto;
+        background: transparent; border: none; border-radius: 0;
+        border-left: 2px solid #00BDE7;
+        padding: 2px 0 2px 14px; margin: 0 0 0.18in 0;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .comp-grid { break-inside: auto; page-break-inside: auto; }
       body { background: white; }
       /* Clean Citro print footer */
       body::after {
