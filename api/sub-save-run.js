@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
   const email = verifySubscriberToken(token);
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { results, profile, personas, propertyId } = req.body;
+  const { results, profile, personas, queries, propertyId } = req.body;
   if (!results) return res.status(400).json({ error: 'Missing results' });
 
   try {
@@ -126,15 +126,26 @@ module.exports = async function handler(req, res) {
       results,
       profile,
       personas: personas || [],
+      queries: queries || [],
       propertyId: propertyId || null,
       createdAt: now,
     });
+
+    // A score series is only a series while the questions stay the same. Stamp
+    // each run with a fingerprint of its query set so a break is detectable
+    // rather than showing up as an unexplained jump in the trend line.
+    const querySetId = Array.isArray(queries) && queries.length
+      ? crypto.createHash('sha256')
+          .update(queries.map(q => String(q?.text || '').trim().toLowerCase()).sort().join('|'))
+          .digest('hex').slice(0, 12)
+      : null;
 
     const summary = {
       runId,
       createdAt: now,
       companyName: profile?.company_name || '',
       overallScore: results?.overallScore ?? null,
+      querySetId,
     };
 
     if (isEnterprise && propertyId) {
@@ -154,6 +165,14 @@ module.exports = async function handler(req, res) {
         // Persist personas on property for apples-to-apples reruns
         if (personas && personas.length > 0) {
           properties[propIdx].personas = personas;
+        }
+        // Same for the query set. Personas were persisted and queries were not,
+        // so every rerun asked different questions and the score delta measured
+        // the exam changing rather than the brand's visibility changing.
+        if (Array.isArray(queries) && queries.length > 0 && !properties[propIdx].queries) {
+          properties[propIdx].queries = queries;
+          properties[propIdx].querySetId = querySetId;
+          properties[propIdx].querySetAt = now;
         }
       }
 
@@ -180,6 +199,16 @@ module.exports = async function handler(req, res) {
           profileToSave.personas = personas;
         } else if (existingProfile?.personas) {
           profileToSave.personas = existingProfile.personas;
+        }
+        // Lock the query set on first run, then keep it. Same reason as personas.
+        if (existingProfile?.queries?.length) {
+          profileToSave.queries = existingProfile.queries;
+          profileToSave.querySetId = existingProfile.querySetId || querySetId;
+          profileToSave.querySetAt = existingProfile.querySetAt || now;
+        } else if (Array.isArray(queries) && queries.length > 0) {
+          profileToSave.queries = queries;
+          profileToSave.querySetId = querySetId;
+          profileToSave.querySetAt = now;
         }
         await upstashSet(`subscriber-profile:${email}`, profileToSave);
       }
