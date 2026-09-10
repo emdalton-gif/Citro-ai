@@ -69,7 +69,7 @@ function httpsPost(hostname, path, headers, body) {
         'Content-Length': Buffer.byteLength(bodyStr),
         ...headers,
       },
-      timeout: 30000,
+      timeout: 50000,
     };
     const req = https.request(options, (res) => {
       let data = '';
@@ -144,7 +144,7 @@ async function callClaude(query) {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      timeout: 30000,
+      timeout: 50000,
     };
     const req = https.request(options, (res) => {
       let data = '';
@@ -176,7 +176,10 @@ async function callGemini(query) {
     'generativelanguage.googleapis.com',
     `/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
     {},
-    { contents: [{ parts: [{ text: query }] }] }
+    {
+      contents: [{ parts: [{ text: query }] }],
+      generationConfig: { thinkingConfig: { thinkingLevel: 'low' } },
+    }
   );
 
   if (result.status !== 200) {
