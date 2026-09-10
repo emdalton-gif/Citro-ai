@@ -164,13 +164,17 @@ async function callClaude(query) {
   });
 }
 
+// gemini-2.0-flash was retired; Google's own 404 names gemini-3.6-flash as the
+// replacement. Model IDs on every provider expire, and a retired one fails every
+// call, so a platform that goes quiet across a whole run is worth checking here
+// before assuming the credential is bad.
 async function callGemini(query) {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) throw new Error('GOOGLE_AI_API_KEY not configured');
 
   const result = await httpsPost(
     'generativelanguage.googleapis.com',
-    `/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
     {},
     { contents: [{ parts: [{ text: query }] }] }
   );
