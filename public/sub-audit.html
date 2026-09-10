@@ -313,17 +313,35 @@ function gtag(){dataLayer.push(arguments);}
     .chart-count { font-size: 12px; font-weight: 700; color: var(--muted); width: 28px; text-align: right; flex-shrink: 0; }
 
     /* ── PRINT ── */
+    /* ── PRINT FRAME ──────────────────────────────────────────────────────
+       A table whose thead and tfoot are empty spacers. Browsers repeat both
+       on every printed page, so they reserve the top and bottom margin that
+       @page can't give us without also inviting the browser's own header and
+       footer. Completely inert on screen: every part is forced back to
+       display:block so the layout inside behaves exactly as it did before. */
+    .print-frame, .print-frame > thead, .print-frame > tbody, .print-frame > tfoot,
+    .print-frame > thead > tr, .print-frame > tbody > tr, .print-frame > tfoot > tr,
+    .print-frame > thead > tr > td, .print-frame > tbody > tr > td,
+    .print-frame > tfoot > tr > td {
+      display: block; width: auto; padding: 0; margin: 0; border: 0;
+    }
+    .pf-head, .pf-foot { display: none; }
+
     @page {
       size: letter;
-      /* Margins have to live HERE, not as padding on .wrap. Padding on one
-         tall element is applied once at its start and once at its end, so
-         with margin:0 every page between the first and the last had zero
-         top and bottom margin and the text ran straight off the paper.
-         Trade-off: a non-zero margin gives the browser room to draw its own
-         header/footer if the reader has that checkbox ticked in the print
-         dialog. Unticking it is one click; text sliced by the page edge on
-         every interior page is not fixable by the reader. */
-      margin: 0.5in 0.6in 0.55in 0.6in;
+      /* Zero margin is the ONLY thing that stops the browser drawing its own
+         header (date + page title) and footer (URL + page number) — those are
+         painted inside the @page margin box, so no box means no chrome. This
+         is a customer-facing export; we can't rely on every reader unticking
+         "Headers and footers" in their own print dialog.
+         Zero margin alone, though, leaves the text flush against the paper on
+         every page: vertical padding on a tall element is applied once at its
+         start and once at its end, not per page. The per-page top and bottom
+         space comes from .print-frame below instead — thead and tfoot are the
+         one construct a browser repeats on every printed page. Side margins
+         are ordinary horizontal padding on .wrap, which does apply per line
+         and therefore per page. */
+      margin: 0;
     }
     @media print {
       nav, .back-btn, .run-btn, button, #save-status, .nav-back,
@@ -338,7 +356,7 @@ function gtag(){dataLayer.push(arguments);}
       #ra-cb-wrap, #ra-cb, #ra-modal-overlay, #ra-modal { display: none !important; }
       #screen-results { display: block !important; }
       html, body { margin: 0 !important; padding: 0 !important; }
-      .wrap { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .wrap { max-width: 100% !important; margin: 0 !important; padding: 0 0.6in !important; }
       .score-strip { background: #07202B !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
       /* ── PAGINATION ────────────────────────────────────────────────────
@@ -391,18 +409,27 @@ function gtag(){dataLayer.push(arguments);}
       }
       .comp-grid { break-inside: auto; page-break-inside: auto; }
       body { background: white; }
-      /* Clean Citro print footer */
-      body::after {
-        content: 'Citro · getcitro.ai · Powered by RootPartners';
-        display: block;
-        text-align: center;
-        font-size: 9px;
-        color: #999;
-        margin-top: 32px;
-        padding-top: 12px;
-        border-top: 1px solid #eee;
-        font-family: 'Inter', sans-serif;
-        letter-spacing: 0.04em;
+      /* The frame becomes a real table only when printing. The Citro line
+         moves into the tfoot, so it now repeats as a running footer on every
+         page instead of appearing once at the very end. */
+      .print-frame { display: table !important; width: 100% !important; table-layout: fixed; }
+      .print-frame > thead { display: table-header-group !important; }
+      .print-frame > tbody { display: table-row-group !important; }
+      .print-frame > tfoot { display: table-footer-group !important; }
+      .print-frame > thead > tr, .print-frame > tbody > tr,
+      .print-frame > tfoot > tr { display: table-row !important; }
+      .print-frame > thead > tr > td, .print-frame > tbody > tr > td,
+      .print-frame > tfoot > tr > td { display: table-cell !important; padding: 0 !important; }
+      /* #screen-results carries 48px of vertical padding for the screen. The
+         trailing 48px sits outside the print frame, so it spilled past the
+         last page and printed as an entirely blank final sheet. */
+      #screen-results { padding: 0 !important; }
+      .pf-head { display: block !important; height: 0.45in; }
+      .pf-foot {
+        display: block !important; height: 0.55in;
+        padding-top: 0.12in; border-top: 1px solid #eee;
+        text-align: center; font-size: 9px; color: #999;
+        font-family: 'Inter', sans-serif; letter-spacing: 0.04em;
       }
     }
 
@@ -592,6 +619,7 @@ function gtag(){dataLayer.push(arguments);}
 <!-- RESULTS SCREEN -->
 <div id="screen-results">
   <div class="wrap">
+    <table class="print-frame"><thead><tr><td><div class="pf-head"></div></td></tr></thead><tbody><tr><td>
     <div class="report-actions is-top">
       <a href="/sub-dashboard.html" class="rbtn">← Back to dashboard</a>
       <span class="ra-spacer"></span>
@@ -684,6 +712,7 @@ function gtag(){dataLayer.push(arguments);}
       <button type="button" class="rbtn" onclick="window.print()">⬇ Print / Save PDF</button>
       <button type="button" class="rbtn rbtn-primary" onclick="window.location.href='/sub-audit.html'">Run another audit →</button>
     </div>
+    </td></tr></tbody><tfoot><tr><td><div class="pf-foot">Citro · getcitro.ai · Powered by RootPartners</div></td></tr></tfoot></table>
   </div>
 </div>
   </div>
