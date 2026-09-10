@@ -797,7 +797,8 @@ function gtag(){dataLayer.push(arguments);}
     const ps = personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const currentYear = new Date().getFullYear();
-    const raw = await callClaude([{ role:'user', content:`Generate 9 realistic search queries for an Citro audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query, 1 additional buyer-intent query.\n- Platform assignment (IMPORTANT — assign exactly the stated number of queries to each platform): ChatGPT (2 queries), Perplexity (2 queries), Google Gemini (2 queries), Claude (2 queries), Grok (1 query). Every platform must appear exactly as listed and no other platform may be used.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Grok","brand_specific":true|false}` }]);
+    const raw = await callClaude([{ role:'user', content:`Generate 9 realistic search queries for an Citro audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query, 1 additional buyer-intent query.\n- Platform assignment (IMPORTANT — assign exactly the stated number of queries to each platform): ChatGPT (2 queries), Perplexity (2 queries), Google Gemini (2 queries), Claude (2 queries), Grok (1 query). Every platform must appear exactly as listed and no other platform may be used.
+- The 1 brand_specific query MUST be assigned to a platform that has 2 queries, never to Grok. Grok's single query must be an organic (non-brand) query, otherwise that platform has no discovery result to report.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Grok","brand_specific":true|false}` }]);
     return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(q => ({...q, checked: true}));
   }
 
@@ -910,10 +911,13 @@ function gtag(){dataLayer.push(arguments);}
     const gapQueries = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
     const gapCtx = gapQueries.length ? gapQueries.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
     const sys = 'You are a senior GTM strategist at Citro. Write in a confident, direct consultant tone. Be specific to this company — never give generic advice that could apply to any business. Name actual page types, platforms, content formats, and directories relevant to their industry. Output ONLY the JSON requested — no prose before or after.';
+    // The projected figure is computed in JS below. Give it to the model too, or
+    // the narrative quotes a different range than the number beside it.
     const ctx = `Brand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}`;
 
     // ── Projected score computed in JS — never ask Claude for a number ──────
     const projectedScore = score === 0 ? 18 : Math.min(95, score + Math.round((100 - score) * 0.28));
+    const projectionRule = `\nProjected 90-day Citro Score: ${projectedScore}%. When writing projection_narrative you MUST use this exact figure and MUST NOT state any other number or range.`;
 
     // ── JS-generated analysis fields (data-driven, no token risk) ────────────
     const topComps = comps.slice(0, 3);
@@ -937,7 +941,7 @@ function gtag(){dataLayer.push(arguments);}
 
     // ── Call 1: 3 short narrative fields only (~200-250 tokens output) ────────
     // IMPORTANT: Only 3 string values. Short sentences only. No other output.
-    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 400);
+    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 400);
     let n;
     try {
       const j1 = raw1.replace(/```json[\s\S]*?```|```/g,'').trim();
@@ -1236,16 +1240,32 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
     // ── Platform visibility chart ───────────────────────────────────────────
     const platformData = {};
     const visWeightsChart = { high: 1.0, medium: 0.5, low: 0.25, none: 0 };
-    simResults.filter(r => !r.brand_specific).forEach(r => {
+    // !failed for the same reason the score excludes them: an unanswered query
+    // is not evidence the brand was absent, and counting it as 0 would drag the
+    // platform's percentage down for an outage.
+    simResults.filter(r => !r.brand_specific && !r.failed).forEach(r => {
       if (!platformData[r.platform]) platformData[r.platform] = { total: 0, count: 0 };
       platformData[r.platform].total += visWeightsChart[r.visibility] || 0;
       platformData[r.platform].count += 1;
     });
+    // Every platform that was queried belongs in the breakdown. One with no
+    // organic queries has no percentage to report, but omitting the row made it
+    // look untested.
+    [...new Set(simResults.map(r => r.platform))].forEach(pl => {
+      if (!platformData[pl]) platformData[pl] = { total: 0, count: 0 };
+    });
     const platformRows = Object.entries(platformData)
-      .map(([p, d]) => [p, Math.round(d.total / d.count * 100)])
-      .sort((a, b) => b[1] - a[1]);
+      .map(([p, d]) => [p, d.count ? Math.round(d.total / d.count * 100) : null])
+      .sort((a, b) => (b[1] ?? -1) - (a[1] ?? -1));
     if (platformRows.length > 0) {
       document.getElementById('platform-chart').innerHTML = platformRows.map(([platform, pct]) => {
+        if (pct === null) {
+          return `<div class="chart-row">
+            <div class="chart-label">${esc(platform)}</div>
+            <div class="chart-bar-wrap"></div>
+            <div class="chart-count" title="Only a brand-name query ran on this platform, so there is no discovery score for it">n/a</div>
+          </div>`;
+        }
         const barClass = pct >= 65 ? 'green' : pct >= 35 ? 'amber' : 'red';
         return `<div class="chart-row">
           <div class="chart-label">${esc(platform)}</div>
