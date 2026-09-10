@@ -264,6 +264,15 @@ function gtag(){dataLayer.push(arguments);}
     .vis-pill.low { background: #FFF3F0; color: #8C2A15; }
     .vis-pill.none { background: #E9F3F6; color: #48626E; }
     .qb-insight { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .qset-note { background:#EDFAFD; border:1px solid #BEEEF9; border-radius:10px;
+      padding:16px 20px; margin-bottom:20px; display:flex; flex-direction:column; gap:6px; }
+    .qset-note[hidden] { display:none; }
+    .qset-h { font-family:var(--mono); font-size:10px; letter-spacing:0.1em;
+      text-transform:uppercase; color:var(--accent-d2); }
+    .qset-note p { font-size:14px; color:var(--muted); line-height:1.6; margin:0; }
+    .qset-regen { align-self:flex-start; margin-top:4px; background:none; border:none; padding:0;
+      font-family:var(--sans); font-size:13px; font-weight:600; color:var(--accent-d2);
+      text-decoration:underline; cursor:pointer; }
     .qb-foot { margin-top: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
     .qb-src.live { color: var(--accent-d2); }
     .qb-src.dead { color: #C63A22; }
@@ -567,7 +576,12 @@ function gtag(){dataLayer.push(arguments);}
   <div class="wrap">
     <div class="queries-label">Step 3 of 3 — Review before running</div>
     <h1 class="queries-title">Review your search queries.</h1>
-    <p class="queries-sub">These are the exact questions your buyers would type into each AI platform. Uncheck any you want to skip, or edit the text — most users run all 9.</p>
+    <p class="queries-sub">These are the exact questions your buyers would type into each AI platform. Uncheck any you want to skip, or edit the text.</p>
+    <div class="qset-note" id="qset-note" hidden>
+      <div class="qset-h">Your baseline question set</div>
+      <p>These are the same questions as your last audit, so this run is comparable to it. Your Citro Score only means something over time if the questions stay the same.</p>
+      <button type="button" class="qset-regen" id="regenQueriesBtn">Generate a new set instead</button>
+    </div>
     <div class="query-cards" id="query-cards">
       <!-- Populated by renderQueryCards() -->
     </div>
@@ -1275,6 +1289,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         queries = await genQueries(profile, personas);
         setPhase(1, 'done');
       }
+      _currentQueries = queries;
       setPhase(2, 'active');
 
       simResults = await runSimulations(profile, personas, queries);
@@ -1293,7 +1308,12 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
 
       // Save to dashboard (after render so results show immediately)
       const saveStatus = document.getElementById('save-status');
-      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas, propertyId: activePropertyId || undefined };
+      // Persist the query set so the next run asks the same questions. Without
+      // this the score delta measures a new exam, not a change in visibility.
+      const savedQueries = (queries || []).map(q => ({
+        text: q.text, platform: q.platform, brand_specific: !!q.brand_specific,
+      }));
+      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas, queries: savedQueries, propertyId: activePropertyId || undefined };
       try {
         const saveResp = await fetch(SAVE_API, {
           method: 'POST',
@@ -1582,18 +1602,52 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       _currentPersonas = personas;
       const btn = document.getElementById('runAuditBtn');
       btn.disabled = true;
-      btn.textContent = 'Generating queries…';
       try {
-        const queries = await genQueries(_currentProfile, personas);
+        // A saved query set means this property has been audited before. Reuse
+        // it, so the two runs are comparable. Generating fresh questions every
+        // time is what made the score history meaningless.
+        const saved = Array.isArray(p.queries) && p.queries.length ? p.queries : null;
+        let queries;
+        if (saved) {
+          btn.textContent = 'Loading your question set…';
+          queries = saved.map(q => ({ ...q, checked: true }));
+        } else {
+          btn.textContent = 'Generating queries…';
+          queries = await genQueries(_currentProfile, personas);
+        }
         _currentQueries = queries;
         renderQueryCards(queries);
+        const note = document.getElementById('qset-note');
+        if (note) note.hidden = !saved;
         hide('screen-personas');
         block('screen-queries');
       } catch(e) {
-        alert('Could not generate queries. Please try again.');
+        alert('Could not load your queries. Please try again.');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Review queries →';
+      }
+    });
+
+    document.getElementById('regenQueriesBtn')?.addEventListener('click', async () => {
+      const ok = confirm(
+        'Generating a new question set restarts your score history.\n\n' +
+        'Scores from earlier runs were measured against different questions, so ' +
+        'they will no longer be comparable to this one.\n\nGenerate a new set?'
+      );
+      if (!ok) return;
+      const btn = document.getElementById('regenQueriesBtn');
+      btn.disabled = true; btn.textContent = 'Generating…';
+      try {
+        const queries = await genQueries(_currentProfile, _currentPersonas || getPersonasFromForm());
+        _currentQueries = queries;
+        p.queries = null;              // stop the old set being reloaded
+        renderQueryCards(queries);
+        document.getElementById('qset-note').hidden = true;
+      } catch(e) {
+        alert('Could not generate a new question set. Please try again.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Generate a new set instead';
       }
     });
 
