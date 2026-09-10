@@ -1,11 +1,11 @@
 # Citro
 
-> Citro is AI citation intelligence. It shows whether AI platforms recommend your brand when buyers ask what to buy or who to hire, and gives a 30 to 90 day plan to improve. The core metric is the Citro Score, your citation rate across 7 AI platforms: ChatGPT, Perplexity, Gemini, Claude, Copilot, Grok, and Meta AI. Powered by RootPartners.
+> Citro is AI citation intelligence. It shows whether AI platforms recommend your brand when buyers ask what to buy or who to hire, and gives a 30 to 90 day plan to improve. The core metric is the Citro Score, your citation rate across 5 AI platforms: ChatGPT, Perplexity, Gemini, Claude, and Grok. Powered by RootPartners.
 
 Citro is built for marketers at every level (in-house leaders, agencies, and founders) who need to know whether they appear when buyers ask AI for vendor and product recommendations, and how to improve. It is not a generalized ranking or keyword tool and not a passive mention monitor. It does three things: it builds editable buyer personas specific to your company and asks the AI the questions those buyers actually ask; it audits where you rank and get recommended across the major AI platforms, compared to your named competitors; and it returns a specific action plan built from your own website, code, industry, and market, sequenced over 30 to 90 days.
 
 ## Product
-- [How it works](https://getcitro.ai/#how-it-works): Profile your company, build buyer personas, run blind queries across 7 AI platforms, get a Citro Score and a 90-day plan.
+- [How it works](https://getcitro.ai/#how-it-works): Profile your company, build buyer personas, run blind queries across 5 AI platforms, get a Citro Score and a 90-day plan.
 - [Plans and pricing](https://getcitro.ai/plans.html): Professional is 119 USD per month with a 7-day free trial. Enterprise is 299 USD per month for up to 10 brands.
 - [Sample audit report](https://getcitro.ai/sample-audit.html): An example AI Visibility Report.
 - [Start a free trial](https://getcitro.ai/start.html): Run your own Citro audit.
@@ -17,5 +17,5 @@ Citro is built for marketers at every level (in-house leaders, agencies, and fou
 
 ## About
 - Category: AI search visibility, generative engine optimization (GEO), answer engine optimization (AEO), AI citation intelligence.
-- Platforms audited: ChatGPT, Perplexity, Google Gemini, Claude, Microsoft Copilot, Grok, Meta AI.
+- Platforms audited: ChatGPT, Perplexity, Google Gemini, Claude, Grok.
 - Company: Citro, powered by RootPartners. https://getcitro.ai
