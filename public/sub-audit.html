@@ -264,6 +264,9 @@ function gtag(){dataLayer.push(arguments);}
     .vis-pill.low { background: #FFF3F0; color: #8C2A15; }
     .vis-pill.none { background: #E9F3F6; color: #48626E; }
     .qb-insight { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .qb-foot { margin-top: 8px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .qb-src.live { color: var(--accent-d2); }
+    .qb-src.dead { color: #C63A22; }
 
     .back-btn {
       display: inline-flex; align-items: center; gap: 6px;
@@ -780,7 +783,7 @@ function gtag(){dataLayer.push(arguments);}
     const ps = personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const currentYear = new Date().getFullYear();
-    const raw = await callClaude([{ role:'user', content:`Generate 9 realistic search queries for an Citro audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query, 1 additional buyer-intent query.\n- Platform assignment (IMPORTANT — assign exactly one query to each platform): ChatGPT (2 queries), Perplexity (2 queries), Google Gemini (1 query), Claude (1 query), Microsoft Copilot (1 query), Grok (1 query), Meta AI (1 query). Every platform must appear exactly as listed.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot|Grok|Meta AI","brand_specific":true|false}` }]);
+    const raw = await callClaude([{ role:'user', content:`Generate 9 realistic search queries for an Citro audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query, 1 additional buyer-intent query.\n- Platform assignment (IMPORTANT — assign exactly the stated number of queries to each platform): ChatGPT (2 queries), Perplexity (2 queries), Google Gemini (2 queries), Claude (2 queries), Grok (1 query). Every platform must appear exactly as listed and no other platform may be used.\n\nReturn ONLY a JSON array. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Grok","brand_specific":true|false}` }]);
     return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(q => ({...q, checked: true}));
   }
 
@@ -794,7 +797,12 @@ function gtag(){dataLayer.push(arguments);}
     function normalizeComp(name) { return aliasMap[name.toLowerCase()] || name; }
     const aliasCtx = Object.keys(aliasMap).length ? `\nIMPORTANT: normalize competitor names: ${Object.entries(aliasMap).map(([k,v]) => `"${k}" -> "${v}"`).join(', ')}.` : '';
 
-    const LIVE_PLATFORMS = ['Perplexity', 'ChatGPT'];
+    // Every platform we assign queries to is queried for real. Copilot and
+    // Meta AI are absent because no integration exists for them; they were
+    // previously assigned queries and then answered by a model impersonating
+    // them, which is not a measurement. api/live-query.js is the only source
+    // of platform responses now, and there is no fabrication fallback.
+    const LIVE_PLATFORMS = ['Perplexity', 'ChatGPT', 'Google Gemini', 'Claude', 'Grok'];
     const qlItems = document.getElementById('ql-items');
     qlItems.innerHTML = active.map((q, i) => {
       const isLive = LIVE_PLATFORMS.includes(q.platform);
@@ -813,6 +821,7 @@ function gtag(){dataLayer.push(arguments);}
         // ── Get platform response: live API or simulation ──
         let platformResponse = '';
         let isLive = false;
+        let liveError = '';
         if (LIVE_PLATFORMS.includes(q.platform)) {
           try {
             const liveResp = await fetch('/api/live-query', {
@@ -824,13 +833,24 @@ function gtag(){dataLayer.push(arguments);}
               const liveData = await liveResp.json();
               platformResponse = liveData.response;
               isLive = true;
+            } else {
+              const errBody = await liveResp.json().catch(()=>({}));
+              liveError = errBody.error || `live-query returned ${liveResp.status}`;
             }
-          } catch(liveErr) { /* fall through to simulation */ }
+          } catch(liveErr) { liveError = liveErr.message || 'live-query request failed'; }
+        } else {
+          liveError = `no live integration for ${q.platform}`;
         }
-        if (!platformResponse) {
-          // Simulation fallback for non-live platforms (or if live call failed)
-          const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
-          platformResponse = await callClaude([{ role:'user', content:`Query: "${q.text}"` }], simSys, 600);
+
+        // A platform that did not answer is reported as unanswered. It is not
+        // filled in with generated text and it does not enter the score, because
+        // an unanswered query is not evidence the brand was absent.
+        if (!isLive) {
+          if (dot) dot.className = 'ql-dot fail';
+          return { query: q.text, platform: q.platform, brand_specific: q.brand_specific,
+                   is_live: false, failed: true, visibility: null, mentions_client: null,
+                   mention_rank: null, competitors_mentioned: [], response: '',
+                   insight: `No response recorded from ${q.platform}: ${liveError}. Excluded from the score.` };
         }
 
         // ── Evaluate the response ──
@@ -846,7 +866,9 @@ function gtag(){dataLayer.push(arguments);}
         return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: isLive, response: platformResponse, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: false, visibility: 'none', mentions_client: false, insight: 'Query error', response: '', competitors_mentioned: [] };
+        // Scoring an error as "not mentioned" made a broken run look like a bad
+        // result. Excluded instead, and said out loud.
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: false, failed: true, visibility: null, mentions_client: null, mention_rank: null, insight: `Query failed: ${e.message||'unknown error'}. Excluded from the score.`, response: '', competitors_mentioned: [] };
       }
     }));
     return results;
@@ -854,13 +876,20 @@ function gtag(){dataLayer.push(arguments);}
 
   async function genReport(c, personas, results) {
     const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
-    const organic = results.filter(x => !x.brand_specific);
+    // Only queries a platform actually answered can be scored. A query that
+    // never got a response is not evidence of anything and must not sit in
+    // the denominator dragging the score down.
+    const organic = results.filter(x => !x.brand_specific && !x.failed);
     const score = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
     const allCompMentions = results.flatMap(x=>x.competitors_mentioned||[]);
     const compFreq = {};
     allCompMentions.forEach(n=>compFreq[n]=(compFreq[n]||0)+1);
     const comps = [...new Set(allCompMentions)].sort((a,b)=>compFreq[b]-compFreq[a]);
-    const queries = results.map(x=>`[${x.platform}] "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`).join('\n');
+    // Unanswered queries would otherwise read as "null visibility" to the model
+    // writing the report, which it could easily narrate as a bad result.
+    const queries = results.map(x=> x.failed
+      ? `[${x.platform}] "${x.query}" -> NO RESPONSE RECORDED. Not a visibility result. Do not treat as absence.`
+      : `[${x.platform}] "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`).join('\n');
     const buyerCtx = personas.map(p=>`${p.name||'Buyer'} (${p.title||'decision maker'})`).join(', ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const visCtx = score===0 ? `The brand has 0% Citro visibility — it did not appear in any advisory AI responses.` : `Weighted Citro Score: ${score}% (High=100%, Medium=50%, Low=25%, None=0% across ${organic.length} advisory queries).`;
@@ -877,7 +906,7 @@ function gtag(){dataLayer.push(arguments);}
     const topCompList = topComps.map(n => `${n} (${compFreq[n]}/${results.length} queries)`).join(', ');
     const gapPlatforms = [...new Set(gapQueries.map(q => q.platform))].slice(0, 2).join(' and ');
 
-    const technical_recommendations = `Add Organization, Product, and FAQ schema.org markup to ${c.website} and submit to Google's Rich Results Test to build AI knowledge graph coverage. Deploy an llms.txt file at the domain root listing key pages and their canonical descriptions — this directly guides AI crawlers. Claim and complete your Google Business Profile and Wikidata entry to establish the structured citation layer that AI systems reference when identifying credible vendors.`;
+    const technical_recommendations = `Add Organization, Product, and FAQ schema.org markup to ${c.website} and submit to Google's Rich Results Test to build AI knowledge graph coverage. Deploy an llms.txt file at the domain root listing key pages and their canonical descriptions — this directly guides AI crawlers. Claim and complete your Google Business Profile, and create listings on the review and directory sites AI systems retrieve from when identifying credible vendors in your category. Wikidata requires independent published sources and is not available to most companies until press coverage exists, so treat it as a later step rather than a first one.`;
 
     const content_gaps = gapQueries.length === 0
       ? `Tested queries show adequate coverage; focus on depth and specificity rather than new page creation. Ensure existing pages include concrete ROI data, customer quotes, and use-case specifics that AI systems cite as evidence.`
@@ -1112,18 +1141,22 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
 
   function renderResults(simResults, report, profile) {
     const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
-    const organic = simResults.filter(x=>!x.brand_specific);
+    const organic = simResults.filter(x=>!x.brand_specific && !x.failed);
     const score = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
     const high = organic.filter(x=>x.visibility==='high').length;
-    const ranks = simResults.filter(x=>x.mention_rank).map(x=>x.mention_rank);
+    // organic only: the one deliberately brand-naming query is rank 1 by
+    // construction and was flattering this figure.
+    const ranks = organic.filter(x=>x.mention_rank).map(x=>x.mention_rank);
     const avgRank = ranks.length ? (Math.round(ranks.reduce((a,b)=>a+b,0)/ranks.length*10)/10) : null;
     const platforms = [...new Set(simResults.map(x=>x.platform))].length;
     const sc = scoreClass(score);
 
     document.getElementById('res-title').textContent = `AI Visibility Report — ${profile.company_name}`;
     const liveCount = simResults.filter(x=>x.is_live).length;
-    const estCount = simResults.filter(x=>!x.is_live).length;
-    const sourceLabel = liveCount > 0 ? `${liveCount} live · ${estCount} estimated` : `${estCount} simulated`;
+    const failedCount = simResults.filter(x=>x.failed).length;
+    const sourceLabel = failedCount
+      ? `${liveCount} of ${simResults.length} queries answered · ${failedCount} unanswered`
+      : `${liveCount} live queries`;
     document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${sourceLabel} · ${platforms} platforms`;
 
     const scoreNum = document.getElementById('score-num');
@@ -1159,7 +1192,15 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       document.getElementById('roadmap-phases').innerHTML = report.roadmap_phases.map(p=>`<div class="roadmap-phase"><div class="roadmap-days">${esc(p.days)}</div><div class="roadmap-theme">${esc(p.theme)}</div><div class="roadmap-actions">${(p.actions||[]).map(a=>`<div class="roadmap-action">${esc(a)}</div>`).join('')}</div></div>`).join('');
       block('section-roadmap');
     }
-    document.getElementById('query-breakdown').innerHTML = simResults.map(q=>`<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span><span class="vis-pill ${q.visibility}">${q.visibility}</span></div><div class="qb-insight">${esc(q.insight||'')}</div></div>`).join('');
+    document.getElementById('query-breakdown').innerHTML = simResults.map(q=>{
+      const pill = q.failed
+        ? '<span class="vis-pill none">unanswered</span>'
+        : `<span class="vis-pill ${q.visibility}">${q.visibility}</span>`;
+      const src = q.is_live
+        ? '<span class="qb-src live">live query</span>'
+        : '<span class="qb-src dead">no response</span>';
+      return `<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span>${pill}</div><div class="qb-insight">${esc(q.insight||'')}</div><div class="qb-foot">${src}</div></div>`;
+    }).join('');
     block('section-queries');
 
     // ── Competitor frequency chart ──────────────────────────────────────────
@@ -1242,9 +1283,10 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       report = await genReport(profile, personas, simResults);
       setPhase(3, 'done');
 
-      // Compute score for saving
+      // Compute score for saving. Same denominator as the rendered score, or
+      // the dashboard history and the report would show different numbers.
       const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
-      const organic = simResults.filter(x=>!x.brand_specific);
+      const organic = simResults.filter(x=>!x.brand_specific && !x.failed);
       const overallScore = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
 
       renderResults(simResults, report, profile);
