@@ -181,6 +181,9 @@ async function callGemini(query) {
   return result.body.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
+// grok-3 was retired in xAI's 15 May 2026 model retirement. grok-4.6 is the
+// current flagship. A retired model ID fails every call, silently marking
+// Grok unanswered on every audit.
 async function callGrok(query) {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) throw new Error('XAI_API_KEY not configured');
@@ -188,7 +191,7 @@ async function callGrok(query) {
   const result = await httpsPost('api.x.ai', '/v1/chat/completions', {
     'Authorization': `Bearer ${apiKey}`,
   }, {
-    model: 'grok-3',
+    model: 'grok-4.6',
     messages: [{ role: 'user', content: query }],
     max_tokens: 700,
   });
