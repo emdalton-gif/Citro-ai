@@ -201,11 +201,11 @@ function gtag(){dataLayer.push(arguments);}
         <div class="sc-label" id="rRange">Estimated AI recommendation rate · preliminary</div>
         <div class="gtrack"><div class="gfill" id="rFill"></div></div>
         <div class="gmark"><span>Invisible</span><span>Recommended</span></div>
-        <div class="sc-frame">A directional read from your public site. Your verified Citro Score is calculated in the full audit, from your company profile and buyer personas querying all 7 platforms.</div>
+        <div class="sc-frame">A directional read from your public site. Your verified Citro Score is calculated in the full audit, from your company profile and buyer personas querying all 5 platforms.</div>
       </div>
 
       <div class="findings">
-        <div class="find"><div class="k">Platforms checked</div><div class="v"><span id="rPlatforms">7</span> AI assistants</div></div>
+        <div class="find"><div class="k">Platforms in the full audit</div><div class="v"><span id="rPlatforms">5</span> AI assistants, queried live</div></div>
         <div class="find red"><div class="k">A competitor named instead</div><div class="v" id="rCompetitor">-</div></div>
       </div>
       <div class="find red" style="margin-bottom:16px;"><div class="k">A query you are losing</div><div class="v" id="rQuery">-</div></div>
@@ -214,7 +214,7 @@ function gtag(){dataLayer.push(arguments);}
         <h3>That was a directional read. Here is your full audit.</h3>
         <p style="font-size:14px;color:var(--mid);margin-bottom:14px;line-height:1.5;">Your verified Citro Score on each platform, the competitors named ahead of you, and a 90-day plan built from your own site, personas, and market.</p>
         <ul>
-          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your score on each of the 7 platforms, one by one</li>
+          <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Your score on each of the 5 platforms, one by one</li>
           <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> The full list of competitors named ahead of you</li>
           <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Editable buyer personas that query AI the way your buyers do</li>
           <li><svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> A 30 to 90 day plan you can actually ship, built from your site</li>
@@ -301,7 +301,7 @@ function gtag(){dataLayer.push(arguments);}
 
   function renderResult(d){
     document.getElementById('rCompany').textContent = d.company || 'your brand';
-    document.getElementById('rPlatforms').textContent = d.platformsTested || 7;
+    document.getElementById('rPlatforms').textContent = d.platformsTested || 5;
     document.getElementById('rCompetitor').textContent = d.competitor || 'Established category leaders';
     document.getElementById('rQuery').textContent = d.losingQuery ? ('"' + d.losingQuery + '"') : 'Category buying questions';
 
