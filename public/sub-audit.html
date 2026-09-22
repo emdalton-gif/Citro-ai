@@ -156,6 +156,26 @@ function gtag(){dataLayer.push(arguments);}
     .query-text-input { font-family: var(--sans); font-size: 14px; color: var(--dark); border: none; background: transparent; outline: none; width: 100%; padding: 0; font-weight: 500; }
     .query-text-input:focus { color: var(--accent); }
     .query-brand-note { font-size: 11px; color: var(--amber); margin-top: 4px; font-family: var(--mono); }
+    .query-brand-note[hidden], .query-warn[hidden], .query-status[hidden] { display: none; }
+    .query-text-static { font-size: 14px; color: var(--dark); font-weight: 500; }
+    .query-card.editable { cursor: default; }
+    .query-edit-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+    .query-platform-select { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+    .query-brand-toggle { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .query-brand-toggle input { width: 14px; height: 14px; margin: 0; accent-color: var(--accent); }
+    .query-remove { margin-left: auto; background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; font-family: inherit; padding: 4px 0; }
+    .query-remove:hover { color: var(--red); }
+    .query-text-input.editable { display: block; resize: none; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; background: #fff; line-height: 1.45; font-size: 15px; transition: border-color 0.15s; }
+    .query-text-input.editable:hover { border-color: var(--accent-dim); }
+    .query-text-input.editable:focus { border-color: var(--accent); color: var(--dark); }
+    .query-warn { font-size: 12px; color: #8C5A00; background: #FFF7E6; border-radius: 6px; padding: 8px 10px; margin-top: 8px; line-height: 1.5; }
+    .query-editor-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 2px; }
+    .query-add { background: none; border: 1px dashed var(--accent); color: var(--accent); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .query-add:hover { background: #EDFAFD; }
+    .query-count { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    .query-status { font-size: 13px; line-height: 1.55; border-radius: 8px; padding: 10px 14px; }
+    .query-status.error { background: #FFF3F0; color: #8C2A15; }
+    .query-status.warn { background: #FFF7E6; color: #6B4500; }
 
     /* ── LOADING SCREEN ── */
     #screen-loading {
@@ -882,33 +902,38 @@ Return ONLY JSON: {"category":"...","queries":[{"type":"category|brand|persona|p
     return queries;
   }
 
-  // Second pass: an independent check of each organic question against the
-  // offer. Anything a strong brand in this category could not fairly win is
-  // rewritten. If this call fails the audit still runs on the generated set;
-  // the customer reviews and can edit every question before it is locked.
-  async function checkQueryRelevance(c, category, queries) {
-    const organic = queries.map((q, i) => ({ i, q })).filter(x => !x.q.brand_specific);
-    const listing = organic.map(x => `${x.i}. [${x.q.type}] ${x.q.text}`).join('\n');
+  // Asks the model whether each question would return a vendor list the brand
+  // could fairly appear in. items: [{i, q}]. Returns [{i, pass, reason, rewrite}].
+  async function judgeQueries(c, category, items) {
+    const listing = items.map(x => `${x.i}. ${x.q.text}`).join('\n');
     const prompt = `A company sells: ${c.offer || c.industry || category}
-Its solution category: ${category}
+Its solution category: ${category || c.offer || c.industry || 'not specified'}
 
 Below are questions buyers will ask an AI assistant. For each, judge: would a good, honest answer to this question list specific companies or programs, AND would a strong company that sells the above be a legitimate candidate to appear in that list?
 
-Fail a question if it names the company or its products, or if it is a "how to" or informational question, a trend or research question, about an adjacent or broader category (for example executive education, LMS platforms, or general HR strategy when the company sells a specific kind of training), or too vague to produce a vendor list.
+Fail a question if it names ${c.company_name} or its products, or if it is a "how to" or informational question, a trend or research question, about an adjacent or broader category (for example executive education, LMS platforms, or general HR strategy when the company sells a specific kind of training), or too vague to produce a vendor list.
 
-For each failed question, write a replacement of the same type that passes: 5 to 12 words, natural buyer phrasing, does not name ${c.company_name} or its products.
+For each failed question, write a replacement that passes: 5 to 12 words, natural buyer phrasing, does not name ${c.company_name} or its products.
 
 ${listing}
 
 Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","rewrite":"<replacement, or empty if pass>"}]`;
+    const raw = await callClaude([{ role: 'user', content: prompt }], null, 1200);
+    const verdicts = parseJsonLoose(raw);
+    if (!Array.isArray(verdicts)) throw new Error('Unexpected check output');
+    return verdicts.map(v => ({ ...v, i: Number(v.i) }));
+  }
 
+  // Second pass on a generated set: anything a strong brand in this category
+  // could not fairly win is rewritten. If this call fails the audit still runs
+  // on the generated set; the review screen shows every question first.
+  async function checkQueryRelevance(c, category, queries) {
+    const items = queries.map((q, i) => ({ i, q })).filter(x => !x.q.brand_specific);
     try {
-      const raw = await callClaude([{ role: 'user', content: prompt }], null, 1200);
-      const verdicts = parseJsonLoose(raw);
-      if (!Array.isArray(verdicts)) return queries;
+      const verdicts = await judgeQueries(c, category, items);
       return queries.map((q, i) => {
         if (q.brand_specific) return q;
-        const v = verdicts.find(x => Number(x.i) === i);
+        const v = verdicts.find(x => x.i === i);
         const rewrite = String(v?.rewrite || '').trim();
         if (v && v.pass === false && rewrite && !namesBrand(rewrite, c)) {
           return { ...q, text: rewrite, rewritten_from: q.text, relevance_note: v.reason || '' };
@@ -1452,7 +1477,8 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       const savedQueries = (queries || []).map(q => ({
         text: q.text, platform: q.platform, brand_specific: !!q.brand_specific,
       }));
-      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas, queries: savedQueries, propertyId: activePropertyId || undefined };
+      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas, queries: savedQueries, propertyId: activePropertyId || undefined,
+        newQuerySet: !_editorEnterprise && _queriesRegenerated };
       try {
         const saveResp = await fetch(SAVE_API, {
           method: 'POST',
@@ -1511,36 +1537,210 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
   let _currentQueries = null;
 
   // ── Query review helpers ──────────────────────────────────────────────────
-  function renderQueryCards(queries) {
-    const container = document.getElementById('query-cards');
-    container.innerHTML = queries.map((q, i) => `
+  // Enterprise customers can edit the question set: rewrite, add, remove,
+  // change platform and mark brand questions. They know what their buyers ask
+  // better than a generator does. Saving a changed set creates a new version
+  // (api/sub-update-queries.js) and the dashboard marks where it changed.
+  // Professional keeps the managed set: it can skip a question for one run.
+  const QUERY_PLATFORMS = ['ChatGPT', 'Perplexity', 'Google Gemini', 'Claude', 'Grok'];
+  const QUERY_MIN = 5, QUERY_MAX = 15, QUERY_MAX_BRAND = 2;
+  let _editorEnterprise = false;     // set when the review screen opens
+  let _queriesRegenerated = false;   // "Generate a new set instead" was used
+  let _savedQuerySetKey = null;      // the property's saved set, for change detection
+  let _warnedQuerySetKey = null;     // set the customer already saw warnings for
+
+  function querySetKey(queries) {
+    return (queries || [])
+      .map(q => `${String(q.text || '').trim().toLowerCase()}::${q.platform}::${q.brand_specific ? 1 : 0}`)
+      .sort().join('|');
+  }
+
+  // Mirrors validate() in api/sub-update-queries.js. Returns an error or null.
+  function validateQuerySet(queries) {
+    if (queries.length < QUERY_MIN || queries.length > QUERY_MAX) {
+      return `A question set needs between ${QUERY_MIN} and ${QUERY_MAX} questions. You have ${queries.length}.`;
+    }
+    if (queries.some(q => q.text.length < 3)) return 'Every question needs some text. Remove any empty ones.';
+    if (queries.some(q => q.text.length > 200)) return 'Keep each question under 200 characters.';
+    const seen = new Set();
+    for (const q of queries) {
+      const k = q.text.toLowerCase() + '::' + q.platform;
+      if (seen.has(k)) return `"${q.text}" appears twice on ${q.platform}.`;
+      seen.add(k);
+    }
+    if (queries.filter(q => q.brand_specific).length > QUERY_MAX_BRAND) {
+      return `At most ${QUERY_MAX_BRAND} questions can name your brand. Brand questions are shown in the report but not scored.`;
+    }
+    const missing = QUERY_PLATFORMS.filter(p => !queries.some(q => q.platform === p && !q.brand_specific));
+    if (missing.length) return `Every platform needs at least one question that doesn't name your brand. Add one for: ${missing.join(', ')}.`;
+    return null;
+  }
+
+  function setQueryScreenCopy(hasSaved, version) {
+    const sub = document.querySelector('#screen-queries .queries-sub');
+    const note = document.getElementById('qset-note');
+    if (_editorEnterprise) {
+      if (sub) sub.textContent = 'You know what your buyers ask AI better than anyone. Rewrite any question, change its platform, add your own, or remove ones that don\'t fit.';
+      if (note && hasSaved) {
+        note.querySelector('.qset-h').textContent = `Your question set · version ${version}`;
+        note.querySelector('p').textContent = 'These are the same questions as your last audit, so this run is comparable to it. If you change them, the new set is saved as the next version and your dashboard marks where the questions changed.';
+      }
+    } else if (sub) {
+      sub.textContent = 'These are the exact questions your buyers would type into each AI platform. Uncheck any you want to skip on this run.';
+    }
+  }
+
+  function queryCardHtml(q, i) {
+    if (!_editorEnterprise) {
+      return `
       <label class="query-card${q.checked === false ? ' unchecked' : ''}" data-index="${i}">
         <input type="checkbox" ${q.checked !== false ? 'checked' : ''} onchange="
           this.closest('.query-card').classList.toggle('unchecked', !this.checked);
         " />
         <div class="query-card-body">
           <div class="query-platform-badge">${esc(q.platform)}</div>
-          <input class="query-text-input" type="text" value="${esc(q.text)}" placeholder="Enter query…" />
+          <div class="query-text-static">${esc(q.text)}</div>
           ${q.brand_specific ? '<div class="query-brand-note">★ Brand query</div>' : ''}
         </div>
-      </label>
-    `).join('');
+      </label>`;
+    }
+    const opts = QUERY_PLATFORMS.map(p => `<option value="${esc(p)}"${p === q.platform ? ' selected' : ''}>${esc(p)}</option>`).join('');
+    return `
+      <div class="query-card editable" data-index="${i}">
+        <div class="query-card-body">
+          <div class="query-edit-row">
+            <select class="query-platform-select" aria-label="Platform">${opts}</select>
+            <label class="query-brand-toggle"><input type="checkbox" class="query-brand"${q.brand_specific ? ' checked' : ''} /> Names our brand</label>
+            <button type="button" class="query-remove" aria-label="Remove this question">Remove</button>
+          </div>
+          <textarea class="query-text-input editable" rows="1" maxlength="200" placeholder="Type a question your buyers ask…">${esc(q.text)}</textarea>
+          <div class="query-brand-note" hidden>Names your brand, so it's shown in the report but not scored.</div>
+          <div class="query-warn" hidden></div>
+        </div>
+      </div>`;
+  }
+
+  function renderQueryCards(queries) {
+    const container = document.getElementById('query-cards');
+    container.innerHTML = queries.map((q, i) => queryCardHtml(q, i)).join('') + (_editorEnterprise ? `
+      <div class="query-editor-bar">
+        <button type="button" class="query-add" id="queryAddBtn">+ Add a question</button>
+        <span class="query-count" id="queryCount"></span>
+      </div>
+      <div class="query-status" id="queryStatus" hidden></div>` : '');
+    if (!_editorEnterprise) return;
+    container.querySelectorAll('.query-card.editable').forEach(wireEditableCard);
+    document.getElementById('queryAddBtn').addEventListener('click', () => {
+      const cards = container.querySelectorAll('.query-card.editable');
+      const wrap = document.createElement('div');
+      wrap.innerHTML = queryCardHtml({ text: '', platform: 'ChatGPT', brand_specific: false }, cards.length).trim();
+      const card = wrap.firstChild;
+      container.insertBefore(card, container.querySelector('.query-editor-bar'));
+      wireEditableCard(card);
+      card.querySelector('.query-text-input').focus();
+      refreshQueryEditor();
+    });
+    refreshQueryEditor();
+  }
+
+  function autoSizeTextarea(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
+  function wireEditableCard(card) {
+    const text = card.querySelector('.query-text-input');
+    const brand = card.querySelector('.query-brand');
+    const onChange = () => {
+      const warn = card.querySelector('.query-warn');
+      if (warn) { warn.hidden = true; warn.textContent = ''; }
+      refreshQueryEditor();
+    };
+    text.addEventListener('input', () => { autoSizeTextarea(text); onChange(); });
+    brand.addEventListener('change', onChange);
+    card.querySelector('.query-platform-select').addEventListener('change', onChange);
+    card.querySelector('.query-remove').addEventListener('click', () => { card.remove(); refreshQueryEditor(); });
+    requestAnimationFrame(() => autoSizeTextarea(text));
+  }
+
+  // A question that names the brand can't be scored as organic: it would be
+  // rank 1 by construction. Detected automatically and locked to "brand".
+  function refreshQueryEditor() {
+    document.querySelectorAll('#query-cards .query-card.editable').forEach(card => {
+      const text = card.querySelector('.query-text-input').value;
+      const brand = card.querySelector('.query-brand');
+      const forced = _currentProfile ? namesBrand(text, _currentProfile) : false;
+      if (forced) brand.checked = true;
+      brand.disabled = forced;
+      card.querySelector('.query-brand-note').hidden = !brand.checked;
+    });
+    const qs = getQueriesFromCards();
+    const countEl = document.getElementById('queryCount');
+    if (countEl) {
+      const nb = qs.filter(q => q.brand_specific).length;
+      countEl.textContent = `${qs.length} question${qs.length === 1 ? '' : 's'}` + (nb ? ` · ${nb} name${nb === 1 ? 's' : ''} your brand` : '');
+    }
+    setQueryStatus('');
+  }
+
+  function setQueryStatus(msg, kind) {
+    const el = document.getElementById('queryStatus');
+    if (!el) { if (msg) alert(msg); return; }
+    el.hidden = !msg;
+    el.textContent = msg || '';
+    el.className = 'query-status' + (kind ? ' ' + kind : '');
   }
 
   function getQueriesFromCards() {
+    if (_editorEnterprise) {
+      return Array.from(document.querySelectorAll('#query-cards .query-card.editable')).map(card => ({
+        text: card.querySelector('.query-text-input').value.trim().replace(/\s+/g, ' '),
+        platform: card.querySelector('.query-platform-select').value,
+        brand_specific: card.querySelector('.query-brand').checked,
+        checked: true,
+      })).filter(q => q.text.length > 0);
+    }
     const cards = document.querySelectorAll('#query-cards .query-card');
     const base = _currentQueries || [];
     return Array.from(cards).map((card, i) => {
       const checkbox = card.querySelector('input[type="checkbox"]');
-      const textInput = card.querySelector('.query-text-input');
       return {
         ...(base[i] || {}),
-        text: textInput ? textInput.value.trim() : (base[i]?.text || ''),
+        text: base[i]?.text || '',
         checked: checkbox ? checkbox.checked : true,
         platform: base[i]?.platform || 'ChatGPT',
         brand_specific: base[i]?.brand_specific || false,
       };
     });
+  }
+
+  // Advisory only: flags questions unlikely to return a vendor list. The
+  // customer can keep them; they know their buyers. Only new or changed
+  // questions are checked. Returns true when the run should pause so the
+  // customer can see the warnings.
+  async function warnOnWeakQueries(queries, savedQueries) {
+    const savedTexts = new Set((savedQueries || []).map(q => String(q.text).trim().toLowerCase()));
+    const items = queries.map((q, i) => ({ i, q })).filter(x => !x.q.brand_specific && !savedTexts.has(x.q.text.toLowerCase()));
+    if (!items.length) return false;
+    const c = _currentProfile || {};
+    let verdicts;
+    try {
+      verdicts = await judgeQueries(c, c.offer || c.industry || '', items);
+    } catch (e) {
+      console.warn('Question check skipped:', e.message);
+      return false;
+    }
+    const cards = Array.from(document.querySelectorAll('#query-cards .query-card.editable'))
+      .filter(card => card.querySelector('.query-text-input').value.trim());
+    let flagged = 0;
+    verdicts.forEach(v => {
+      if (v && v.pass === false && cards[v.i]) {
+        const warn = cards[v.i].querySelector('.query-warn');
+        warn.textContent = `This may not return a list of providers: ${v.reason || 'outside your category'}.` + (v.rewrite ? ` Try: "${v.rewrite}"` : '');
+        warn.hidden = false;
+        flagged++;
+      }
+    });
+    if (!flagged) return false;
+    setQueryStatus(`${flagged} question${flagged === 1 ? '' : 's'} may not show where you rank. Edit ${flagged === 1 ? 'it' : 'them'}, or click Run audit again to keep your wording.`, 'warn');
+    return true;
   }
 
   // ── Persona review helpers ────────────────────────────────────────────────
@@ -1697,6 +1897,11 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         specific_product: document.getElementById('f-product').value.trim(),
         competitors:      document.getElementById('f-competitors').value.trim(),
       };
+      // Every prompt reads c.offer (the name audit.html uses). This form stored
+      // the product as specific_product only, so on the subscriber path the
+      // query generator, the grader and the report never saw what the brand
+      // sells and worked from the industry field alone.
+      profile.offer = profile.specific_product;
       if (!profile.company_name || !profile.website) {
         alert('Please enter your company name and website before running.');
         return;
@@ -1755,6 +1960,11 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
           queries = await genQueries(_currentProfile, personas);
         }
         _currentQueries = queries;
+        _editorEnterprise = !!isEnterprise;
+        _queriesRegenerated = false;
+        _warnedQuerySetKey = null;
+        _savedQuerySetKey = saved ? querySetKey(saved) : null;
+        setQueryScreenCopy(!!saved, p.querySetVersion || (saved ? 1 : 0));
         renderQueryCards(queries);
         const note = document.getElementById('qset-note');
         if (note) note.hidden = !saved;
@@ -1780,6 +1990,8 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       try {
         const queries = await genQueries(_currentProfile, _currentPersonas || getPersonasFromForm());
         _currentQueries = queries;
+        _queriesRegenerated = true;    // persisted as a new set when the run starts
+        _warnedQuerySetKey = null;
         p.queries = null;              // stop the old set being reloaded
         renderQueryCards(queries);
         document.getElementById('qset-note').hidden = true;
@@ -1819,13 +2031,71 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       block('screen-personas');
     });
 
-    document.getElementById('runFromQueriesBtn').addEventListener('click', () => {
-      // Read queries from the rendered cards (respects user edits + unchecks)
+    document.getElementById('runFromQueriesBtn').addEventListener('click', async () => {
       const queriesFromCards = getQueriesFromCards();
-      const activeQueries = queriesFromCards.filter(q => q.checked);
-      if (activeQueries.length === 0) {
-        alert('Please keep at least one query checked before running.');
+
+      if (!_editorEnterprise) {
+        const activeQueries = queriesFromCards.filter(q => q.checked);
+        if (activeQueries.length === 0) {
+          alert('Please keep at least one query checked before running.');
+          return;
+        }
+        runAudit(_currentProfile, _currentPersonas, queriesFromCards);
         return;
+      }
+
+      // ── Enterprise: validate, warn, save as a new version, then run ──
+      const invalid = validateQuerySet(queriesFromCards);
+      if (invalid) { setQueryStatus(invalid, 'error'); return; }
+
+      const key = querySetKey(queriesFromCards);
+      const changed = _savedQuerySetKey !== null && key !== _savedQuerySetKey;
+      const btn = document.getElementById('runFromQueriesBtn');
+
+      // Check anything the customer wrote or changed (the generated set was
+      // already checked when it was built). Advisory: a second click runs.
+      const edited = key !== querySetKey(_currentQueries);
+      if (edited && key !== _warnedQuerySetKey) {
+        btn.disabled = true; btn.textContent = 'Checking your questions…';
+        const paused = await warnOnWeakQueries(queriesFromCards, _currentQueries || []);
+        btn.disabled = false; btn.textContent = 'Run audit →';
+        _warnedQuerySetKey = key;
+        if (paused) return;
+      }
+
+      if (changed) {
+        const nextVersion = (p.querySetVersion || 1) + 1;
+        const ok = confirm(
+          `Save these questions as version ${nextVersion} of your question set?\n\n` +
+          'Your score history restarts from this run, and your dashboard marks where the questions changed. ' +
+          'Earlier scores stay visible but were measured against different questions.'
+        );
+        if (!ok) return;
+
+        btn.disabled = true; btn.textContent = 'Saving your questions…';
+        try {
+          const r = await fetch('/api/sub-update-queries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+            body: JSON.stringify({
+              propertyId: activePropertyId,
+              queries: queriesFromCards.map(q => ({ text: q.text, platform: q.platform, brand_specific: q.brand_specific })),
+              source: _queriesRegenerated ? 'generated' : 'edited',
+            }),
+          });
+          const d = await r.json().catch(() => ({}));
+          if (!r.ok) throw new Error(d.error || `Save failed (${r.status})`);
+          p.queries = queriesFromCards.map(q => ({ text: q.text, platform: q.platform, brand_specific: q.brand_specific }));
+          p.querySetVersion = d.querySetVersion;
+          p.querySetId = d.querySetId;
+          _savedQuerySetKey = key;
+          _queriesRegenerated = false;
+        } catch (e) {
+          setQueryStatus(`Your questions weren't saved: ${e.message}`, 'error');
+          return;
+        } finally {
+          btn.disabled = false; btn.textContent = 'Run audit →';
+        }
       }
       runAudit(_currentProfile, _currentPersonas, queriesFromCards);
     });
@@ -1949,6 +2219,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
           industry: p.industry || '',
           geo: p.geo || '',
           specific_product: p.specific_product || '',
+          offer: p.specific_product || '',
           competitors: p.competitors || '',
         };
         flex('screen-loading');

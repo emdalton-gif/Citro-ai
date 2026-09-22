@@ -104,7 +104,7 @@ module.exports = async function handler(req, res) {
   const email = verifySubscriberToken(token);
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { results, profile, personas, queries, propertyId } = req.body;
+  const { results, profile, personas, queries, propertyId, newQuerySet } = req.body;
   if (!results) return res.status(400).json({ error: 'Missing results' });
 
   try {
@@ -146,6 +146,7 @@ module.exports = async function handler(req, res) {
       companyName: profile?.company_name || '',
       overallScore: results?.overallScore ?? null,
       querySetId,
+      querySetVersion: null,
     };
 
     if (isEnterprise && propertyId) {
@@ -169,11 +170,16 @@ module.exports = async function handler(req, res) {
         // Same for the query set. Personas were persisted and queries were not,
         // so every rerun asked different questions and the score delta measured
         // the exam changing rather than the brand's visibility changing.
+        // Later changes go through api/sub-update-queries.js, which versions them.
         if (Array.isArray(queries) && queries.length > 0 && !properties[propIdx].queries) {
           properties[propIdx].queries = queries;
           properties[propIdx].querySetId = querySetId;
           properties[propIdx].querySetAt = now;
+          properties[propIdx].querySetVersion = 1;
         }
+        // Stamp the run with the question-set version it used, so the
+        // dashboard can mark where the questions changed.
+        summary.querySetVersion = properties[propIdx].querySetVersion || 1;
       }
 
       await Promise.all([
@@ -201,15 +207,27 @@ module.exports = async function handler(req, res) {
           profileToSave.personas = existingProfile.personas;
         }
         // Lock the query set on first run, then keep it. Same reason as personas.
-        if (existingProfile?.queries?.length) {
+        // newQuerySet: the customer chose "Generate a new set instead", which
+        // already warned them it restarts their score history. Without this
+        // the regenerated set applied to one run and the next run silently
+        // went back to the old questions.
+        if (newQuerySet && Array.isArray(queries) && queries.length > 0) {
+          profileToSave.queries = queries;
+          profileToSave.querySetId = querySetId;
+          profileToSave.querySetAt = now;
+          profileToSave.querySetVersion = (existingProfile?.querySetVersion || (existingProfile?.queries?.length ? 1 : 0)) + 1;
+        } else if (existingProfile?.queries?.length) {
           profileToSave.queries = existingProfile.queries;
           profileToSave.querySetId = existingProfile.querySetId || querySetId;
           profileToSave.querySetAt = existingProfile.querySetAt || now;
+          profileToSave.querySetVersion = existingProfile.querySetVersion || 1;
         } else if (Array.isArray(queries) && queries.length > 0) {
           profileToSave.queries = queries;
           profileToSave.querySetId = querySetId;
           profileToSave.querySetAt = now;
+          profileToSave.querySetVersion = 1;
         }
+        summary.querySetVersion = profileToSave.querySetVersion || null;
         await upstashSet(`subscriber-profile:${email}`, profileToSave);
       }
 

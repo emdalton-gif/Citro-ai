@@ -346,7 +346,9 @@ function gtag(){dataLayer.push(arguments);}
 
 
 
-  </style>
+      .prop-qset-legend { font-size: 12px; color: var(--muted); line-height: 1.5; margin: 8px 0 4px; }
+    .prop-qset-tag { font-size: 10px; font-family: var(--mono, monospace); letter-spacing: 0.04em; text-transform: uppercase; color: #8C5A00; background: #FFF7E6; border-radius: 4px; padding: 2px 6px; margin-left: 6px; }
+</style>
 </head>
 <body>
 
@@ -1052,6 +1054,20 @@ function gtag(){dataLayer.push(arguments);}
 
       // Chart: oldest → newest on x-axis
       const chartRuns = [...allRuns].reverse();
+
+      // Mark runs where the question set changed from the run before. A score
+      // move across a marker reflects different questions, not only a change
+      // in visibility, so the customer needs to see where those points are.
+      const setChangedAt = chartRuns.map((r, i) => {
+        if (i === 0) return false;
+        const prev = chartRuns[i - 1];
+        if (prev.querySetVersion && r.querySetVersion) return prev.querySetVersion !== r.querySetVersion;
+        if (prev.querySetId && r.querySetId) return prev.querySetId !== r.querySetId;
+        return !prev.querySetId && !!r.querySetId;
+      });
+      const changedRunIds = new Set(chartRuns.filter((r, i) => setChangedAt[i]).map(r => r.runId));
+      const MARK = '#E8A21A';
+
       new Chart(chartCanvas.getContext('2d'), {
         type: 'line',
         data: {
@@ -1061,8 +1077,11 @@ function gtag(){dataLayer.push(arguments);}
             borderColor: '#00BDE7',
             backgroundColor: 'rgba(0,189,231,0.07)',
             borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: '#00BDE7',
+            pointRadius: setChangedAt.map(c => c ? 7 : 4),
+            pointStyle: setChangedAt.map(c => c ? 'rectRot' : 'circle'),
+            pointBackgroundColor: setChangedAt.map(c => c ? MARK : '#00BDE7'),
+            pointBorderColor: setChangedAt.map(c => c ? MARK : '#00BDE7'),
+            segment: { borderDash: ctx => setChangedAt[ctx.p1DataIndex] ? [5, 4] : undefined },
             fill: true,
             tension: 0.35,
           }]
@@ -1071,7 +1090,12 @@ function gtag(){dataLayer.push(arguments);}
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: {
-            callbacks: { label: ctx => ctx.parsed.y + '%' }
+            callbacks: {
+              label: ctx => ctx.parsed.y + '%',
+              afterLabel: ctx => setChangedAt[ctx.dataIndex]
+                ? `New question set${chartRuns[ctx.dataIndex].querySetVersion ? ' (version ' + chartRuns[ctx.dataIndex].querySetVersion + ')' : ''}`
+                : '',
+            }
           }},
           scales: {
             y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#E9F3F6' } },
@@ -1080,6 +1104,13 @@ function gtag(){dataLayer.push(arguments);}
         }
       });
 
+      if (changedRunIds.size) {
+        const legend = document.createElement('div');
+        legend.className = 'prop-qset-legend';
+        legend.innerHTML = `<span style="color:${MARK}">◆</span> Questions changed. Scores before and after a marker were measured against different questions.`;
+        chartCanvas.parentElement.insertAdjacentElement('afterend', legend);
+      }
+
       // Runs list. Shows the 5 most recent; the toggle below reveals the rest.
       const SHORT = 5;
       const renderRuns = (all) => {
@@ -1087,7 +1118,7 @@ function gtag(){dataLayer.push(arguments);}
         runsEl.innerHTML = list.map(r => {
           const sc = r.overallScore;
           return `<a href="/sub-audit.html?runId=${r.runId}" onclick="event.stopPropagation()">
-            <span>${formatDate(r.createdAt)}</span>
+            <span>${formatDate(r.createdAt)}${changedRunIds.has(r.runId) ? ' <span class="prop-qset-tag">new questions</span>' : ''}</span>
             <span class="${scoreClass(sc)}" style="font-weight:700">${sc !== null && sc !== undefined ? sc + '%' : '—'}</span>
           </a>`;
         }).join('');
