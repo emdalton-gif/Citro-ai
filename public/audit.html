@@ -571,15 +571,132 @@ function gtag(){dataLayer.push(arguments);}
     return JSON.parse(raw.replace(/```json|```/g,'').trim());
   }
 
+  // ── Query generation ──────────────────────────────────────────────────────
+  // The question set is locked per property and defines the score history, so
+  // every organic query has to be one the brand could legitimately win: a buyer
+  // choosing a solution in the brand's own category. The previous prompt asked
+  // for "adjacent" queries and queries "where the brand might not appear", and
+  // built persona queries from the persona's general worries (retention, AI
+  // readiness), so a well-known brand could score 0% on questions outside its
+  // category. Platforms are assigned here in code, not by the model, so the
+  // brand query can never land on Grok and the counts are always right.
+  const QUERY_SLOTS = [
+    { platform: 'ChatGPT',       type: 'category' },
+    { platform: 'ChatGPT',       type: 'brand' },
+    { platform: 'Perplexity',    type: 'category' },
+    { platform: 'Perplexity',    type: 'persona' },
+    { platform: 'Google Gemini', type: 'category' },
+    { platform: 'Google Gemini', type: 'problem' },
+    { platform: 'Claude',        type: 'persona' },
+    { platform: 'Claude',        type: 'comparison' },
+    { platform: 'Grok',          type: 'use_case' },
+  ];
+
+  function parseJsonLoose(raw) {
+    const s = String(raw || '').replace(/```json|```/g, '').trim();
+    try { return JSON.parse(s); } catch {}
+    const m = s.match(/[\[{][\s\S]*[\]}]/);
+    if (m) return JSON.parse(m[0]);
+    throw new Error('Could not parse model output');
+  }
+
+  function namesBrand(text, c) {
+    const t = String(text || '').toLowerCase();
+    const names = [c.company_name, ...(String(c.brand_aliases || '').split(','))]
+      .map(s => String(s || '').trim().toLowerCase()).filter(s => s.length > 2);
+    return names.some(n => t.includes(n));
+  }
+
   async function genQueries(c, personas) {
-    const ps = personas.map(p => `${p.name||'Buyer'} (${p.title}), goal: ${p.goal}, pain: ${p.pain}`).join('; ');
-    const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    const ps = (personas || []).map(p => `${p.name||'Buyer'}: ${p.title||'decision maker'} at ${p.company||'a company'}`).join('; ');
     const currentYear = new Date().getFullYear();
-    const raw = await callClaude([{
-      role: 'user',
-      content: `Generate 9 realistic search queries for an Citro audit. These are queries a real buyer would type into ChatGPT or Perplexity.\n\nBrand: ${c.company_name}\nProduct/solution: ${c.offer||'not specified'}\nPersonas: ${ps}\nCategory: ${c.industry||'this market'}\nKnown competitors: ${c.competitors||'not specified'}\nCurrent year: ${currentYear}\n\nRules:\n- If any query references a year, always use ${currentYear}.\n- Write queries the way a real person types — short, natural, 5-10 words max.\n- Do NOT include brand names unless it is the 1 allowed brand_specific query.\n- Include both queries where the brand might appear AND where they might not.\n- Mix required: 2 broad category queries, 2 buyer-persona-specific queries, 1 comparison query, 1 pain-driven query, 1 adjacent/broader query, 1 brand-specific query, 1 additional organic query of your choice.\n- Platform assignment (IMPORTANT — assign exactly one query to each platform): ChatGPT (2 queries), Perplexity (2 queries), Google Gemini (1 query), Claude (1 query), Microsoft Copilot (1 query), Grok (1 query), Meta AI (1 query). Every platform must appear exactly as listed.\n\nReturn ONLY a JSON array of exactly 9 items. Each item: {"text":"...","platform":"ChatGPT|Perplexity|Google Gemini|Claude|Microsoft Copilot|Meta AI|Grok","brand_specific":true|false}`
-    }]);
-    return JSON.parse(raw.replace(/```json|```/g,'').trim()).map(q => ({...q, checked: true}));
+    const prompt = `You are building the fixed question set for an AI search visibility audit. Each question will be sent to a real AI assistant, and we measure whether ${c.company_name} is recommended in the answer. The set is reused on every future audit, so every organic question must be one that a well-positioned company in ${c.company_name}'s category could fairly win.
+
+Brand: ${c.company_name}
+What they sell: ${c.offer || 'not specified'}
+Industry field (may be imprecise, trust "What they sell" over this): ${c.industry || 'not specified'}
+Ideal buyer: ${c.buyer || 'not specified'}
+Buyer personas (use for role and company context only): ${ps || 'not specified'}
+Known competitors: ${c.competitors || 'not specified'}
+Current year: ${currentYear}
+
+STEP 1. Define the solution category in plain buyer language: what a buyer would call the thing ${c.company_name} sells (for example "communication skills training for employees", not "leadership development" or "L&D"). Be as specific as the offer allows. If the offer spans several things, pick the core one.
+
+STEP 2. Write exactly 9 questions, one per type below, in this order:
+1. category: a buyer asking for the best or top options in the category.
+2. brand: the one question that names ${c.company_name} (for example reviews, pricing, or "is ${c.company_name} worth it").
+3. category: a second, differently worded request for providers or programs in the category.
+4. persona: the category request framed by a persona's role or company size (for example "for managers at a 2,000-person company").
+5. category: a request for recommended vendors, tools, or programs in the category, with one qualifier (budget, delivery format, industry, team size).
+6. problem: a buyer describing the specific problem the offer solves and asking what to buy or who to hire to fix it. The problem must be one this offer directly solves, not a general business worry.
+7. persona: a second persona-framed category request, different role or context from #4.
+8. comparison: alternatives to one named competitor (use a name from Known competitors), or which is better among options in the category. Do not name ${c.company_name}.
+9. use_case: the category applied to one concrete use case the offer serves.
+
+Rules for every question except #2:
+- It must be something a buyer types when looking for a solution or provider, so a good answer lists specific companies, products, or programs. No "how to" questions, no trend or research questions, no questions about adjacent categories.
+- It must be squarely inside the category from Step 1. If a strong company in that category would not reasonably appear in a good answer, the question is wrong.
+- Do not name ${c.company_name} or its product names.
+- Short and natural, the way people type into ChatGPT: 5 to 12 words.
+- If a year is used, use ${currentYear}.
+
+Return ONLY JSON: {"category":"...","queries":[{"type":"category|brand|persona|problem|comparison|use_case","text":"..."}]}`;
+
+    const raw = await callClaude([{ role: 'user', content: prompt }], null, 1200);
+    const parsed = parseJsonLoose(raw);
+    const list = Array.isArray(parsed) ? parsed : (parsed.queries || []);
+    const category = (parsed && parsed.category) || c.offer || c.industry || '';
+    if (list.length < QUERY_SLOTS.length) throw new Error('Query generation returned too few questions');
+
+    let queries = QUERY_SLOTS.map((slot, i) => ({
+      text: String(list[i]?.text || '').trim(),
+      platform: slot.platform,
+      type: slot.type,
+      brand_specific: slot.type === 'brand',
+      checked: true,
+    }));
+
+    queries = await checkQueryRelevance(c, category, queries);
+    return queries;
+  }
+
+  // Second pass: an independent check of each organic question against the
+  // offer. Anything a strong brand in this category could not fairly win is
+  // rewritten. If this call fails the audit still runs on the generated set;
+  // the customer reviews and can edit every question before it is locked.
+  async function checkQueryRelevance(c, category, queries) {
+    const organic = queries.map((q, i) => ({ i, q })).filter(x => !x.q.brand_specific);
+    const listing = organic.map(x => `${x.i}. [${x.q.type}] ${x.q.text}`).join('\n');
+    const prompt = `A company sells: ${c.offer || c.industry || category}
+Its solution category: ${category}
+
+Below are questions buyers will ask an AI assistant. For each, judge: would a good, honest answer to this question list specific companies or programs, AND would a strong company that sells the above be a legitimate candidate to appear in that list?
+
+Fail a question if it names the company or its products, or if it is a "how to" or informational question, a trend or research question, about an adjacent or broader category (for example executive education, LMS platforms, or general HR strategy when the company sells a specific kind of training), or too vague to produce a vendor list.
+
+For each failed question, write a replacement of the same type that passes: 5 to 12 words, natural buyer phrasing, does not name ${c.company_name} or its products.
+
+${listing}
+
+Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","rewrite":"<replacement, or empty if pass>"}]`;
+
+    try {
+      const raw = await callClaude([{ role: 'user', content: prompt }], null, 1200);
+      const verdicts = parseJsonLoose(raw);
+      if (!Array.isArray(verdicts)) return queries;
+      return queries.map((q, i) => {
+        if (q.brand_specific) return q;
+        const v = verdicts.find(x => Number(x.i) === i);
+        const rewrite = String(v?.rewrite || '').trim();
+        if (v && v.pass === false && rewrite && !namesBrand(rewrite, c)) {
+          return { ...q, text: rewrite, rewritten_from: q.text, relevance_note: v.reason || '' };
+        }
+        return q;
+      });
+    } catch (e) {
+      console.warn('Query relevance check skipped:', e.message);
+      return queries;
+    }
   }
 
   async function runSimulations(c, personas, queries) {
