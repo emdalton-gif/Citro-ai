@@ -224,8 +224,19 @@ async function callClaude(query, loc, timeoutMs) {
   const content = [];
   // A long search can pause mid-turn (stop_reason "pause_turn"); the docs say
   // to send the assistant turn back unchanged to let it finish.
+  // Claude decides for itself whether to search, and the first live health
+  // check showed it answering from memory (no search, no sources). Every
+  // other platform searched. Requiring at least one search on the first turn
+  // keeps the five platforms on the same footing. If the API ever rejects the
+  // requirement, fall back to letting Claude choose rather than failing.
+  let forceSearch = true;
   for (let turn = 0; turn < 3; turn++) {
-    const result = await httpsPost('api.anthropic.com', '/v1/messages', headers, { ...base, messages }, timeoutMs);
+    const payload = { ...base, messages, ...(turn === 0 && forceSearch ? { tool_choice: { type: 'any' } } : {}) };
+    let result = await httpsPost('api.anthropic.com', '/v1/messages', headers, payload, timeoutMs);
+    if (turn === 0 && forceSearch && result.status === 400 && /tool_choice/i.test(JSON.stringify(result.body))) {
+      forceSearch = false;
+      result = await httpsPost('api.anthropic.com', '/v1/messages', headers, { ...base, messages }, timeoutMs);
+    }
     if (result.status !== 200) throw apiError('Anthropic', result);
     content.push(...(result.body.content || []));
     if (result.body.stop_reason !== 'pause_turn') break;
@@ -246,6 +257,15 @@ async function callClaude(query, loc, timeoutMs) {
     }
   });
   if (!texts.length) content.forEach(b => { if (b.type === 'text') texts.push(b.text); });
+  // If the answer carried no inline citations, record the pages the search
+  // returned: those are what the answer was written from.
+  if (!sources.length) {
+    content.forEach(b => {
+      if (b.type === 'web_search_tool_result' && Array.isArray(b.content)) {
+        b.content.forEach(r => { if (r.type === 'web_search_result') addSource(sources, r.url, r.title); });
+      }
+    });
+  }
   const errBlock = content.find(b => b.type === 'web_search_tool_result' && b.content?.type === 'web_search_tool_result_error');
   if (!texts.join('').trim() && errBlock) throw new Error(`Anthropic web search error: ${errBlock.content.error_code}`);
   return { text: texts.join('').trim(), sources, searchQueries: queries, model: MODELS.Claude, locationApplied: !!loc };
