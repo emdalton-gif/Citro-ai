@@ -700,7 +700,7 @@ function renderSetup(id) {
     </div>
     <div class="row2">
       <div class="fg"><label>Industry / niche</label><input id="s-ind-${id}" value="${esc(c.industry)}" onchange="sp('${id}','industry',this.value)" placeholder="e.g. B2B SaaS, healthcare IT"/></div>
-      <div class="fg"><label>Specific geography</label><input id="s-geo-${id}" value="${esc(c.geo)}" onchange="sp('${id}','geo',this.value)" placeholder="Leave blank if global"/></div>
+      <div class="fg"><label>Where buyers search from</label><input id="s-geo-${id}" value="${esc(c.geo)}" onchange="sp('${id}','geo',this.value)" placeholder="Blank = all of the US, or e.g. Grand Rapids, MI"/></div>
     </div>
     <div class="fg"><label>Specific product or service to audit</label>
       <input id="s-prod-${id}" value="${esc(c.specificProduct)}" onchange="sp('${id}','specificProduct',this.value)" placeholder="Leave blank to audit the company overall"/>

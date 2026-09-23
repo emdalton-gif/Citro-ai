@@ -11,9 +11,10 @@
 //   3. Web search is on for every platform, because every consumer app now
 //      searches before answering "which X should I buy" questions. Answering
 //      from model memory alone systematically missed specialist brands.
-//   4. Location comes only from the property's geography setting, never from
-//      the operator. Platforms whose API has no location option answer
-//      nationally, and the response says so.
+//   4. Location comes only from the property's "where your buyers are
+//      searching from" setting, never from the operator. Blank means all of
+//      the US. Platforms whose API has no location option answer nationally,
+//      and the response says so.
 //   5. Models match what a free consumer user of each app gets. Every model ID
 //      can be overridden with an environment variable (below) so a retirement
 //      is a settings change, not a code deploy.
@@ -136,7 +137,9 @@ const STATE_BY_NAME = Object.fromEntries(Object.entries(US_STATES).map(([k, v]) 
 
 function parseLocation(geo) {
   const raw = String(geo || '').trim();
-  if (!raw) return null;
+  // Blank means all of the US: Citro's market is US buyers, and leaving the
+  // country unset let each provider pick its own default.
+  if (!raw) return { country: 'US', label: 'United States' };
   const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
   const last = (parts[parts.length - 1] || '').replace(/\./g, '');
   const stateFromLast = US_STATES[last.toUpperCase()] || STATE_BY_NAME[last.toLowerCase()];
