@@ -1,26 +1,63 @@
 {
   "version": 2,
   "functions": {
-    "api/claude.js": { "maxDuration": 300 },
-    "api/*.js": { "maxDuration": 60 }
+    "api/claude.js": {
+      "maxDuration": 300
+    },
+    "api/live-query.js": {
+      "maxDuration": 120
+    },
+    "api/provider-health.js": {
+      "maxDuration": 120
+    },
+    "api/*.js": {
+      "maxDuration": 60
+    }
   },
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin",  "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
       ]
     }
   ],
   "redirects": [
-    { "source": "/rootace-vs-profound.html", "destination": "/citro-vs-profound.html", "permanent": true },
-    { "source": "/subscribe.html", "destination": "/plans.html", "permanent": true },
-    { "source": "/subscribe.html/", "destination": "/plans.html", "permanent": true }
+    {
+      "source": "/rootace-vs-profound.html",
+      "destination": "/citro-vs-profound.html",
+      "permanent": true
+    },
+    {
+      "source": "/subscribe.html",
+      "destination": "/plans.html",
+      "permanent": true
+    },
+    {
+      "source": "/subscribe.html/",
+      "destination": "/plans.html",
+      "permanent": true
+    }
   ],
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/404.html", "status": 404 }
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/404.html",
+      "status": 404
+    }
   ]
 }

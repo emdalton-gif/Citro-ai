@@ -163,6 +163,14 @@ module.exports = async function handler(req, res) {
         properties[propIdx].lastScore = results?.overallScore ?? null;
         properties[propIdx].lastRunAt = now;
         properties[propIdx].runCount = (properties[propIdx].runCount || 0) + 1;
+        // Keep the profile fields the customer confirmed on this run, so the
+        // next run starts from them. Name and website stay as the property was
+        // created; those are its identity.
+        if (profile) {
+          for (const k of ['industry', 'geo', 'specific_product', 'competitors', 'brand_aliases']) {
+            if (typeof profile[k] === 'string') properties[propIdx][k] = profile[k].slice(0, 1000);
+          }
+        }
         // Persist personas on property for apples-to-apples reruns
         if (personas && personas.length > 0) {
           properties[propIdx].personas = personas;

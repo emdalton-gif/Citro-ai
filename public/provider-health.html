@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Provider Health · Citro</title>
+<style>
+  :root { --dark:#07202B; --muted:#5B6B73; --border:#DCE8EC; --accent:#00BDE7; --green:#0E8A5F; --red:#C23A22; --bg:#F4F9FB; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--dark); }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 16px 64px; }
+  .label { font-family: ui-monospace, Menlo, monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); }
+  h1 { font-size: 28px; margin: 8px 0 6px; letter-spacing:-.02em; }
+  p.sub { color: var(--muted); margin: 0 0 24px; line-height: 1.6; }
+  button { background: var(--accent); color: #04222E; border: 0; border-radius: 8px; padding: 12px 20px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
+  button:disabled { opacity: .6; cursor: default; }
+  .summary { margin: 20px 0; font-weight: 600; }
+  .summary.ok { color: var(--green); } .summary.bad { color: var(--red); }
+  .card { background:#fff; border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-bottom:10px; display:grid; grid-template-columns: 150px 1fr; gap: 6px 16px; }
+  .card h2 { margin:0; font-size:15px; }
+  .pill { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; margin-top:6px; }
+  .pill.ok { background:#E3F6EE; color:var(--green); } .pill.bad { background:#FCEAE6; color:var(--red); }
+  .meta { font-size:13px; color:var(--muted); line-height:1.6; word-break: break-word; }
+  .meta b { color: var(--dark); font-weight:600; }
+  .problem { color: var(--red); font-size: 13px; margin-top: 4px; }
+  @media (max-width: 600px) { .card { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="label">Admin · Methodology check</div>
+  <h1>AI platform health</h1>
+  <p class="sub">Sends one test question to each platform with web search on, from Grand Rapids, MI. Every row should be green, with sources. Run it after each deploy, and whenever a platform shows up as unanswered in audits. Takes up to a minute.</p>
+  <button id="run">Run check</button>
+  <div id="summary" class="summary"></div>
+  <div id="out"></div>
+</div>
+<script>
+  const TOKEN = (() => { try { return localStorage.getItem('admin_token'); } catch (e) { return null; } })();
+  if (!TOKEN) window.location.href = '/admin-login.html';
+  const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  document.getElementById('run').addEventListener('click', async () => {
+    const btn = document.getElementById('run'), out = document.getElementById('out'), sum = document.getElementById('summary');
+    btn.disabled = true; btn.textContent = 'Checking all five platforms…'; out.innerHTML = ''; sum.textContent = ''; sum.className = 'summary';
+    try {
+      const r = await fetch('/api/provider-health', { headers: { Authorization: `Bearer ${TOKEN}` } });
+      if (r.status === 401) { window.location.href = '/admin-login.html'; return; }
+      const d = await r.json();
+      sum.textContent = d.all_ok ? 'All platforms answered with web sources.' : 'One or more platforms need attention.';
+      sum.className = 'summary ' + (d.all_ok ? 'ok' : 'bad');
+      out.innerHTML = d.results.map(x => `
+        <div class="card">
+          <div><h2>${esc(x.platform)}</h2><span class="pill ${x.ok ? 'ok' : 'bad'}">${x.ok ? 'Working' : 'Problem'}</span></div>
+          <div class="meta">
+            <div><b>Model</b> ${esc(x.model)} · <b>Time</b> ${(x.latency_ms / 1000).toFixed(1)}s${x.sources != null ? ` · <b>Sources</b> ${x.sources}` : ''}${x.location_applied != null ? ` · <b>Location</b> ${x.location_applied ? 'applied' : 'not supported by this API'}` : ''}</div>
+            ${x.sample_sources?.length ? `<div><b>Cited</b> ${x.sample_sources.map(esc).join(', ')}</div>` : ''}
+            ${x.search_queries?.length ? `<div><b>Searched for</b> ${x.search_queries.map(q => '"' + esc(q) + '"').join(', ')}</div>` : ''}
+            ${x.problem ? `<div class="problem">${esc(x.problem)}</div>` : ''}
+          </div>
+        </div>`).join('');
+    } catch (e) {
+      sum.textContent = 'The check itself failed: ' + e.message; sum.className = 'summary bad';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Run check';
+    }
+  });
+</script>
+</body>
+</html>

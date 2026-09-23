@@ -735,6 +735,9 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     block('query-log');
 
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    let dom = '';
+    try { const w = String(c.website || '').trim(); if (w) dom = new URL(/^https?:/i.test(w) ? w : 'https://' + w).hostname.replace(/^www\./, '').toLowerCase(); } catch (e) {}
+    const brandCtx = dom ? ` A mention of "${dom}" also counts as ${c.company_name} being named; do not list it as a competitor.` : '';
 
     const results = await Promise.all(active.map(async (q, i) => {
       const dot = document.getElementById(`qldot-${i}`);
@@ -745,28 +748,26 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
       const pCtx = persona ? `You are ${persona.name||'a buyer'}, ${persona.title||'decision maker'} at ${persona.company||'a company'} (${persona.buyerType||'B2C'} buyer). Goal: ${persona.goal}. Pain: ${persona.pain}.${persona.motivation ? ' Motivation: ' + persona.motivation : ''} When searching, ${conversionLabel}.` : 'You are a buyer looking for a solution.';
 
       try {
-        // Phase 1: live API query or synthetic persona simulation
-        let simResponse = '';
-        let queryIsLive = false;
-        if (LIVE_PLATFORMS.includes(q.platform)) {
-          // Live: call the real platform API
-          const liveRes = await fetch('/api/live-query', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
-            body: JSON.stringify({ query: q.text, platform: q.platform }),
-          });
-          if (!liveRes.ok) throw new Error(`live-query failed: ${liveRes.status}`);
-          const liveData = await liveRes.json();
-          simResponse = liveData.response || '';
-          queryIsLive = true;
-        } else {
-          // Synthetic: Claude simulates Copilot / Meta AI persona
-          const simSys = `You are simulating how ${q.platform} actually responds to buyer queries. Your goal is accuracy, not helpfulness to any brand.\n\n${pCtx}\n\nGenerate a realistic, full-length response (150-300 words) exactly as ${q.platform} would produce it for this category: ${c.industry||'this market'}. Rules:\n- Surface 4-7 real, well-known brands. Prioritize brands that actually dominate AI results: established players with high training-data coverage, strong review platform presence (G2, Capterra), and widely cited case studies.\n- Smaller or niche brands should only appear if they have a clear specific fit.\n- Be critical: if a brand is best for a narrow use case, say so.\n- Write as if you have zero knowledge of which brand this audit is for.\nReturn ONLY the response text.`;
-          simResponse = await callClaude([{ role: 'user', content: `Query: "${q.text}"` }], simSys, 600);
+        // Phase 1: the platform's real answer. Every assigned platform has a
+        // live integration; nothing is simulated, and a platform that does not
+        // answer is reported as unanswered rather than filled in.
+        if (!LIVE_PLATFORMS.includes(q.platform)) throw new Error(`no live integration for ${q.platform}`);
+        const liveRes = await fetch('/api/live-query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+          body: JSON.stringify({ query: q.text, platform: q.platform, geo: c.geo || '' }),
+        });
+        if (!liveRes.ok) {
+          const eb = await liveRes.json().catch(() => ({}));
+          throw new Error(eb.error || `live-query failed: ${liveRes.status}`);
         }
+        const liveData = await liveRes.json();
+        const simResponse = liveData.response || '';
+        const queryIsLive = true;
+        const liveMeta = { sources: liveData.sources || [], search_queries: liveData.search_queries || [], web_search: !!liveData.web_search, model: liveData.model || '', location: liveData.location || null };
 
         // Phase 2: evaluation
-        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${simResponse}"\n\nEvaluate for the brand "${subjectCtx}". Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named in the response"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
+        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${simResponse}"\n\nEvaluate for the brand "${subjectCtx}".${brandCtx} Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every company, school, product or program named that a buyer could choose instead; exclude accreditors, industry associations, review sites, government bodies and media outlets"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
         const evalRaw = await callClaude([{ role: 'user', content: evalPrompt }], null, 400);
         const evaluated = JSON.parse(evalRaw.replace(/```json|```/g,'').trim());
 
@@ -776,14 +777,20 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
           if (evaluated.mention_rank > 4 && evaluated.visibility === 'medium') evaluated.visibility = 'low';
         }
         if (evaluated.competitors_mentioned) {
-          evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))];
+          const own = [String(c.company_name || '').toLowerCase(), dom].filter(Boolean);
+          evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))]
+            .filter(n => !own.includes(String(n).toLowerCase()));
         }
 
         if (dot) dot.className = 'ql-dot done';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, is_live: queryIsLive, ...evaluated };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, is_live: queryIsLive,
+                 sources: liveMeta.sources, search_queries: liveMeta.search_queries, web_search: liveMeta.web_search, model: liveMeta.model, location: liveMeta.location, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, visibility: 'none', mentions_client: false, insight: 'Query error', response: '', is_live: LIVE_PLATFORMS.includes(q.platform), competitors_mentioned: [] };
+        // An unanswered query is not evidence the brand was absent. Scoring it
+        // "none" made an outage look like bad visibility (fixed in sub-audit on
+        // Sept 9; this page had kept the old behaviour).
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, failed: true, visibility: null, mentions_client: null, mention_rank: null, insight: `No response recorded from ${q.platform}: ${e.message || 'unknown error'}. Excluded from the score.`, response: '', is_live: false, competitors_mentioned: [] };
       }
     }));
 
@@ -792,14 +799,16 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 
   async function genReport(c, personas, results) {
     const visWeights = { high: 1.0, medium: 0.5, low: 0.25, none: 0 };
-    const organic = results.filter(x => !x.brand_specific);
+    const organic = results.filter(x => !x.brand_specific && !x.failed);
     const mentioned = organic.filter(x => x.mentions_client).length;
     const score = organic.length ? Math.round(organic.reduce((sum, x) => sum + (visWeights[x.visibility] || 0), 0) / organic.length * 100) : 0;
     const allCompMentions = results.flatMap(x => x.competitors_mentioned || []);
     const compFreq = {};
     allCompMentions.forEach(n => compFreq[n] = (compFreq[n] || 0) + 1);
     const comps = [...new Set(allCompMentions)].sort((a, b) => compFreq[b] - compFreq[a]);
-    const queries = results.map(x => `[${x.platform}] "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`).join('\n');
+    const queries = results.map(x => x.failed
+      ? `[${x.platform}] "${x.query}" -> NO RESPONSE RECORDED. Not a visibility result. Do not treat as absence.`
+      : `[${x.platform}] "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`).join('\n');
     const buyerCtx = personas.map(p => `${p.name||'Buyer'} (${p.title||'decision maker'})`).join(', ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const visCtx = score === 0
@@ -822,7 +831,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
   // ── Render Results ────────────────────────────────────────────────────────
   function renderResults(results, report, orderData, resultId) {
     const visWeights = { high: 1.0, medium: 0.5, low: 0.25, none: 0 };
-    const organic = results.filter(x => !x.brand_specific);
+    const organic = results.filter(x => !x.brand_specific && !x.failed);
     const mentioned = organic.filter(x => x.mentions_client).length;
     const score = organic.length ? Math.round(organic.reduce((sum, x) => sum + (visWeights[x.visibility] || 0), 0) / organic.length * 100) : 0;
     const high = organic.filter(x => x.visibility === 'high').length;
@@ -833,10 +842,12 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     // Header
     document.getElementById('res-title').textContent = `Your AI Visibility Results for ${orderData.company_name}`;
     const liveCount = results.filter(r => r.is_live).length;
-    const syntheticCount = results.filter(r => !r.is_live).length;
-    const methodLabel = syntheticCount > 0
-      ? `${liveCount} live queries · ${syntheticCount} synthetic simulations`
-      : `${liveCount} live queries`;
+    const failedCount = results.filter(r => r.failed).length;
+    const locLabel = (results.find(r => r.location) || {}).location;
+    const webLabel = results.some(r => r.web_search) ? ` · web-enabled answers${locLabel ? `, as seen from ${locLabel}` : ''}` : '';
+    const methodLabel = (failedCount
+      ? `${liveCount} of ${results.length} queries answered · ${failedCount} unanswered`
+      : `${liveCount} live queries`) + webLabel;
     document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})} · ${methodLabel} · ${platforms} platforms`;
 
     // Share link
@@ -920,11 +931,12 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     if (results.length) {
       document.getElementById('query-breakdown').innerHTML = results.map(r => `
         <div class="qb-item">
-          <span class="qb-vis ${r.brand_specific ? 'none' : r.visibility}">${r.brand_specific ? 'brand' : r.visibility}</span>
+          <span class="qb-vis ${r.failed || r.brand_specific ? 'none' : r.visibility}">${r.failed ? 'unanswered' : r.brand_specific ? 'brand' : r.visibility}</span>
           <div class="qb-body">
             <div class="qb-q">${esc(r.query)}</div>
             <div class="qb-platform">${esc(r.platform)}</div>
             ${r.insight ? `<div class="qb-insight">${esc(r.insight)}</div>` : ''}
+            ${(r.sources || []).length ? `<div class="qb-platform" style="margin-top:6px;">Sources: ${r.sources.slice(0, 5).map(s => esc(s.domain || s.title || '')).filter(Boolean).join(', ')}${r.sources.length > 5 ? ` +${r.sources.length - 5} more` : ''}</div>` : ''}
           </div>
         </div>`).join('');
       block('section-queries');
@@ -1032,7 +1044,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 
       // Calculate score for saving
       const visWeights = { high: 1.0, medium: 0.5, low: 0.25, none: 0 };
-      const organic = results.filter(x => !x.brand_specific);
+      const organic = results.filter(x => !x.brand_specific && !x.failed);
       const score = organic.length ? Math.round(organic.reduce((sum, x) => sum + (visWeights[x.visibility] || 0), 0) / organic.length * 100) : 0;
 
       // Save results

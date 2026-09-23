@@ -157,6 +157,14 @@ function gtag(){dataLayer.push(arguments);}
     .query-text-input:focus { color: var(--accent); }
     .query-brand-note { font-size: 11px; color: var(--amber); margin-top: 4px; font-family: var(--mono); }
     .query-brand-note[hidden], .query-warn[hidden], .query-status[hidden] { display: none; }
+    .qb-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 8px; font-size: 12px; }
+    .qb-sources-lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .qb-sources a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
+    .qb-sources a:hover { border-bottom-color: var(--accent); }
+    .qb-more { color: var(--muted); }
+    .qb-own { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #0E6B4A; background: #E3F6EE; border-radius: 4px; padding: 2px 6px; margin-left: 8px; }
+    .sources-note { font-size: 14px; color: var(--dark); font-weight: 600; margin: 0 0 14px; }
+    .sources-foot { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5; }
     .query-text-static { font-size: 14px; color: var(--dark); font-weight: 500; }
     .query-card.editable { cursor: default; }
     .query-edit-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -554,6 +562,11 @@ function gtag(){dataLayer.push(arguments);}
           <textarea id="f-competitors" style="min-height:80px;" placeholder="Competitor A, Competitor B, Competitor C"></textarea>
           <span style="font-size:11px;color:var(--muted);">Edit the list — add anyone we missed or remove ones that don't apply</span>
         </div>
+        <div class="form-group full">
+          <label>Other names buyers use for you</label>
+          <input type="text" id="f-aliases" placeholder="e.g. short name, former name, product names, your web address" />
+          <span style="font-size:11px;color:var(--muted);">Separate with commas. AI answers often name a product or a short name instead of the company, and those still count as you.</span>
+        </div>
       </div>
       <button class="run-btn" id="startRunBtn">Continue →</button>
     </div>
@@ -722,8 +735,17 @@ function gtag(){dataLayer.push(arguments);}
 
     <div class="result-section" id="section-queries">
       <div class="rs-label">Query Breakdown</div>
-      <div class="rs-title">Every simulation, scored</div>
+      <div class="rs-title">Every question, scored</div>
       <div class="query-breakdown" id="query-breakdown"></div>
+    </div>
+
+    <!-- Sources the AI platforms read before answering (injected by renderResults) -->
+    <div class="result-section" id="section-sources" style="display:none">
+      <div class="rs-label">Sources</div>
+      <div class="rs-title">Where AI looked before answering</div>
+      <p class="sources-note" id="sources-note"></p>
+      <div id="sources-chart"></div>
+      <p class="sources-foot">Number of answers that used each site. Being named, reviewed or listed on these sites is how brands get recommended.</p>
     </div>
 
     <!-- Competitor frequency chart (injected by renderResults) -->
@@ -772,6 +794,7 @@ function gtag(){dataLayer.push(arguments);}
   const SAVE_API = '/api/sub-save-run';
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function safeUrl(u) { return /^https?:\/\//i.test(String(u || '')) ? u : '#'; }
   function show(id) { const el = document.getElementById(id); if(el) el.style.display = ''; }
   function hide(id) { const el = document.getElementById(id); if(el) el.style.display = 'none'; }
   function block(id) { const el = document.getElementById(id); if(el) el.style.display = 'block'; }
@@ -842,9 +865,20 @@ function gtag(){dataLayer.push(arguments);}
     throw new Error('Could not parse model output');
   }
 
+  function siteDomain(c) {
+    const w = String(c.website || '').trim();
+    if (!w) return '';
+    try { return new URL(/^https?:/i.test(w) ? w : 'https://' + w).hostname.replace(/^www\./, '').toLowerCase(); } catch { return ''; }
+  }
+
+  function brandNames(c) {
+    return [c.company_name, ...(String(c.brand_aliases || '').split(','))]
+      .map(s => String(s || '').trim()).filter(s => s.length > 1);
+  }
+
   function namesBrand(text, c) {
     const t = String(text || '').toLowerCase();
-    const names = [c.company_name, ...(String(c.brand_aliases || '').split(','))]
+    const names = [c.company_name, ...(String(c.brand_aliases || '').split(',')), siteDomain(c)]
       .map(s => String(s || '').trim().toLowerCase()).filter(s => s.length > 2);
     return names.some(n => t.includes(n));
   }
@@ -970,6 +1004,13 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     document.getElementById('query-log').style.display = 'block';
 
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
+    // AI answers often name a product, a short name or the web address rather
+    // than the company. Those are the brand being recommended and must count.
+    const otherNames = brandNames(c).filter(n => n.toLowerCase() !== String(c.company_name || '').toLowerCase());
+    const dom = siteDomain(c);
+    const brandCtx = (otherNames.length || dom)
+      ? ` Any of these also count as ${c.company_name} being named: ${[...otherNames, ...(dom ? [dom] : [])].map(n => `"${n}"`).join(', ')}. Do not list them as competitors.`
+      : '';
     const results = await Promise.all(active.map(async (q, i) => {
       const dot = document.getElementById(`qldot-${i}`);
       if (dot) dot.className = 'ql-dot running';
@@ -981,16 +1022,24 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         let platformResponse = '';
         let isLive = false;
         let liveError = '';
+        let liveMeta = { sources: [], search_queries: [], web_search: false, model: '', location: null };
         if (LIVE_PLATFORMS.includes(q.platform)) {
           try {
             const liveResp = await fetch('/api/live-query', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
-              body: JSON.stringify({ query: q.text, platform: q.platform }),
+              body: JSON.stringify({ query: q.text, platform: q.platform, geo: c.geo || '' }),
             });
             if (liveResp.ok) {
               const liveData = await liveResp.json();
               platformResponse = liveData.response;
+              liveMeta = {
+                sources: Array.isArray(liveData.sources) ? liveData.sources : [],
+                search_queries: liveData.search_queries || [],
+                web_search: !!liveData.web_search,
+                model: liveData.model || '',
+                location: liveData.location || null,
+              };
               isLive = true;
             } else {
               const errBody = await liveResp.json().catch(()=>({}));
@@ -1013,16 +1062,26 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         }
 
         // ── Evaluate the response ──
-        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${platformResponse}"\n\nEvaluate for the brand "${subjectCtx}". Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every brand named in the response"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
+        const evalPrompt = `A buyer asked: "${q.text}"\n\n${q.platform} responded:\n"${platformResponse}"\n\nEvaluate for the brand "${subjectCtx}".${brandCtx} Score based on BOTH rank position AND coverage quality.\n\nFind the brand and count its exact rank (1 = first named, 2 = second, etc.). Set mention_rank to that number, or null if not mentioned.\n\nVisibility rules (rank gates the score):\n- "high": rank 1 or 2, AND substantive coverage (features, use cases, pricing, reason-to-buy). Rank 1 or 2 with only a name-drop = "medium".\n- "medium": rank 3 or 4 regardless of coverage. OR rank 1-2 with only a name-drop.\n- "low": rank 5 or higher. OR appears only incidentally.\n- "none": not mentioned at all.\n\nCRITICAL: rank 3+ CANNOT be "high". Rank 5+ CANNOT be "medium".${aliasCtx}\n\nReturn ONLY JSON: {"mentions_client":true|false,"mention_rank":1|2|3|4|5|6|7|null,"competitors_mentioned":["every company, school, product or program named that a buyer could choose instead; exclude accreditors, industry associations, review sites, government bodies and media outlets"],"visibility":"high"|"medium"|"low"|"none","sentiment":"positive"|"neutral"|"negative","insight":"1 direct honest sentence about what this result means for ${c.company_name}'s visibility"}`;
         const evalRaw = await callClaude([{ role:'user', content:evalPrompt }], null, 400);
         const evaluated = JSON.parse(evalRaw.replace(/```json|```/g,'').trim());
         if (evaluated.mention_rank != null) {
           if (evaluated.mention_rank > 2 && evaluated.visibility === 'high') evaluated.visibility = 'medium';
           if (evaluated.mention_rank > 4 && evaluated.visibility === 'medium') evaluated.visibility = 'low';
         }
-        if (evaluated.competitors_mentioned) evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))];
+        if (evaluated.competitors_mentioned) {
+          const own = [...brandNames(c), dom].filter(Boolean).map(n => n.toLowerCase());
+          evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))]
+            .filter(n => !own.includes(String(n).toLowerCase()));
+        }
         if (dot) dot.className = 'ql-dot done';
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: isLive, response: platformResponse, ...evaluated };
+        const citedOwnSite = !!dom && liveMeta.sources.some(s => {
+          const d = String(s.domain || '').toLowerCase();
+          return d === dom || d.endsWith('.' + dom);
+        });
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: isLive, response: platformResponse,
+                 sources: liveMeta.sources, search_queries: liveMeta.search_queries, web_search: liveMeta.web_search,
+                 model: liveMeta.model, location: liveMeta.location, cited_own_site: citedOwnSite, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
         // Scoring an error as "not mentioned" made a broken run look like a bad
@@ -1057,7 +1116,16 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const sys = 'You are a senior GTM strategist at Citro. Write in a confident, direct consultant tone. Be specific to this company — never give generic advice that could apply to any business. Name actual page types, platforms, content formats, and directories relevant to their industry. Output ONLY the JSON requested — no prose before or after.';
     // The projected figure is computed in JS below. Give it to the model too, or
     // the narrative quotes a different range than the number beside it.
-    const ctx = `Brand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}`;
+    // Sources the platforms read (web search on). Recommendations should point
+    // at these sites rather than generic directories.
+    const srcCount = {};
+    results.filter(r => !r.failed).forEach(r => new Set((r.sources || []).map(s => String(s.domain || '').toLowerCase()).filter(Boolean)).forEach(d => { srcCount[d] = (srcCount[d] || 0) + 1; }));
+    const srcTop = Object.entries(srcCount).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([d, n]) => `${d} (${n})`).join(', ');
+    const ownSiteHits = results.filter(r => r.cited_own_site).length;
+    const srcCtx = srcTop
+      ? `\nWeb sources the AI platforms read before answering (answers using each): ${srcTop}\n${c.company_name}'s own site used as a source in ${ownSiteHits} answers.\nWhen recommending third-party placements, prefer the sites above; do not name review sites or directories that are not relevant to this category.`
+      : '';
+    const ctx = `Brand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}${srcCtx}`;
 
     // ── Projected score computed in JS — never ask Claude for a number ──────
     const projectedScore = score === 0 ? 18 : Math.min(95, score + Math.round((100 - score) * 0.28));
@@ -1074,14 +1142,29 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
       ? `Tested queries show adequate coverage; focus on depth and specificity rather than new page creation. Ensure existing pages include concrete ROI data, customer quotes, and use-case specifics that AI systems cite as evidence.`
       : `${c.company_name} does not appear in AI responses for ${gapQueries.length} of the tested queries${gapPlatforms ? ` on ${gapPlatforms}` : ''}, pointing to a gap in indexed, citable content for those search patterns. Priority: publish long-form comparison guides and buyer-intent pages targeting the exact query language where gaps were found. Each page should include quantified outcomes, third-party validation, and FAQ sections that match how buyers actually phrase their searches.`;
 
+    // Grounded in the sources the platforms actually read, not a generic
+    // claim about review sites. Earlier text named G2 and Capterra for every
+    // client, including ones those sites have nothing to do with.
+    const answeredResults = results.filter(r => !r.failed);
+    const topDomainsFor = (rows, n = 3) => {
+      const cnt = {};
+      rows.forEach(r => new Set((r.sources || []).map(s => String(s.domain || '').toLowerCase()).filter(Boolean)).forEach(d => { cnt[d] = (cnt[d] || 0) + 1; }));
+      return Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, n).map(([d]) => d);
+    };
+    const listJoin = a => a.length <= 1 ? (a[0] || '') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1];
+    const overallDomains = topDomainsFor(answeredResults);
     const competitive_analysis = topComps.length === 0
-      ? `No direct competitors were identified in AI responses — the category may be underrepresented in AI training data, requiring foundational category-building content before brand-specific positioning.`
-      : `${topCompList} lead AI recommendations in this category. Their dominance reflects stronger review platform presence (G2, Capterra, TrustRadius), higher third-party citation volume, and more complete structured data coverage — all factors that AI systems weight heavily when constructing advisory responses.`;
+      ? `No competing providers were named in the AI answers${overallDomains.length ? `, which drew mostly on ${listJoin(overallDomains)}` : ''}. Answers in this category stay generic, so the first brand that sources describe clearly is well placed to be named.`
+      : `${topCompList} were named most often in AI answers for this category.${overallDomains.length ? ` The answers drew most on ${listJoin(overallDomains)}, so being clearly described on those sites is the most direct way to be named alongside or ahead of them.` : ''}`;
 
-    const competitor_insights = comps.slice(0, 4).map(comp => ({
-      competitor: comp,
-      insight: `Appeared in ${compFreq[comp]} of ${results.length} simulated queries. AI citation strength is likely driven by review platform presence and third-party case study coverage — the primary structural advantages to close.`,
-    }));
+    const competitor_insights = comps.slice(0, 4).map(comp => {
+      const withComp = answeredResults.filter(r => (r.competitors_mentioned || []).includes(comp));
+      const doms = topDomainsFor(withComp);
+      return {
+        competitor: comp,
+        insight: `Named in ${compFreq[comp]} of ${answeredResults.length} answers.${doms.length ? ` Answers that named them drew on ${listJoin(doms)}.` : ''}`,
+      };
+    });
 
     // ── Call 1: 3 short narrative fields only (~200-250 tokens output) ────────
     // IMPORTANT: Only 3 string values. Short sentences only. No other output.
@@ -1319,7 +1402,10 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
     const sourceLabel = failedCount
       ? `${liveCount} of ${simResults.length} queries answered · ${failedCount} unanswered`
       : `${liveCount} live queries`;
-    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${sourceLabel} · ${platforms} platforms`;
+    const webCount = simResults.filter(x => x.web_search).length;
+    const locLabel = (simResults.find(x => x.location) || {}).location;
+    const methodLabel = webCount ? ` · web-enabled answers${locLabel ? `, as seen from ${locLabel}` : ''}` : '';
+    document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${sourceLabel} · ${platforms} platforms${methodLabel}`;
 
     const scoreNum = document.getElementById('score-num');
     scoreNum.textContent = score + '%';
@@ -1361,9 +1447,41 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       const src = q.is_live
         ? '<span class="qb-src live">live query</span>'
         : '<span class="qb-src dead">no response</span>';
-      return `<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span>${pill}</div><div class="qb-insight">${esc(q.insight||'')}</div><div class="qb-foot">${src}</div></div>`;
+      const srcs = (q.sources || []).slice(0, 6);
+      const own = q.cited_own_site ? '<span class="qb-own">cited your site</span>' : '';
+      const srcHtml = srcs.length
+        ? `<div class="qb-sources"><span class="qb-sources-lbl">Sources used</span>${srcs.map(s => `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener nofollow">${esc(s.domain || s.title || 'source')}</a>`).join('')}${(q.sources || []).length > srcs.length ? `<span class="qb-more">+${q.sources.length - srcs.length} more</span>` : ''}</div>`
+        : '';
+      return `<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span>${pill}</div><div class="qb-insight">${esc(q.insight||'')}</div>${srcHtml}<div class="qb-foot">${src}${own}</div></div>`;
     }).join('');
     block('section-queries');
+
+    // ── Sources AI relied on ────────────────────────────────────────────────
+    // With web search on, these are the sites the platforms read before
+    // answering. They are where a brand has to be present to be recommended.
+    const domCount = {};
+    const ownDom = siteDomain(profile);
+    simResults.filter(r => !r.failed).forEach(r => {
+      new Set((r.sources || []).map(s => String(s.domain || '').toLowerCase()).filter(Boolean)).forEach(d => { domCount[d] = (domCount[d] || 0) + 1; });
+    });
+    const topDomains = Object.entries(domCount).sort((a, b) => b[1] - a[1]).slice(0, 12);
+    if (topDomains.length) {
+      const answered = simResults.filter(r => !r.failed).length;
+      const ownHits = ownDom ? Object.entries(domCount).filter(([d]) => d === ownDom || d.endsWith('.' + ownDom)).reduce((s, [, n]) => s + n, 0) : 0;
+      const maxD = topDomains[0][1];
+      document.getElementById('sources-note').textContent = ownDom
+        ? (ownHits ? `Your site (${ownDom}) was used as a source in ${ownHits} of ${answered} answers.` : `Your site (${ownDom}) was not used as a source in any of the ${answered} answers.`)
+        : '';
+      document.getElementById('sources-chart').innerHTML = topDomains.map(([d, n]) => {
+        const isOwn = ownDom && (d === ownDom || d.endsWith('.' + ownDom));
+        return `<div class="chart-row">
+          <div class="chart-label" title="${esc(d)}${isOwn ? ' (your site)' : ''}"${isOwn ? ' style="font-weight:700"' : ''}>${esc(d)}</div>
+          <div class="chart-bar-wrap"><div class="chart-bar${isOwn ? ' green' : ''}" style="width:${Math.round(n / maxD * 100)}%"></div></div>
+          <div class="chart-count">${n}</div>
+        </div>`;
+      }).join('');
+      block('section-sources');
+    }
 
     // ── Competitor frequency chart ──────────────────────────────────────────
     const allMentions = simResults.flatMap(r => r.competitors_mentioned || []);
@@ -1896,6 +2014,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         geo:              document.getElementById('f-geo').value.trim(),
         specific_product: document.getElementById('f-product').value.trim(),
         competitors:      document.getElementById('f-competitors').value.trim(),
+        brand_aliases:    document.getElementById('f-aliases').value.trim(),
       };
       // Every prompt reads c.offer (the name audit.html uses). This form stored
       // the product as specific_product only, so on the subscriber path the
@@ -2141,6 +2260,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         if (p.geo)             document.getElementById('f-geo').value             = p.geo;
         if (p.specific_product) document.getElementById('f-product').value        = p.specific_product;
         if (p.competitors)     document.getElementById('f-competitors').value     = p.competitors;
+        if (p.brand_aliases)   document.getElementById('f-aliases').value         = p.brand_aliases;
 
         // Update heading based on whether this property has been run before
         const isFirstPropertyRun = (property.runCount || 0) === 0;
@@ -2221,6 +2341,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
           specific_product: p.specific_product || '',
           offer: p.specific_product || '',
           competitors: p.competitors || '',
+          brand_aliases: p.brand_aliases || '',
         };
         flex('screen-loading');
         runAudit(profile);
@@ -2242,6 +2363,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       if (p.geo) document.getElementById('f-geo').value = p.geo;
       if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
       if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
+      if (p.brand_aliases) document.getElementById('f-aliases').value = p.brand_aliases;
 
       // Lock company name and website after first run to prevent agency abuse
       if (p.profileLocked) {

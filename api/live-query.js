@@ -1,16 +1,45 @@
 // api/live-query.js
-// Sends queries to real AI platform APIs and returns live responses.
+// Sends one buyer question to one AI platform and returns the answer the way a
+// new, anonymous buyer would get it: web search on, no personalization.
 // Accepts purchase tokens (one-time Snapshot buyers), subscriber tokens, and portal tokens.
 //
+// Methodology (see the Citro methodology doc):
+//   1. API only. Never a logged-in consumer account, so no memory, chat
+//      history or custom instructions can colour the answer.
+//   2. The buyer's question is sent word for word. No system prompt, persona
+//      or history goes to the answering platform.
+//   3. Web search is on for every platform, because every consumer app now
+//      searches before answering "which X should I buy" questions. Answering
+//      from model memory alone systematically missed specialist brands.
+//   4. Location comes only from the property's geography setting, never from
+//      the operator. Platforms whose API has no location option answer
+//      nationally, and the response says so.
+//   5. Models match what a free consumer user of each app gets. Every model ID
+//      can be overridden with an environment variable (below) so a retirement
+//      is a settings change, not a code deploy.
+//
 // Required environment variables:
-//   PERPLEXITY_API_KEY  — from https://www.perplexity.ai/settings/api
-//   OPENAI_API_KEY      — from https://platform.openai.com/api-keys
-//   ANTHROPIC_API_KEY   — from https://console.anthropic.com/
-//   GOOGLE_AI_API_KEY   — from https://aistudio.google.com/app/apikey
-//   XAI_API_KEY         — from https://console.x.ai/
+//   PERPLEXITY_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_AI_API_KEY, XAI_API_KEY
+// Optional model overrides:
+//   CITRO_MODEL_CHATGPT, CITRO_MODEL_CLAUDE, CITRO_MODEL_GEMINI, CITRO_MODEL_GROK, CITRO_PERPLEXITY_PRESET
 
 const https = require('https');
 const crypto = require('crypto');
+
+// Models checked against provider docs on 2026-09-23.
+const MODELS = {
+  ChatGPT:        process.env.CITRO_MODEL_CHATGPT     || 'gpt-5.6-luna',     // ChatGPT Free default
+  Claude:         process.env.CITRO_MODEL_CLAUDE      || 'claude-sonnet-5',
+  'Google Gemini': process.env.CITRO_MODEL_GEMINI     || 'gemini-3.8-flash',
+  Grok:           process.env.CITRO_MODEL_GROK        || 'grok-4.7',
+  Perplexity:     process.env.CITRO_PERPLEXITY_PRESET || 'low',              // Agent API preset; sonar-pro's successor
+};
+
+const MAX_OUTPUT_TOKENS = 1500;
+// Vercel maxDuration for this function is 120s (vercel.json). Leave headroom
+// for one retry of a fast failure; a slow answer gets one long attempt.
+const CALL_TIMEOUT_MS = 95000;
+const TOTAL_BUDGET_MS = 110000;
 
 // ── Token verification ────────────────────────────────────────────────────────
 
@@ -57,156 +86,272 @@ function verifyPurchaseToken(token) {
 
 // ── HTTP helper ───────────────────────────────────────────────────────────────
 
-function httpsPost(hostname, path, headers, body) {
+function httpsPost(hostname, path, headers, body, timeoutMs = CALL_TIMEOUT_MS) {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
-    const options = {
-      hostname,
-      path,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(bodyStr),
-        ...headers,
-      },
-      timeout: 50000,
-    };
-    const req = https.request(options, (res) => {
+    const req = https.request({
+      hostname, path, method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bodyStr), ...headers },
+      timeout: timeoutMs,
+    }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
-        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
-        catch (e) { reject(new Error('Invalid JSON from upstream: ' + data.slice(0, 200))); }
+        let parsed;
+        try { parsed = JSON.parse(data); }
+        catch { return reject(Object.assign(new Error('Invalid JSON from upstream: ' + data.slice(0, 200)), { status: res.statusCode })); }
+        resolve({ status: res.statusCode, body: parsed });
       });
     });
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
+    req.on('timeout', () => { req.destroy(); reject(Object.assign(new Error('Request timed out'), { timeout: true })); });
     req.write(bodyStr);
     req.end();
   });
 }
 
-// ── Platform callers ──────────────────────────────────────────────────────────
-
-async function callPerplexity(query) {
-  const apiKey = process.env.PERPLEXITY_API_KEY;
-  if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
-
-  const result = await httpsPost('api.perplexity.ai', '/chat/completions', {
-    'Authorization': `Bearer ${apiKey}`,
-  }, {
-    model: 'sonar-pro',
-    messages: [{ role: 'user', content: query }],
-    max_tokens: 700,
-  });
-
-  if (result.status !== 200) {
-    throw new Error(`Perplexity API ${result.status}: ${JSON.stringify(result.body?.error || result.body)}`);
-  }
-  return result.body.choices?.[0]?.message?.content || '';
+function apiError(name, result) {
+  const b = result.body || {};
+  const detail = b.error?.message || b.error || b.message || b.detail || b;
+  const err = new Error(`${name} API ${result.status}: ${typeof detail === 'string' ? detail : JSON.stringify(detail).slice(0, 300)}`);
+  err.status = result.status;
+  return err;
 }
 
-async function callOpenAI(query) {
+// ── Location ──────────────────────────────────────────────────────────────────
+// The property's geography field is free text ("Grand Rapids, MI",
+// "US only", "Northeast"). Only a clearly identified US place is passed;
+// anything ambiguous answers nationally rather than guessing.
+
+const US_STATES = {
+  AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',
+  FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',
+  LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',
+  MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',
+  NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',
+  RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',
+  VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',DC:'District of Columbia',
+};
+const STATE_BY_NAME = Object.fromEntries(Object.entries(US_STATES).map(([k, v]) => [v.toLowerCase(), v]));
+
+function parseLocation(geo) {
+  const raw = String(geo || '').trim();
+  if (!raw) return null;
+  const parts = raw.split(',').map(s => s.trim()).filter(Boolean);
+  const last = (parts[parts.length - 1] || '').replace(/\./g, '');
+  const stateFromLast = US_STATES[last.toUpperCase()] || STATE_BY_NAME[last.toLowerCase()];
+  if (stateFromLast) {
+    const city = parts.length > 1 ? parts[0] : undefined;
+    return { country: 'US', region: stateFromLast, ...(city ? { city } : {}), label: city ? `${city}, ${stateFromLast}` : stateFromLast };
+  }
+  const whole = STATE_BY_NAME[raw.toLowerCase()];
+  if (whole) return { country: 'US', region: whole, label: whole };
+  if (/^(us|usa|u\.s\.a?\.?|united states)( only)?$/i.test(raw) || /\b(nationwide|national)\b/i.test(raw)) {
+    return { country: 'US', label: 'United States' };
+  }
+  return null;
+}
+
+// ── Response helpers ──────────────────────────────────────────────────────────
+
+function hostOf(url) {
+  try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ''; }
+}
+
+function addSource(list, url, title) {
+  if (!url || typeof url !== 'string') return;
+  if (list.some(s => s.url === url)) return;
+  list.push({ url, title: title ? String(title).slice(0, 200) : '', domain: hostOf(url) });
+}
+
+// Responses-API shape shared by OpenAI and xAI: output[] with message items
+// whose content[] holds output_text parts with url_citation annotations.
+function parseResponsesShape(body) {
+  const sources = [];
+  const texts = [];
+  const queries = [];
+  for (const item of body.output || []) {
+    if (item.type === 'message') {
+      for (const part of item.content || []) {
+        if ((part.type === 'output_text' || part.type === 'text') && part.text) {
+          texts.push(part.text);
+          for (const a of part.annotations || []) {
+            if (a.type === 'url_citation') addSource(sources, a.url, typeof a.title === 'string' && !/^\d+$/.test(a.title) ? a.title : '');
+          }
+        }
+      }
+    } else if (item.type === 'web_search_call') {
+      if (item.action?.query) queries.push(item.action.query);
+      for (const s of item.action?.sources || []) addSource(sources, s.url, s.title);
+    }
+  }
+  if (!texts.length && typeof body.output_text === 'string') texts.push(body.output_text);
+  for (const c of body.citations || []) addSource(sources, typeof c === 'string' ? c : c?.url, c?.title);
+  return { text: texts.join('\n\n').trim(), sources, searchQueries: queries };
+}
+
+// ── Platform callers ──────────────────────────────────────────────────────────
+// Each returns { text, sources:[{url,title,domain}], searchQueries, model, locationApplied }.
+
+async function callOpenAI(query, loc, timeoutMs) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error('OPENAI_API_KEY not configured');
-
-  const result = await httpsPost('api.openai.com', '/v1/chat/completions', {
-    'Authorization': `Bearer ${apiKey}`,
-  }, {
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: query }],
-    max_tokens: 700,
-  });
-
-  if (result.status !== 200) {
-    throw new Error(`OpenAI API ${result.status}: ${JSON.stringify(result.body?.error || result.body)}`);
-  }
-  return result.body.choices?.[0]?.message?.content || '';
+  const tool = { type: 'web_search' };
+  if (loc) tool.user_location = { type: 'approximate', country: loc.country, ...(loc.region ? { region: loc.region } : {}), ...(loc.city ? { city: loc.city } : {}) };
+  const result = await httpsPost('api.openai.com', '/v1/responses', { Authorization: `Bearer ${apiKey}` }, {
+    model: MODELS.ChatGPT,
+    input: query,
+    tools: [tool],
+    include: ['web_search_call.action.sources'],
+    reasoning: { effort: 'low' },
+    max_output_tokens: MAX_OUTPUT_TOKENS,
+  }, timeoutMs);
+  if (result.status !== 200) throw apiError('OpenAI', result);
+  return { ...parseResponsesShape(result.body), model: MODELS.ChatGPT, locationApplied: !!loc };
 }
 
-async function callClaude(query) {
+async function callClaude(query, loc, timeoutMs) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
-
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 700,
-      messages: [{ role: 'user', content: query }],
-    });
-    const options = {
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      timeout: 50000,
-    };
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const parsed = JSON.parse(data);
-          if (res.statusCode !== 200) throw new Error(`Anthropic API ${res.statusCode}: ${JSON.stringify(parsed?.error)}`);
-          resolve(parsed.content?.[0]?.text || '');
-        } catch (e) { reject(e); }
-      });
-    });
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Request timed out')); });
-    req.write(body);
-    req.end();
+  const tool = { type: 'web_search_20250305', name: 'web_search', max_uses: 5 };
+  if (loc) tool.user_location = { type: 'approximate', country: loc.country, ...(loc.region ? { region: loc.region } : {}), ...(loc.city ? { city: loc.city } : {}) };
+  const headers = { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' };
+  const base = { model: MODELS.Claude, max_tokens: MAX_OUTPUT_TOKENS, tools: [tool] };
+  let messages = [{ role: 'user', content: query }];
+  const content = [];
+  // A long search can pause mid-turn (stop_reason "pause_turn"); the docs say
+  // to send the assistant turn back unchanged to let it finish.
+  for (let turn = 0; turn < 3; turn++) {
+    const result = await httpsPost('api.anthropic.com', '/v1/messages', headers, { ...base, messages }, timeoutMs);
+    if (result.status !== 200) throw apiError('Anthropic', result);
+    content.push(...(result.body.content || []));
+    if (result.body.stop_reason !== 'pause_turn') break;
+    messages = [{ role: 'user', content: query }, { role: 'assistant', content: result.body.content }];
+  }
+  const sources = [];
+  const queries = [];
+  // Text that precedes the last search call is the model narrating ("I'll
+  // search for..."), not part of the answer a buyer reads.
+  let lastToolIdx = -1;
+  content.forEach((b, i) => { if (b.type === 'server_tool_use' || b.type === 'web_search_tool_result') lastToolIdx = i; });
+  const texts = [];
+  content.forEach((b, i) => {
+    if (b.type === 'server_tool_use' && b.input?.query) queries.push(b.input.query);
+    if (b.type === 'text' && i > lastToolIdx) {
+      texts.push(b.text);
+      for (const c of b.citations || []) addSource(sources, c.url, c.title);
+    }
   });
+  if (!texts.length) content.forEach(b => { if (b.type === 'text') texts.push(b.text); });
+  const errBlock = content.find(b => b.type === 'web_search_tool_result' && b.content?.type === 'web_search_tool_result_error');
+  if (!texts.join('').trim() && errBlock) throw new Error(`Anthropic web search error: ${errBlock.content.error_code}`);
+  return { text: texts.join('').trim(), sources, searchQueries: queries, model: MODELS.Claude, locationApplied: !!loc };
 }
 
-// gemini-2.0-flash was retired; Google's own 404 names gemini-3.6-flash as the
-// replacement. Model IDs on every provider expire, and a retired one fails every
-// call, so a platform that goes quiet across a whole run is worth checking here
-// before assuming the credential is bad.
-async function callGemini(query) {
+async function callGemini(query, loc, timeoutMs) {
   const apiKey = process.env.GOOGLE_AI_API_KEY;
   if (!apiKey) throw new Error('GOOGLE_AI_API_KEY not configured');
-
+  const model = MODELS['Google Gemini'];
   const result = await httpsPost(
     'generativelanguage.googleapis.com',
-    `/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
-    {},
+    `/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+    { 'x-goog-api-key': apiKey },
     {
-      contents: [{ parts: [{ text: query }] }],
-      generationConfig: { thinkingConfig: { thinkingLevel: 'low' } },
-    }
+      contents: [{ role: 'user', parts: [{ text: query }] }],
+      tools: [{ google_search: {} }],
+      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, thinkingConfig: { thinkingLevel: 'low' } },
+    },
+    timeoutMs,
   );
-
-  if (result.status !== 200) {
-    throw new Error(`Gemini API ${result.status}: ${JSON.stringify(result.body?.error || result.body)}`);
+  if (result.status !== 200) throw apiError('Gemini', result);
+  const cand = result.body.candidates?.[0] || {};
+  const text = (cand.content?.parts || []).map(p => p.text || '').join('').trim();
+  const gm = cand.groundingMetadata || {};
+  const sources = [];
+  // Gemini returns redirect links (vertexaisearch...) with the site's domain
+  // as the title, so the title is what identifies the source.
+  for (const ch of gm.groundingChunks || []) {
+    const w = ch.web || {};
+    if (!w.uri) continue;
+    const domain = /\./.test(w.title || '') && !/\s/.test(w.title) ? w.title.replace(/^www\./, '') : hostOf(w.uri);
+    if (!sources.some(s => s.domain === domain && s.title === w.title)) sources.push({ url: w.uri, title: w.title || domain, domain });
   }
-  return result.body.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return { text, sources, searchQueries: gm.webSearchQueries || [], model, locationApplied: false };
 }
 
-// grok-3 was retired in xAI's 15 May 2026 model retirement. grok-4.6 is the
-// current flagship. A retired model ID fails every call, silently marking
-// Grok unanswered on every audit.
-async function callGrok(query) {
+async function callGrok(query, loc, timeoutMs) {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) throw new Error('XAI_API_KEY not configured');
+  const result = await httpsPost('api.x.ai', '/v1/responses', { Authorization: `Bearer ${apiKey}` }, {
+    model: MODELS.Grok,
+    input: [{ role: 'user', content: query }],
+    tools: [{ type: 'web_search' }],
+    max_output_tokens: MAX_OUTPUT_TOKENS,
+  }, timeoutMs);
+  if (result.status !== 200) throw apiError('Grok', result);
+  const parsed = parseResponsesShape(result.body);
+  // Grok writes inline citation markers like [[1]](https://...) into the text.
+  parsed.text = parsed.text.replace(/\s*\[\[\d+\]\]\([^)]+\)/g, '');
+  return { ...parsed, model: MODELS.Grok, locationApplied: false };
+}
 
-  const result = await httpsPost('api.x.ai', '/v1/chat/completions', {
-    'Authorization': `Bearer ${apiKey}`,
-  }, {
-    model: 'grok-4.6',
-    messages: [{ role: 'user', content: query }],
-    max_tokens: 700,
-  });
-
-  if (result.status !== 200) {
-    throw new Error(`Grok API ${result.status}: ${JSON.stringify(result.body?.error || result.body)}`);
+async function callPerplexity(query, loc, timeoutMs) {
+  const apiKey = process.env.PERPLEXITY_API_KEY;
+  if (!apiKey) throw new Error('PERPLEXITY_API_KEY not configured');
+  const headers = { Authorization: `Bearer ${apiKey}` };
+  const body = { preset: MODELS.Perplexity, input: query, max_output_tokens: MAX_OUTPUT_TOKENS };
+  let locationApplied = false;
+  let result;
+  if (loc) {
+    // Agent API (replaces Sonar, which Perplexity retires 2026-09-27). The
+    // preset already searches; the explicit tool carries the location. If the
+    // API rejects that combination, retry on the preset alone, still searched.
+    const withLoc = { ...body, tools: [{ type: 'web_search', user_location: { country: loc.country, ...(loc.region ? { region: loc.region } : {}), ...(loc.city ? { city: loc.city } : {}) } }] };
+    result = await httpsPost('api.perplexity.ai', '/v1/agent', headers, withLoc, timeoutMs);
+    if (result.status === 200) locationApplied = true;
+    else if (result.status !== 400 && result.status !== 422) throw apiError('Perplexity', result);
   }
-  return result.body.choices?.[0]?.message?.content || '';
+  if (!result || result.status !== 200) {
+    result = await httpsPost('api.perplexity.ai', '/v1/agent', headers, body, timeoutMs);
+    if (result.status !== 200) throw apiError('Perplexity', result);
+  }
+  const out = result.body.output || [];
+  const sources = [];
+  const queries = [];
+  for (const item of out) {
+    if (item.type === 'search_results') {
+      queries.push(...(item.queries || []));
+      for (const r of item.results || []) addSource(sources, r.url, r.title);
+    }
+  }
+  const parsed = parseResponsesShape(result.body);
+  for (const s of parsed.sources) addSource(sources, s.url, s.title);
+  return { text: parsed.text, sources, searchQueries: queries, model: result.body.model || `preset:${MODELS.Perplexity}`, locationApplied };
+}
+
+const CALLERS = {
+  ChatGPT: callOpenAI,
+  Claude: callClaude,
+  'Google Gemini': callGemini,
+  Grok: callGrok,
+  Perplexity: callPerplexity,
+};
+
+// One retry for transient failures (rate limit, overload, fast network error)
+// when there is time left. A timeout is not retried: it already used most of
+// the budget, and a second slow call would hit the platform limit.
+async function callWithRetry(platform, query, loc) {
+  const started = Date.now();
+  const fn = CALLERS[platform];
+  try {
+    return await fn(query, loc, CALL_TIMEOUT_MS);
+  } catch (err) {
+    const transient = err.status === 429 || (err.status >= 500 && err.status < 600) || (!err.status && !err.timeout);
+    const remaining = TOTAL_BUDGET_MS - (Date.now() - started);
+    if (!transient || remaining < 20000) throw err;
+    await new Promise(r => setTimeout(r, 1500));
+    return await fn(query, loc, remaining - 2000);
+  }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
@@ -223,31 +368,35 @@ module.exports = async function handler(req, res) {
   const isAuthed = verifySubscriberToken(token) || verifyPortalToken(token) || verifyPurchaseToken(token);
   if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { query, platform } = req.body;
+  const { query, platform, geo } = req.body || {};
   if (!query) return res.status(400).json({ error: 'Missing query' });
   if (!platform) return res.status(400).json({ error: 'Missing platform' });
+  if (!CALLERS[platform]) return res.status(400).json({ error: `Live queries not supported for ${platform}` });
 
-  const LIVE_PLATFORMS = ['ChatGPT', 'Perplexity', 'Claude', 'Google Gemini', 'Grok'];
-  if (!LIVE_PLATFORMS.includes(platform)) {
-    return res.status(400).json({ error: `Live queries not supported for ${platform}` });
-  }
-
+  const loc = parseLocation(geo);
+  const started = Date.now();
   try {
-    let response = '';
-    if (platform === 'Perplexity') {
-      response = await callPerplexity(query);
-    } else if (platform === 'ChatGPT') {
-      response = await callOpenAI(query);
-    } else if (platform === 'Claude') {
-      response = await callClaude(query);
-    } else if (platform === 'Google Gemini') {
-      response = await callGemini(query);
-    } else if (platform === 'Grok') {
-      response = await callGrok(query);
-    }
-    res.json({ response, is_live: true, platform });
+    const r = await callWithRetry(platform, String(query).slice(0, 500), loc);
+    if (!r.text) throw new Error(`${platform} returned an empty answer`);
+    res.json({
+      response: r.text,
+      sources: r.sources.slice(0, 25),
+      search_queries: r.searchQueries.slice(0, 10),
+      web_search: true,
+      model: r.model,
+      location: r.locationApplied && loc ? loc.label : null,
+      latency_ms: Date.now() - started,
+      is_live: true,
+      platform,
+    });
   } catch (err) {
     console.error(`live-query error [${platform}]:`, err.message);
     res.status(500).json({ error: err.message });
   }
 };
+
+module.exports.parseLocation = parseLocation;
+module.exports.parseResponsesShape = parseResponsesShape;
+module.exports.CALLERS = CALLERS;
+module.exports.MODELS = MODELS;
+module.exports._httpsPost = httpsPost;
