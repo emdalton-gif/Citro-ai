@@ -1068,11 +1068,24 @@ function gtag(){dataLayer.push(arguments);}
       const changedRunIds = new Set(chartRuns.filter((r, i) => setChangedAt[i]).map(r => r.runId));
       const MARK = '#E8A21A';
 
+      // Properties measured in several markets get one line per market next to
+      // the overall line. Runs before markets were added simply have no point
+      // on those lines.
+      const MARKET_COLORS = ['#7A5AF8', '#2E6BE6', '#0E8A5F', '#E8452A', '#B04FA8'];
+      const marketNames = [...new Set(chartRuns.flatMap(r => (r.marketScores || []).map(m => m.market)))].slice(0, 5);
+      const marketDatasets = marketNames.map((name, k) => ({
+        label: name,
+        data: chartRuns.map(r => { const m = (r.marketScores || []).find(x => x.market === name); return m && typeof m.score === 'number' ? m.score : null; }),
+        borderColor: MARKET_COLORS[k], backgroundColor: MARKET_COLORS[k],
+        borderWidth: 1.5, pointRadius: 3, tension: 0.35, fill: false, spanGaps: true,
+      }));
+
       new Chart(chartCanvas.getContext('2d'), {
         type: 'line',
         data: {
           labels: chartRuns.map(r => formatDate(r.createdAt)),
           datasets: [{
+            label: marketNames.length ? 'Overall' : 'Score',
             data: chartRuns.map(r => r.overallScore),
             borderColor: '#00BDE7',
             backgroundColor: 'rgba(0,189,231,0.07)',
@@ -1084,15 +1097,15 @@ function gtag(){dataLayer.push(arguments);}
             segment: { borderDash: ctx => setChangedAt[ctx.p1DataIndex] ? [5, 4] : undefined },
             fill: true,
             tension: 0.35,
-          }]
+          }, ...marketDatasets]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: {
+          plugins: { legend: { display: marketNames.length > 0, position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }, tooltip: {
             callbacks: {
-              label: ctx => ctx.parsed.y + '%',
-              afterLabel: ctx => setChangedAt[ctx.dataIndex]
+              label: ctx => (marketNames.length ? ctx.dataset.label + ': ' : '') + ctx.parsed.y + '%',
+              afterLabel: ctx => ctx.datasetIndex === 0 && setChangedAt[ctx.dataIndex]
                 ? `New question set${chartRuns[ctx.dataIndex].querySetVersion ? ' (version ' + chartRuns[ctx.dataIndex].querySetVersion + ')' : ''}`
                 : '',
             }

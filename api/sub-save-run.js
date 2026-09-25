@@ -145,6 +145,11 @@ module.exports = async function handler(req, res) {
       createdAt: now,
       companyName: profile?.company_name || '',
       overallScore: results?.overallScore ?? null,
+      // Per-market scores when the property is measured in several markets;
+      // each market keeps its own trend line on the dashboard.
+      marketScores: Array.isArray(results?.marketScores)
+        ? results.marketScores.slice(0, 5).map(m => ({ market: String(m.market || '').slice(0, 80), score: typeof m.score === 'number' ? m.score : null }))
+        : undefined,
       querySetId,
       querySetVersion: null,
     };
@@ -169,6 +174,9 @@ module.exports = async function handler(req, res) {
         if (profile) {
           for (const k of ['industry', 'geo', 'specific_product', 'competitors', 'brand_aliases']) {
             if (typeof profile[k] === 'string') properties[propIdx][k] = profile[k].slice(0, 1000);
+          }
+          if (Array.isArray(profile.markets)) {
+            properties[propIdx].markets = profile.markets.map(m => String(m || '').slice(0, 80)).filter(Boolean).slice(0, 5);
           }
         }
         // Persist personas on property for apples-to-apples reruns

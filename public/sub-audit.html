@@ -78,6 +78,15 @@ function gtag(){dataLayer.push(arguments);}
     .geo-opt { display: inline-flex; align-items: center; gap: 8px; font-weight: 500 !important; font-size: 14px !important; cursor: pointer; }
     .geo-opt input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
     .geo-hint { font-size: 11px; color: var(--muted); }
+    .geo-markets[hidden] { display: none; }
+    .geo-market-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .geo-market-row input { flex: 1; }
+    .geo-market-row .gm-state { font-size: 11px; min-width: 150px; color: var(--muted); }
+    .geo-market-row .gm-state.warn { color: #8C5A00; }
+    .geo-market-row button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; font-family: inherit; }
+    .geo-market-row button:hover { color: var(--red); }
+    .geo-add { background: none; border: 1px dashed var(--accent); color: var(--accent); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .geo-add[disabled] { opacity: .4; cursor: default; }
     .geo-hint.warn { color: #8C5A00; }
     .form-group label { font-size: 12px; font-weight: 600; color: var(--dark); }
     .form-group input, .form-group select, .form-group textarea {
@@ -168,6 +177,17 @@ function gtag(){dataLayer.push(arguments);}
     .qb-sources a:hover { border-bottom-color: var(--accent); }
     .qb-more { color: var(--muted); }
     .qb-own { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #0E6B4A; background: #E3F6EE; border-radius: 4px; padding: 2px 6px; margin-left: 8px; }
+    .mk-table { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .mk-row { display: grid; grid-template-columns: minmax(0,1.4fr) minmax(0,.6fr) minmax(0,.7fr) minmax(0,1.4fr) minmax(0,1.2fr); overflow-wrap: anywhere; gap: 12px; padding: 12px 16px; font-size: 13px; border-top: 1px solid var(--border); align-items: center; }
+    .mk-row:first-child { border-top: 0; }
+    .mk-head { background: #F4F9FB; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .mk-name { font-weight: 600; }
+    .mk-score { font-weight: 800; font-size: 15px; }
+    .mk-score.low { color: var(--red); } .mk-score.mid { color: var(--amber); } .mk-score.high-score { color: #0E8A5F; }
+    .qb-market { font-weight: 700; font-size: 15px; margin: 18px 0 8px; display: flex; gap: 10px; align-items: baseline; }
+    .qb-market span { font-family: var(--mono); font-size: 12px; color: var(--muted); font-weight: 500; }
+    @media (max-width: 640px) { .mk-row { grid-template-columns: 1fr 1fr; } .mk-head { display: none; } }
+    .ql-market { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 10px 0 4px; }
     .qb-sent { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
     .sources-note { font-size: 14px; color: var(--dark); font-weight: 600; margin: 0 0 14px; }
     .sources-foot { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5; }
@@ -558,8 +578,13 @@ function gtag(){dataLayer.push(arguments);}
           <div class="geo-choice" role="radiogroup" aria-label="Where your buyers are searching from">
             <label class="geo-opt"><input type="radio" name="geo-mode" value="us" checked /> All of the US</label>
             <label class="geo-opt"><input type="radio" name="geo-mode" value="local" /> A specific city or state</label>
+            <label class="geo-opt"><input type="radio" name="geo-mode" value="multi" /> Several markets</label>
           </div>
           <input type="text" id="f-geo" placeholder="e.g. Grand Rapids, MI or Texas" hidden />
+          <div class="geo-markets" id="geo-markets" hidden>
+            <div id="geo-market-list"></div>
+            <button type="button" class="geo-add" id="geoAddMarket">+ Add a market</button>
+          </div>
           <span class="geo-hint" id="geo-hint">AI answers will be gathered as a buyer anywhere in the US would see them.</span>
         </div>
         <div class="form-group full">
@@ -743,6 +768,13 @@ function gtag(){dataLayer.push(arguments);}
       <div class="roadmap-phases" id="roadmap-phases"></div>
     </div>
 
+    <div class="result-section" id="section-markets" style="display:none">
+      <div class="rs-label">Markets</div>
+      <div class="rs-title">Your visibility by market</div>
+      <p class="sources-note" id="market-note"></p>
+      <div class="mk-table" id="market-table"></div>
+    </div>
+
     <div class="result-section" id="section-queries">
       <div class="rs-label">Query Breakdown</div>
       <div class="rs-title">Every question, scored</div>
@@ -865,13 +897,64 @@ function gtag(){dataLayer.push(arguments);}
   const NEAR_ME_RE = /\b(near me|nearby|close to me|in my area|around me)\b/i;
   function isLocalGeo(geo) { const l = geoLabel(geo); return !!String(geo || '').trim() && !!l && l !== 'United States'; }
 
+  // ── Markets ──
+  // A property can be measured in up to MAX_MARKETS places. The whole
+  // question set runs once per market; the overall score is the simple
+  // average of the market scores, and each market keeps its own history.
+  const MAX_MARKETS = 5;
+  function marketsOf(c) {
+    const m = Array.isArray(c?.markets) ? c.markets.filter(x => String(x || '').trim()) : [];
+    return m.length > 1 ? m : null;
+  }
+  function hasLocalIntent(c) { return !!marketsOf(c) || isLocalGeo(c?.geo); }
+  function locationSummary(c) {
+    const m = marketsOf(c);
+    if (m) return `${m.length} markets: ${m.map(x => geoLabel(x) || x).join('; ')}`;
+    return isLocalGeo(c?.geo) ? geoLabel(c.geo) : '';
+  }
+  function geoMode() { return (document.querySelector('input[name="geo-mode"]:checked') || {}).value || 'us'; }
+  function marketInputs() { return Array.from(document.querySelectorAll('#geo-market-list .geo-market-row input')); }
+  function addMarketRow(value) {
+    const list = document.getElementById('geo-market-list');
+    if (list.children.length >= MAX_MARKETS) return;
+    const row = document.createElement('div');
+    row.className = 'geo-market-row';
+    row.innerHTML = `<input type="text" placeholder="e.g. Houston, TX" /><span class="gm-state"></span><button type="button" aria-label="Remove this market">Remove</button>`;
+    row.querySelector('input').value = value || '';
+    row.querySelector('input').addEventListener('input', refreshGeoField);
+    row.querySelector('button').addEventListener('click', () => { row.remove(); refreshGeoField(); });
+    list.appendChild(row);
+  }
+  function readMarkets() {
+    return marketInputs().map(i => i.value.trim()).filter(v => v && isLocalGeo(v));
+  }
+
   function refreshGeoField() {
     const input = document.getElementById('f-geo');
     const hint = document.getElementById('geo-hint');
     if (!input || !hint) return;
-    const local = document.querySelector('input[name="geo-mode"][value="local"]').checked;
+    const mode = geoMode();
+    const local = mode === 'local';
     input.hidden = !local;
+    document.getElementById('geo-markets').hidden = mode !== 'multi';
     hint.classList.remove('warn');
+    if (mode === 'multi') {
+      if (!marketInputs().length) { addMarketRow(''); addMarketRow(''); }
+      marketInputs().forEach(i => {
+        const st = i.parentElement.querySelector('.gm-state');
+        const v = i.value.trim();
+        const l = v ? geoLabel(v) : null;
+        st.classList.remove('warn');
+        if (!v) st.textContent = '';
+        else if (l && l !== 'United States') st.textContent = `✓ ${l}`;
+        else { st.textContent = 'Not a US city or state'; st.classList.add('warn'); }
+      });
+      const n = readMarkets().length;
+      document.getElementById('geoAddMarket').disabled = marketInputs().length >= MAX_MARKETS;
+      if (n >= 2) hint.textContent = `The full question set runs once in each of these ${n} markets. Your overall score is the average of the market scores. Gemini and Grok don't accept a location, so "near me" questions are sent to them with the market's name written in.`;
+      else { hint.textContent = `Add at least two US cities or states (up to ${MAX_MARKETS}). With only one, choose "A specific city or state" instead.`; hint.classList.add('warn'); }
+      return;
+    }
     if (!local) { hint.textContent = 'AI answers will be gathered as a buyer anywhere in the US would see them.'; return; }
     const v = input.value.trim();
     const label = v ? geoLabel(v) : null;
@@ -881,7 +964,16 @@ function gtag(){dataLayer.push(arguments);}
     else { hint.textContent = `We can't read "${v}" as a US city or state, so answers will cover the whole US. Try a format like "Grand Rapids, MI".`; hint.classList.add('warn'); }
   }
   // Called after the saved profile fills the form.
-  function setGeoField(geo) {
+  function setGeoField(geo, markets) {
+    const m = marketsOf({ markets });
+    document.getElementById('geo-market-list').innerHTML = '';
+    if (m) {
+      document.querySelector('input[name="geo-mode"][value="multi"]').checked = true;
+      m.slice(0, MAX_MARKETS).forEach(addMarketRow);
+      document.getElementById('f-geo').value = '';
+      refreshGeoField();
+      return;
+    }
     const v = String(geo || '').trim();
     const label = v ? geoLabel(v) : 'United States';
     const local = !!v && label !== 'United States';
@@ -889,10 +981,12 @@ function gtag(){dataLayer.push(arguments);}
     document.getElementById('f-geo').value = local ? v : '';
     refreshGeoField();
   }
+  document.getElementById('geoAddMarket')?.addEventListener('click', () => { addMarketRow(''); refreshGeoField(); marketInputs().slice(-1)[0]?.focus(); });
   document.querySelectorAll('input[name="geo-mode"]').forEach(r => r.addEventListener('change', () => {
     if (r.value === 'us' && r.checked) document.getElementById('f-geo').value = '';
     refreshGeoField();
     if (r.value === 'local' && r.checked) document.getElementById('f-geo').focus();
+    if (r.value === 'multi' && r.checked) marketInputs()[0]?.focus();
   }));
   document.getElementById('f-geo')?.addEventListener('input', refreshGeoField);
 
@@ -954,7 +1048,7 @@ Industry field (may be imprecise, trust "What they sell" over this): ${c.industr
 Ideal buyer: ${c.buyer || 'not specified'}
 Buyer personas (use for role and company context only): ${ps || 'not specified'}
 Known competitors: ${c.competitors || 'not specified'}
-Where buyers search from: ${isLocalGeo(c.geo) ? geoLabel(c.geo) : 'anywhere in the US'}
+Where buyers search from: ${locationSummary(c) || 'anywhere in the US'}
 Current year: ${currentYear}
 
 STEP 1. Define the solution category in plain buyer language: what a buyer would call the thing ${c.company_name} sells (for example "communication skills training for employees", not "leadership development" or "L&D"). Be as specific as the offer allows. If the offer spans several things, pick the core one.
@@ -975,7 +1069,8 @@ Rules for every question except #2:
 - It must be squarely inside the category from Step 1. If a strong company in that category would not reasonably appear in a good answer, the question is wrong.
 - Do not name ${c.company_name} or its product names.
 - Short and natural, the way people type into ChatGPT: 5 to 12 words.
-- If a year is used, use ${currentYear}.${isLocalGeo(c.geo) ? `
+- If a year is used, use ${currentYear}.${marketsOf(c) ? `
+- Buyers search from several markets and the same questions run in each, so never name a city or state. Make question #1 end with "near me", and #6 may also use "near me" if that is how buyers of this category search.` : isLocalGeo(c.geo) ? `
 - Buyers search from ${geoLabel(c.geo)}. Make questions #1 and #6 local the way people actually type them: #1 ends with "near me", and #6 names the city or state (for example "... in ${geoLabel(c.geo)}"). Questions #3 and #5 may also be local if that is how buyers of this category search.` : ''}
 
 Return ONLY JSON: {"category":"...","queries":[{"type":"category|brand|persona|problem|comparison|use_case","text":"..."}]}`;
@@ -1002,7 +1097,7 @@ Return ONLY JSON: {"category":"...","queries":[{"type":"category|brand|persona|p
   // could fairly appear in. items: [{i, q}]. Returns [{i, pass, reason, rewrite}].
   async function judgeQueries(c, category, items) {
     const listing = items.map(x => `${x.i}. ${x.q.text}`).join('\n');
-    const localLabel = isLocalGeo(c.geo) ? geoLabel(c.geo) : '';
+    const localLabel = locationSummary(c);
     const prompt = `A company sells: ${c.offer || c.industry || category}
 Its solution category: ${category || c.offer || c.industry || 'not specified'}
 Where its buyers search from: ${localLabel || 'anywhere in the US'}${localLabel ? ' (the AI assistant is told the buyer is here)' : ''}
@@ -1062,11 +1157,15 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     // them, which is not a measurement. api/live-query.js is the only source
     // of platform responses now, and there is no fabrication fallback.
     const LIVE_PLATFORMS = ['Perplexity', 'ChatGPT', 'Google Gemini', 'Claude', 'Grok'];
+    // One pass per market (or a single pass when no markets are set).
+    const marketList = marketsOf(c);
+    const passes = marketList
+      ? marketList.map((g, m) => ({ key: `m${m}-`, geo: g, label: geoLabel(g) || g }))
+      : [{ key: '', geo: c.geo || '', label: null }];
     const qlItems = document.getElementById('ql-items');
-    qlItems.innerHTML = active.map((q, i) => {
-      const isLive = LIVE_PLATFORMS.includes(q.platform);
-      return `<div class="ql-item"><div class="ql-dot pending" id="qldot-${i}"></div><span class="ql-platform">${esc(q.platform)}</span><span class="ql-text">${esc(q.text)}</span></div>`;
-    }).join('');
+    qlItems.innerHTML = passes.map(p => (p.label ? `<div class="ql-market">${esc(p.label)}</div>` : '') + active.map((q, i) =>
+      `<div class="ql-item"><div class="ql-dot pending" id="qldot-${p.key}${i}"></div><span class="ql-platform">${esc(q.platform)}</span><span class="ql-text">${esc(q.text)}</span></div>`
+    ).join('')).join('');
     document.getElementById('query-log').style.display = 'block';
 
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
@@ -1077,7 +1176,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const brandCtx = (otherNames.length || dom)
       ? ` Any of these also count as ${c.company_name} being named: ${[...otherNames, ...(dom ? [dom] : [])].map(n => `"${n}"`).join(', ')}. Do not list them as competitors.`
       : '';
-    const results = await Promise.all(active.map(async (q, i) => {
+    const runOne = async (q, i, geo, marketLabel) => {
       const dot = document.getElementById(`qldot-${i}`);
       if (dot) dot.className = 'ql-dot running';
       const persona = personas[i % Math.max(personas.length, 1)];
@@ -1094,7 +1193,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
             const liveResp = await fetch('/api/live-query', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
-              body: JSON.stringify({ query: q.text, platform: q.platform, geo: c.geo || '' }),
+              body: JSON.stringify({ query: q.text, platform: q.platform, geo: geo || '' }),
             });
             if (liveResp.ok) {
               const liveData = await liveResp.json();
@@ -1122,7 +1221,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         // an unanswered query is not evidence the brand was absent.
         if (!isLive) {
           if (dot) dot.className = 'ql-dot fail';
-          return { query: q.text, platform: q.platform, brand_specific: q.brand_specific,
+          return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, market: marketLabel,
                    is_live: false, failed: true, visibility: null, mentions_client: null,
                    mention_rank: null, competitors_mentioned: [], response: '',
                    insight: `No response recorded from ${q.platform}: ${liveError}. Excluded from the score.` };
@@ -1146,17 +1245,48 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
           const d = String(s.domain || '').toLowerCase();
           return d === dom || d.endsWith('.' + dom);
         });
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: isLive, response: platformResponse,
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, market: marketLabel, is_live: isLive, response: platformResponse,
                  sources: liveMeta.sources, search_queries: liveMeta.search_queries, web_search: liveMeta.web_search,
                  model: liveMeta.model, location: liveMeta.location, query_sent: liveMeta.query_sent, cited_own_site: citedOwnSite, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
         // Scoring an error as "not mentioned" made a broken run look like a bad
         // result. Excluded instead, and said out loud.
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: false, failed: true, visibility: null, mentions_client: null, mention_rank: null, insight: `Query failed: ${e.message||'unknown error'}. Excluded from the score.`, response: '', competitors_mentioned: [] };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, market: marketLabel, is_live: false, failed: true, visibility: null, mentions_client: null, mention_rank: null, insight: `Query failed: ${e.message||'unknown error'}. Excluded from the score.`, response: '', competitors_mentioned: [] };
       }
-    }));
+    };
+    // Markets run one after another, each market's questions in parallel.
+    // Running every market at once would send up to 45 requests to each
+    // provider together and invite rate limiting.
+    const results = [];
+    for (const p of passes) {
+      results.push(...await Promise.all(active.map((q, i) => runOne(q, `${p.key}${i}`, p.geo, p.label))));
+    }
     return results;
+  }
+
+  // ── Scoring ───────────────────────────────────────────────────────────────
+  // One definition used by the report, the narrative and the saved run.
+  // Unanswered and brand-name questions never count. With markets, each
+  // market is scored on its own answers and the overall score is the simple
+  // average of the markets that produced at least one scorable answer.
+  const VIS_WEIGHTS = { high: 1.0, medium: 0.5, low: 0.25, none: 0 };
+  function scoreOf(rows) {
+    const organic = rows.filter(x => !x.brand_specific && !x.failed);
+    return { organic, score: organic.length ? Math.round(organic.reduce((s, x) => s + (VIS_WEIGHTS[x.visibility] || 0), 0) / organic.length * 100) : 0 };
+  }
+  function computeScores(results) {
+    const pooled = scoreOf(results);
+    const labels = [...new Set(results.map(r => r.market).filter(Boolean))];
+    if (labels.length < 2) return { overall: pooled.score, organic: pooled.organic, markets: [] };
+    const markets = labels.map(label => {
+      const rows = results.filter(r => r.market === label);
+      const s = scoreOf(rows);
+      return { market: label, score: s.organic.length ? s.score : null, answered: rows.filter(r => !r.failed).length, total: rows.length, rows };
+    });
+    const scored = markets.filter(m => m.score !== null);
+    const overall = scored.length ? Math.round(scored.reduce((s, m) => s + m.score, 0) / scored.length) : 0;
+    return { overall, organic: pooled.organic, markets };
   }
 
   async function genReport(c, personas, results) {
@@ -1164,17 +1294,18 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     // Only queries a platform actually answered can be scored. A query that
     // never got a response is not evidence of anything and must not sit in
     // the denominator dragging the score down.
-    const organic = results.filter(x => !x.brand_specific && !x.failed);
-    const score = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+    const scores = computeScores(results);
+    const organic = scores.organic;
+    const score = scores.overall;
     const allCompMentions = results.flatMap(x=>x.competitors_mentioned||[]);
     const compFreq = {};
     allCompMentions.forEach(n=>compFreq[n]=(compFreq[n]||0)+1);
     const comps = [...new Set(allCompMentions)].sort((a,b)=>compFreq[b]-compFreq[a]);
     // Unanswered queries would otherwise read as "null visibility" to the model
     // writing the report, which it could easily narrate as a bad result.
-    const queries = results.map(x=> x.failed
-      ? `[${x.platform}] "${x.query}" -> NO RESPONSE RECORDED. Not a visibility result. Do not treat as absence.`
-      : `[${x.platform}] "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`).join('\n');
+    const queries = results.map(x=> { const tag = `[${x.platform}${x.market ? ' · ' + x.market : ''}]`; return x.failed
+      ? `${tag} "${x.query}" -> NO RESPONSE RECORDED. Not a visibility result. Do not treat as absence.`
+      : `${tag} "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`; }).join('\n');
     const buyerCtx = personas.map(p=>`${p.name||'Buyer'} (${p.title||'decision maker'})`).join(', ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const visCtx = score===0 ? `The brand has 0% Citro visibility — it did not appear in any advisory AI responses.` : `Weighted Citro Score: ${score}% (High=100%, Medium=50%, Low=25%, None=0% across ${organic.length} advisory queries).`;
@@ -1192,7 +1323,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const srcCtx = srcTop
       ? `\nWeb sources the AI platforms read before answering (answers using each): ${srcTop}\n${c.company_name}'s own site used as a source in ${ownSiteHits} answers.\nWhen recommending third-party placements, prefer the sites above; do not name review sites or directories that are not relevant to this category.`
       : '';
-    const ctx = `Brand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}${srcCtx}`;
+    const ctx = `Brand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}${srcCtx}${scores.markets.length ? `\nScores by market (overall score is their simple average): ${scores.markets.map(m => `${m.market} ${m.score === null ? 'no answers' : m.score + '%'}`).join('; ')}. Where markets differ, say which markets are strong and weak and why.` : ''}`;
 
     // ── Projected score computed in JS — never ask Claude for a number ──────
     const projectedScore = score === 0 ? 18 : Math.min(95, score + Math.round((100 - score) * 0.28));
@@ -1453,8 +1584,9 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
 
   function renderResults(simResults, report, profile) {
     const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
-    const organic = simResults.filter(x=>!x.brand_specific && !x.failed);
-    const score = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+    const scoresAll = computeScores(simResults);
+    const organic = scoresAll.organic;
+    const score = scoresAll.overall;
     const high = organic.filter(x=>x.visibility==='high').length;
     // organic only: the one deliberately brand-naming query is rank 1 by
     // construction and was flattering this figure.
@@ -1471,7 +1603,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       : `${liveCount} live queries`;
     const webCount = simResults.filter(x => x.web_search).length;
     const locLabel = (simResults.find(x => x.location) || {}).location;
-    const methodLabel = webCount ? ` · web-enabled answers${locLabel ? `, as seen from ${locLabel}` : ''}` : '';
+    const methodLabel = webCount ? ` · web-enabled answers${scoresAll.markets.length ? ` in ${scoresAll.markets.length} markets` : locLabel ? `, as seen from ${locLabel}` : ''}` : '';
     document.getElementById('res-meta').textContent = `Completed ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} · ${sourceLabel} · ${platforms} platforms${methodLabel}`;
 
     const scoreNum = document.getElementById('score-num');
@@ -1507,7 +1639,24 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       document.getElementById('roadmap-phases').innerHTML = report.roadmap_phases.map(p=>`<div class="roadmap-phase"><div class="roadmap-days">${esc(p.days)}</div><div class="roadmap-theme">${esc(p.theme)}</div><div class="roadmap-actions">${(p.actions||[]).map(a=>`<div class="roadmap-action">${esc(a)}</div>`).join('')}</div></div>`).join('');
       block('section-roadmap');
     }
-    document.getElementById('query-breakdown').innerHTML = simResults.map(q=>{
+    // ── By market ─────────────────────────────────────────────────────────
+    if (scoresAll.markets.length) {
+      const topOf = (arr) => { const c = {}; arr.forEach(x => { if (x) c[x] = (c[x] || 0) + 1; }); const e = Object.entries(c).sort((a, b) => b[1] - a[1])[0]; return e ? e[0] : ''; };
+      document.getElementById('market-table').innerHTML = `
+        <div class="mk-row mk-head"><span>Market</span><span>Score</span><span>Answered</span><span>Named most instead of you</span><span>Most-used source</span></div>` +
+        scoresAll.markets.map(m => {
+          const answered = m.rows.filter(r => !r.failed);
+          const comp = topOf(answered.flatMap(r => r.competitors_mentioned || []));
+          const src = topOf(answered.flatMap(r => [...new Set((r.sources || []).map(s => String(s.domain || '').toLowerCase()))]));
+          const sc = m.score === null ? '—' : m.score + '%';
+          const cls = m.score === null ? '' : scoreClass(m.score);
+          return `<div class="mk-row"><span class="mk-name">${esc(m.market)}</span><span class="mk-score ${cls}">${sc}</span><span>${m.answered} of ${m.total}</span><span>${esc(comp || '—')}</span><span>${esc(src || '—')}</span></div>`;
+        }).join('');
+      document.getElementById('market-note').textContent = `Your Citro Score of ${score}% is the average of these ${scoresAll.markets.filter(m => m.score !== null).length} market scores. Each market was asked the same questions.`;
+      block('section-markets');
+    }
+
+    const qbCard = (q) => {
       const pill = q.failed
         ? '<span class="vis-pill none">unanswered</span>'
         : `<span class="vis-pill ${q.visibility}">${q.visibility}</span>`;
@@ -1521,7 +1670,10 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         ? `<div class="qb-sources"><span class="qb-sources-lbl">Sources used</span>${srcs.map(s => `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener nofollow">${esc(s.domain || s.title || 'source')}</a>`).join('')}${(q.sources || []).length > srcs.length ? `<span class="qb-more">+${q.sources.length - srcs.length} more</span>` : ''}</div>`
         : '';
       return `<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span>${pill}</div><div class="qb-insight">${esc(q.insight||'')}</div>${sentNote}${srcHtml}<div class="qb-foot">${src}${own}</div></div>`;
-    }).join('');
+    };
+    document.getElementById('query-breakdown').innerHTML = scoresAll.markets.length
+      ? scoresAll.markets.map(m => `<div class="qb-market">${esc(m.market)} <span>${m.score === null ? 'no answers' : m.score + '%'}</span></div>` + m.rows.map(qbCard).join('')).join('')
+      : simResults.map(qbCard).join('');
     block('section-queries');
 
     // ── Sources AI relied on ────────────────────────────────────────────────
@@ -1651,8 +1803,9 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       // Compute score for saving. Same denominator as the rendered score, or
       // the dashboard history and the report would show different numbers.
       const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
-      const organic = simResults.filter(x=>!x.brand_specific && !x.failed);
-      const overallScore = organic.length ? Math.round(organic.reduce((sum,x)=>sum+(visWeights[x.visibility]||0),0)/organic.length*100) : 0;
+      const scoresForSave = computeScores(simResults);
+      const overallScore = scoresForSave.overall;
+      const marketScores = scoresForSave.markets.map(m => ({ market: m.market, score: m.score, answered: m.answered }));
 
       renderResults(simResults, report, profile);
 
@@ -1663,7 +1816,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       const savedQueries = (queries || []).map(q => ({
         text: q.text, platform: q.platform, brand_specific: !!q.brand_specific,
       }));
-      _lastSavePayload = { results: { ...report, overallScore, simResults }, profile, personas, queries: savedQueries, propertyId: activePropertyId || undefined,
+      _lastSavePayload = { results: { ...report, overallScore, marketScores, simResults }, profile, personas, queries: savedQueries, propertyId: activePropertyId || undefined,
         newQuerySet: !_editorEnterprise && _queriesRegenerated };
       try {
         const saveResp = await fetch(SAVE_API, {
@@ -1909,7 +2062,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
     // "Near me" needs a place to be near. With All of the US selected there
     // is none, and the platforms would each guess.
     let localFlags = 0;
-    if (!isLocalGeo(c.geo)) {
+    if (!hasLocalIntent(c)) {
       queries.forEach((q, i) => {
         if (NEAR_ME_RE.test(q.text) && cardsAll[i]) {
           const warn = cardsAll[i].querySelector('.query-warn');
@@ -2096,7 +2249,9 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         website:      activePropertyId ? document.getElementById('f-website').value.trim()
                                        : (lockedWebsite ?? document.getElementById('f-website').value.trim()),
         industry:         document.getElementById('f-industry').value.trim(),
-        geo:              document.querySelector('input[name="geo-mode"][value="local"]').checked ? document.getElementById('f-geo').value.trim() : '',
+        geo:              geoMode() === 'local' ? document.getElementById('f-geo').value.trim()
+                        : (geoMode() === 'multi' && readMarkets().length === 1 ? readMarkets()[0] : ''),
+        markets:          geoMode() === 'multi' && readMarkets().length > 1 ? readMarkets().slice(0, MAX_MARKETS) : [],
         specific_product: document.getElementById('f-product').value.trim(),
         competitors:      document.getElementById('f-competitors').value.trim(),
         brand_aliases:    document.getElementById('f-aliases').value.trim(),
@@ -2108,6 +2263,10 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       profile.offer = profile.specific_product;
       if (!profile.company_name || !profile.website) {
         alert('Please enter your company name and website before running.');
+        return;
+      }
+      if (geoMode() === 'multi' && readMarkets().length < 2) {
+        alert('Add at least two US cities or states under "Several markets", or choose a single location.');
         return;
       }
       // Persist profile so future visits pre-fill — skip for Enterprise since
@@ -2342,7 +2501,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         if (p.name)            document.getElementById('f-name').value            = p.name;
         if (p.website)         document.getElementById('f-website').value         = p.website;
         if (p.industry)        document.getElementById('f-industry').value        = p.industry;
-        setGeoField(p.geo);
+        setGeoField(p.geo, p.markets);
         if (p.specific_product) document.getElementById('f-product').value        = p.specific_product;
         if (p.competitors)     document.getElementById('f-competitors').value     = p.competitors;
         if (p.brand_aliases)   document.getElementById('f-aliases').value         = p.brand_aliases;
@@ -2445,7 +2604,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       if (p.company_name) document.getElementById('f-name').value = p.company_name;
       if (p.website) document.getElementById('f-website').value = p.website;
       if (p.industry) document.getElementById('f-industry').value = p.industry;
-      setGeoField(p.geo);
+      setGeoField(p.geo, p.markets);
       if (p.specific_product) document.getElementById('f-product').value = p.specific_product;
       if (p.competitors) document.getElementById('f-competitors').value = p.competitors;
       if (p.brand_aliases) document.getElementById('f-aliases').value = p.brand_aliases;
