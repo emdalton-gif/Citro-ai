@@ -352,6 +352,9 @@ async function callPerplexity(query, loc, timeoutMs) {
   return { text: parsed.text, sources, searchQueries: queries, model: result.body.model || `preset:${MODELS.Perplexity}`, locationApplied };
 }
 
+const NO_LOCATION_PLATFORMS = new Set(['Google Gemini', 'Grok']);
+const NEAR_ME_RE = /\b(near me|nearby|close to me|in my area|around me)\b/i;
+
 const CALLERS = {
   ChatGPT: callOpenAI,
   Claude: callClaude,
@@ -398,8 +401,16 @@ module.exports = async function handler(req, res) {
 
   const loc = parseLocation(geo);
   const started = Date.now();
+  // Gemini's and Grok's APIs can't take a location, but their apps answer
+  // "near me" from the phone's location. Writing the property's location
+  // into the question is the closest match. Only done for a real city or
+  // state, only on those two platforms, and reported back as query_sent.
+  let sent = String(query).slice(0, 500);
+  if (NO_LOCATION_PLATFORMS.has(platform) && loc && loc.region) {
+    sent = sent.replace(NEAR_ME_RE, `near ${loc.label}`);
+  }
   try {
-    const r = await callWithRetry(platform, String(query).slice(0, 500), loc);
+    const r = await callWithRetry(platform, sent, loc);
     if (!r.text) throw new Error(`${platform} returned an empty answer`);
     res.json({
       response: r.text,
@@ -407,7 +418,8 @@ module.exports = async function handler(req, res) {
       search_queries: r.searchQueries.slice(0, 10),
       web_search: true,
       model: r.model,
-      location: r.locationApplied && loc ? loc.label : null,
+      location: (r.locationApplied || sent !== String(query).slice(0, 500)) && loc ? loc.label : null,
+      query_sent: sent,
       latency_ms: Date.now() - started,
       is_live: true,
       platform,

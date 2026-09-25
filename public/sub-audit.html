@@ -168,6 +168,7 @@ function gtag(){dataLayer.push(arguments);}
     .qb-sources a:hover { border-bottom-color: var(--accent); }
     .qb-more { color: var(--muted); }
     .qb-own { display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: #0E6B4A; background: #E3F6EE; border-radius: 4px; padding: 2px 6px; margin-left: 8px; }
+    .qb-sent { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
     .sources-note { font-size: 14px; color: var(--dark); font-weight: 600; margin: 0 0 14px; }
     .sources-foot { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5; }
     .query-text-static { font-size: 14px; color: var(--dark); font-weight: 500; }
@@ -861,6 +862,9 @@ function gtag(){dataLayer.push(arguments);}
     if (/^(us|usa|u\.s\.a?\.?|united states)( only)?$/i.test(raw) || /\b(nationwide|national)\b/i.test(raw)) return 'United States';
     return null;
   }
+  const NEAR_ME_RE = /\b(near me|nearby|close to me|in my area|around me)\b/i;
+  function isLocalGeo(geo) { const l = geoLabel(geo); return !!String(geo || '').trim() && !!l && l !== 'United States'; }
+
   function refreshGeoField() {
     const input = document.getElementById('f-geo');
     const hint = document.getElementById('geo-hint');
@@ -950,6 +954,7 @@ Industry field (may be imprecise, trust "What they sell" over this): ${c.industr
 Ideal buyer: ${c.buyer || 'not specified'}
 Buyer personas (use for role and company context only): ${ps || 'not specified'}
 Known competitors: ${c.competitors || 'not specified'}
+Where buyers search from: ${isLocalGeo(c.geo) ? geoLabel(c.geo) : 'anywhere in the US'}
 Current year: ${currentYear}
 
 STEP 1. Define the solution category in plain buyer language: what a buyer would call the thing ${c.company_name} sells (for example "communication skills training for employees", not "leadership development" or "L&D"). Be as specific as the offer allows. If the offer spans several things, pick the core one.
@@ -970,7 +975,8 @@ Rules for every question except #2:
 - It must be squarely inside the category from Step 1. If a strong company in that category would not reasonably appear in a good answer, the question is wrong.
 - Do not name ${c.company_name} or its product names.
 - Short and natural, the way people type into ChatGPT: 5 to 12 words.
-- If a year is used, use ${currentYear}.
+- If a year is used, use ${currentYear}.${isLocalGeo(c.geo) ? `
+- Buyers search from ${geoLabel(c.geo)}. Make questions #1 and #6 local the way people actually type them: #1 ends with "near me", and #6 names the city or state (for example "... in ${geoLabel(c.geo)}"). Questions #3 and #5 may also be local if that is how buyers of this category search.` : ''}
 
 Return ONLY JSON: {"category":"...","queries":[{"type":"category|brand|persona|problem|comparison|use_case","text":"..."}]}`;
 
@@ -996,8 +1002,12 @@ Return ONLY JSON: {"category":"...","queries":[{"type":"category|brand|persona|p
   // could fairly appear in. items: [{i, q}]. Returns [{i, pass, reason, rewrite}].
   async function judgeQueries(c, category, items) {
     const listing = items.map(x => `${x.i}. ${x.q.text}`).join('\n');
+    const localLabel = isLocalGeo(c.geo) ? geoLabel(c.geo) : '';
     const prompt = `A company sells: ${c.offer || c.industry || category}
 Its solution category: ${category || c.offer || c.industry || 'not specified'}
+Where its buyers search from: ${localLabel || 'anywhere in the US'}${localLabel ? ' (the AI assistant is told the buyer is here)' : ''}
+
+Local-intent questions such as "X near me", "X nearby" or "X in <city>" are strong, legitimate buying questions: AI assistants answer them with lists of local providers. Never fail a question for being local or short, and never remove the local part in a rewrite.
 
 Below are questions buyers will ask an AI assistant. For each, judge: would a good, honest answer to this question list specific companies or programs, AND would a strong company that sells the above be a legitimate candidate to appear in that list?
 
@@ -1078,7 +1088,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         let platformResponse = '';
         let isLive = false;
         let liveError = '';
-        let liveMeta = { sources: [], search_queries: [], web_search: false, model: '', location: null };
+        let liveMeta = { sources: [], search_queries: [], web_search: false, model: '', location: null, query_sent: q.text };
         if (LIVE_PLATFORMS.includes(q.platform)) {
           try {
             const liveResp = await fetch('/api/live-query', {
@@ -1095,6 +1105,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
                 web_search: !!liveData.web_search,
                 model: liveData.model || '',
                 location: liveData.location || null,
+                query_sent: liveData.query_sent || q.text,
               };
               isLive = true;
             } else {
@@ -1137,7 +1148,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         });
         return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, is_live: isLive, response: platformResponse,
                  sources: liveMeta.sources, search_queries: liveMeta.search_queries, web_search: liveMeta.web_search,
-                 model: liveMeta.model, location: liveMeta.location, cited_own_site: citedOwnSite, ...evaluated };
+                 model: liveMeta.model, location: liveMeta.location, query_sent: liveMeta.query_sent, cited_own_site: citedOwnSite, ...evaluated };
       } catch(e) {
         if (dot) dot.className = 'ql-dot fail';
         // Scoring an error as "not mentioned" made a broken run look like a bad
@@ -1505,10 +1516,11 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         : '<span class="qb-src dead">no response</span>';
       const srcs = (q.sources || []).slice(0, 6);
       const own = q.cited_own_site ? '<span class="qb-own">cited your site</span>' : '';
+      const sentNote = q.query_sent && q.query_sent !== q.query ? `<div class="qb-sent">Sent as "${esc(q.query_sent)}": this platform's API can't take a location, so the buyer's location was written in, as the app would do with the phone's location.</div>` : '';
       const srcHtml = srcs.length
         ? `<div class="qb-sources"><span class="qb-sources-lbl">Sources used</span>${srcs.map(s => `<a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener nofollow">${esc(s.domain || s.title || 'source')}</a>`).join('')}${(q.sources || []).length > srcs.length ? `<span class="qb-more">+${q.sources.length - srcs.length} more</span>` : ''}</div>`
         : '';
-      return `<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span>${pill}</div><div class="qb-insight">${esc(q.insight||'')}</div>${srcHtml}<div class="qb-foot">${src}${own}</div></div>`;
+      return `<div class="qb-item"><div class="qb-top"><span class="qb-platform">${esc(q.platform)}</span><span class="qb-query">${esc(q.query)}</span>${pill}</div><div class="qb-insight">${esc(q.insight||'')}</div>${sentNote}${srcHtml}<div class="qb-foot">${src}${own}</div></div>`;
     }).join('');
     block('section-queries');
 
@@ -1891,19 +1903,36 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
   // customer can see the warnings.
   async function warnOnWeakQueries(queries, savedQueries) {
     const savedTexts = new Set((savedQueries || []).map(q => String(q.text).trim().toLowerCase()));
-    const items = queries.map((q, i) => ({ i, q })).filter(x => !x.q.brand_specific && !savedTexts.has(x.q.text.toLowerCase()));
-    if (!items.length) return false;
     const c = _currentProfile || {};
+    const cardsAll = Array.from(document.querySelectorAll('#query-cards .query-card.editable'))
+      .filter(card => card.querySelector('.query-text-input').value.trim());
+    // "Near me" needs a place to be near. With All of the US selected there
+    // is none, and the platforms would each guess.
+    let localFlags = 0;
+    if (!isLocalGeo(c.geo)) {
+      queries.forEach((q, i) => {
+        if (NEAR_ME_RE.test(q.text) && cardsAll[i]) {
+          const warn = cardsAll[i].querySelector('.query-warn');
+          warn.textContent = 'This asks for results near the buyer, but this property is set to All of the US, so there is no location to search from. Go back and choose a city or state under "Where your buyers are searching from", or name the city in the question.';
+          warn.hidden = false;
+          localFlags++;
+        }
+      });
+    }
+    const items = queries.map((q, i) => ({ i, q })).filter(x => !x.q.brand_specific && !savedTexts.has(x.q.text.toLowerCase()) && !(localFlags && NEAR_ME_RE.test(x.q.text)));
+    if (!items.length) {
+      if (localFlags) setQueryStatus(`${localFlags} question${localFlags === 1 ? '' : 's'} need${localFlags === 1 ? 's' : ''} a location. Fix it, or click Run audit again to keep your wording.`, 'warn');
+      return localFlags > 0;
+    }
     let verdicts;
     try {
       verdicts = await judgeQueries(c, c.offer || c.industry || '', items);
     } catch (e) {
       console.warn('Question check skipped:', e.message);
-      return false;
+      return localFlags > 0;
     }
-    const cards = Array.from(document.querySelectorAll('#query-cards .query-card.editable'))
-      .filter(card => card.querySelector('.query-text-input').value.trim());
-    let flagged = 0;
+    const cards = cardsAll;
+    let flagged = localFlags;
     verdicts.forEach(v => {
       if (v && v.pass === false && cards[v.i]) {
         const warn = cards[v.i].querySelector('.query-warn');
