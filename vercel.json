@@ -10,6 +10,9 @@
     "api/provider-health.js": {
       "maxDuration": 120
     },
+    "api/free-check.js": {
+      "maxDuration": 120
+    },
     "api/*.js": {
       "maxDuration": 60
     }
@@ -48,6 +51,16 @@
       "source": "/subscribe.html/",
       "destination": "/plans.html",
       "permanent": true
+    },
+    {
+      "source": "/check.html",
+      "destination": "/free-check.html",
+      "permanent": false
+    },
+    {
+      "source": "/check-v2.html",
+      "destination": "/free-check.html",
+      "permanent": false
     }
   ],
   "routes": [

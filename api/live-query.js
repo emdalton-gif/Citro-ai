@@ -431,6 +431,8 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.parseLocation = parseLocation;
+module.exports.NEAR_ME_RE = NEAR_ME_RE;
+module.exports.NO_LOCATION_PLATFORMS = NO_LOCATION_PLATFORMS;
 module.exports.parseResponsesShape = parseResponsesShape;
 module.exports.CALLERS = CALLERS;
 module.exports.MODELS = MODELS;

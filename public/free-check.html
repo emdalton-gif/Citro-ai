@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Citro Consent Mode v2 -->
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;
+  try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}var eea=true;try{eea=((Intl.DateTimeFormat().resolvedOptions().timeZone)||'').indexOf('Europe/')===0;}catch(e){}
+  gtag('consent','default',{
+    analytics_storage: (c?!!c.a:!eea)?'granted':'denied',
+    ad_storage:        (c?!!c.m:!eea)?'granted':'denied',
+    ad_user_data:      (c?!!c.m:!eea)?'granted':'denied',
+    ad_personalization:(c?!!c.m:!eea)?'granted':'denied',
+    wait_for_update: 500
+  });
+})();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', 'G-9LYVMPB7R3');gtag('config','AW-18148918651');</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Free AI Visibility Check: Does ChatGPT Recommend Your Business? | Citro</title>
+  <meta name="description" content="Free check: we ask ChatGPT and Google Gemini the questions your customers ask, with live web search, and show you whether they recommend you, who they name instead, and which sites they read. No card, about a minute." />
+  <link rel="canonical" href="https://getcitro.ai/free-check.html" />
+  <meta property="og:title" content="Does AI recommend your business? Free check from Citro" />
+  <meta property="og:description" content="See exactly what ChatGPT and Google Gemini tell your customers about your category. Free, no card." />
+  <meta property="og:url" content="https://getcitro.ai/free-check.html" />
+  <meta property="og:type" content="website" />
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://getcitro.ai/free-check.html#webpage",
+  "url": "https://getcitro.ai/free-check.html",
+  "name": "Free AI visibility check",
+  "description": "A free check that asks ChatGPT and Google Gemini three buyer questions with live web search and reports whether a business is recommended, who is named instead, and which sources were used.",
+  "isPartOf": { "@id": "https://getcitro.ai/#website" },
+  "about": { "@id": "https://getcitro.ai/#citro" },
+  "publisher": { "@id": "https://getcitro.ai/#organization" }
+}
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F2F8FA; --surface: #FFFFFF; --surface-2: #E9F3F6;
+      --dark: #07202B; --dark-2: #0D2A38;
+      --ink: #07202B; --ink-2: #123545; --mid: #48626E; --quiet: #54707C;
+      --border: rgba(7,32,43,0.1);
+      --accent: #00BDE7; --accent-d: #026F8B; --accent-soft: #8FE3F6; --on-accent: #04222E;
+      --coral: #FF6A4D; --coral-d: #B5381F; --ok: #0E7A56;
+      --sans: 'Inter', system-ui, sans-serif; --display: 'Archivo', 'Inter', system-ui, sans-serif; --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    h1, h2, h3 { font-family: var(--display); letter-spacing: -0.025em; }
+    a { color: inherit; }
+
+    nav { position: sticky; top: 0; z-index: 50; background: rgba(242,248,250,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-right { display: flex; align-items: center; gap: 18px; }
+    .nav-link { font-size: 14px; color: var(--mid); text-decoration: none; font-weight: 500; }
+    .nav-link:hover { color: var(--ink); }
+    .nav-cta { background: var(--ink); color: #fff; padding: 9px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; }
+    .nav-cta:hover { background: var(--ink-2); }
+
+    .hero { background: var(--dark); color: #F2F8FA; padding: 72px 32px 88px; }
+    .hero-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: start; }
+    .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-soft); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+    .eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    .hero h1 { font-size: 48px; line-height: 1.05; font-weight: 800; margin-bottom: 20px; }
+    .hero h1 .accent { color: var(--accent-soft); }
+    .hero-sub { font-size: 18px; line-height: 1.6; color: rgba(242,248,250,0.72); margin-bottom: 28px; }
+    .hero-points { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+    .hero-points li { font-size: 15px; line-height: 1.55; color: rgba(242,248,250,0.7); display: flex; gap: 12px; }
+    .hero-points li::before { content: '→'; color: #4FD8F5; flex-shrink: 0; }
+
+    .card { background: var(--surface); color: var(--ink); border-radius: 16px; padding: 28px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+    .card h2 { font-size: 20px; margin-bottom: 4px; }
+    .card-sub { font-size: 13px; color: var(--quiet); margin-bottom: 20px; }
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .field label { font-size: 13px; font-weight: 600; }
+    .field .opt { font-weight: 400; color: var(--quiet); }
+    .field input[type=text], .field input[type=email] { font: inherit; font-size: 15px; padding: 11px 13px; border: 1px solid rgba(7,32,43,0.18); border-radius: 10px; background: #fff; color: var(--ink); width: 100%; }
+    .field input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .loc-choice { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
+    .loc-choice label { font-weight: 500; display: inline-flex; gap: 7px; align-items: center; cursor: pointer; }
+    .loc-choice input { accent-color: var(--accent-d); width: 16px; height: 16px; }
+    .hint { font-size: 12px; color: var(--quiet); line-height: 1.45; }
+    .hint.warn { color: #8C5A00; }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .btn { display: inline-flex; justify-content: center; align-items: center; gap: 8px; width: 100%; background: var(--accent); color: var(--on-accent); border: 0; border-radius: 999px; padding: 14px 24px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; }
+    .btn:hover { background: #33CCEE; }
+    .btn[disabled] { opacity: 0.6; cursor: default; }
+    .fine { font-size: 12px; color: var(--quiet); margin-top: 12px; text-align: center; line-height: 1.5; }
+    .form-error { font-size: 13px; color: var(--coral-d); background: #FFF1EE; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+    .form-error[hidden], [hidden] { display: none !important; }
+
+    .progress { padding: 8px 0; }
+    .progress h2 { margin-bottom: 6px; }
+    .steps { list-style: none; margin: 18px 0 6px; display: flex; flex-direction: column; gap: 12px; }
+    .steps li { display: flex; gap: 12px; align-items: center; font-size: 14px; color: var(--quiet); }
+    .steps li .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(7,32,43,0.15); flex-shrink: 0; }
+    .steps li.active { color: var(--ink); font-weight: 600; }
+    .steps li.active .dot { border-color: var(--accent); border-top-color: transparent; animation: spin 0.8s linear infinite; }
+    .steps li.done { color: var(--ink); }
+    .steps li.done .dot { background: var(--accent-d); border-color: var(--accent-d); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .results { max-width: 1080px; margin: 0 auto; padding: 56px 32px 24px; }
+    .res-head { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; background: var(--dark); color: #F2F8FA; border-radius: 16px; padding: 32px; margin-bottom: 28px; }
+    .score { font-family: var(--display); font-size: 64px; font-weight: 800; line-height: 1; }
+    .score.low { color: var(--coral); } .score.mid { color: #FFC04D; } .score.high { color: #4FD8F5; }
+    .score-lbl { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: rgba(242,248,250,0.5); margin-top: 6px; }
+    .res-head h2 { font-size: 26px; line-height: 1.2; margin-bottom: 8px; }
+    .res-head p { font-size: 15px; line-height: 1.6; color: rgba(242,248,250,0.72); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .panel h3 { font-size: 16px; margin-bottom: 4px; }
+    .panel .sub { font-size: 13px; color: var(--quiet); margin-bottom: 14px; line-height: 1.5; }
+    .bar-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr) 28px; gap: 10px; align-items: center; font-size: 13px; margin-bottom: 8px; }
+    .bar-row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-row .t { display: block; height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+    .bar-row .f { display: block; height: 100%; background: var(--accent-d); border-radius: 4px; }
+    .bar-row .f.coral { background: var(--coral); }
+    .bar-row .c { text-align: right; font-weight: 700; color: var(--mid); }
+    .bar-row.own .n { font-weight: 700; }
+    .empty { font-size: 13px; color: var(--quiet); }
+
+    .q { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+    .q-label { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-d); margin-bottom: 6px; }
+    .q h3 { font-size: 18px; margin-bottom: 16px; }
+    .q-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ans { border: 1px solid var(--border); border-radius: 10px; padding: 14px; background: #FBFDFE; }
+    .ans-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .ans-plat { font-weight: 700; font-size: 14px; }
+    .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .pill.yes { background: #E3F6EE; color: var(--ok); }
+    .pill.no { background: #FFEDE8; color: var(--coral-d); }
+    .pill.na { background: var(--surface-2); color: var(--quiet); }
+    .excerpt { font-size: 13px; line-height: 1.55; color: var(--mid); margin-bottom: 8px; }
+    .meta { font-size: 12px; color: var(--quiet); line-height: 1.5; }
+    .meta b { color: var(--ink-2); font-weight: 600; }
+
+    .todo { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin: 28px 0; }
+    .todo h3 { font-size: 18px; margin-bottom: 14px; }
+    .todo ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .todo li { font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+
+    .upsell { background: var(--dark); color: #F2F8FA; border-radius: 16px; padding: 36px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; margin-bottom: 56px; }
+    .upsell h2 { font-size: 28px; line-height: 1.15; margin-bottom: 12px; }
+    .upsell p { font-size: 15px; line-height: 1.6; color: rgba(242,248,250,0.72); margin-bottom: 14px; }
+    .upsell ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .upsell li { font-size: 14px; color: rgba(242,248,250,0.8); display: flex; gap: 10px; }
+    .upsell li::before { content: '✓'; color: #4FD8F5; }
+    .upsell .fine { color: rgba(242,248,250,0.5); }
+    .ghost { display: block; text-align: center; margin-top: 12px; font-size: 14px; color: rgba(242,248,250,0.65); }
+
+    footer { background: var(--dark); color: rgba(242,248,250,0.5); padding: 28px 32px; font-size: 13px; }
+    footer .inner { max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer a { color: rgba(242,248,250,0.6); text-decoration: none; margin-right: 16px; }
+
+    @media (max-width: 860px) {
+      nav { padding: 0 16px; }
+      .nav-link { display: none; }
+      .hero { padding: 40px 16px 56px; }
+      .hero-inner { grid-template-columns: 1fr; gap: 28px; }
+      .hero h1 { font-size: 34px; }
+      .hero-sub { font-size: 16px; }
+      .card { padding: 20px; }
+      .row2, .grid2, .q-cols, .upsell { grid-template-columns: 1fr; }
+      .results { padding: 32px 16px 16px; }
+      .res-head { grid-template-columns: 1fr; padding: 24px; gap: 12px; }
+      .score { font-size: 52px; }
+      .res-head h2 { font-size: 21px; }
+      .upsell { padding: 24px; }
+      .upsell h2 { font-size: 23px; }
+      footer { padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/"><img src="/citro-logo-dark.png" alt="Citro" height="30" style="display:block;"></a>
+  <div class="nav-right">
+    <a href="/plans.html" class="nav-link">Pricing</a>
+    <a href="/sample-audit.html" class="nav-link">Sample report</a>
+    <a href="/signin.html" class="nav-link">Sign in</a>
+    <a href="/start.html" class="nav-cta" data-track="nav">Start free trial</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Free AI visibility check</div>
+      <h1>Does AI recommend your business, <span class="accent">or your competitors?</span></h1>
+      <p class="hero-sub">Your customers are asking ChatGPT and Google who to buy from. We'll ask them three of those questions right now and show you exactly what they say.</p>
+      <ul class="hero-points">
+        <li>Real answers from ChatGPT and Google Gemini, with live web search, not an estimate</li>
+        <li>Who they recommend instead of you, and the websites they read to decide</li>
+        <li>What to do first, in plain language, if you're not being named</li>
+      </ul>
+    </div>
+
+    <div class="card" id="card">
+      <form id="form" novalidate>
+        <h2>Run your free check</h2>
+        <p class="card-sub">About a minute. No card, no signup.</p>
+        <div class="form-error" id="form-error" hidden></div>
+        <div class="field">
+          <label for="website">Your website</label>
+          <input type="text" id="website" name="website" placeholder="yourbusiness.com" autocomplete="url" inputmode="url" required />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="company">Business name <span class="opt">(optional)</span></label>
+            <input type="text" id="company" name="company" placeholder="Acme Plumbing" autocomplete="organization" />
+          </div>
+          <div class="field">
+            <label for="offer">What you sell <span class="opt">(optional)</span></label>
+            <input type="text" id="offer" name="offer" placeholder="e.g. emergency plumbing" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Where are your customers?</label>
+          <div class="loc-choice" role="radiogroup">
+            <label><input type="radio" name="loc" value="us" checked /> Anywhere in the US</label>
+            <label><input type="radio" name="loc" value="local" /> A city or state</label>
+          </div>
+          <input type="text" id="location" placeholder="e.g. Grand Rapids, MI" hidden />
+          <span class="hint" id="loc-hint" hidden></span>
+        </div>
+        <div class="field">
+          <label for="email">Email for your results</label>
+          <input type="email" id="email" name="email" placeholder="you@yourbusiness.com" autocomplete="email" required />
+        </div>
+        <div class="hp" aria-hidden="true"><label>Fax <input type="text" id="company_fax" tabindex="-1" autocomplete="off" /></label></div>
+        <button class="btn" type="submit" id="submit">Check my business →</button>
+        <p class="fine">We'll email you a copy of your results. We never share your email. <a href="/privacy.html">Privacy</a></p>
+      </form>
+
+      <div class="progress" id="progress" hidden>
+        <h2>Checking <span id="p-domain"></span></h2>
+        <p class="card-sub">This takes about a minute. The answers are live, so we wait for them.</p>
+        <ol class="steps" id="steps">
+          <li data-at="0"><span class="dot"></span> Reading your website</li>
+          <li data-at="5"><span class="dot"></span> Writing three questions your customers ask</li>
+          <li data-at="11"><span class="dot"></span> Asking ChatGPT, with web search</li>
+          <li data-at="16"><span class="dot"></span> Asking Google Gemini, with web search</li>
+          <li data-at="34"><span class="dot"></span> Reading the answers for your name</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="results" id="results" hidden></main>
+
+<footer>
+  <div class="inner">
+    <div><a href="/">Citro</a><a href="/plans.html">Pricing</a><a href="/sample-audit.html">Sample report</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a></div>
+    <div>© 2026 RootPartners LLC</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  function track(name, params) { try { if (typeof gtag === 'function') gtag('event', name, params || {}); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  var $ = function (id) { return document.getElementById(id); };
+
+  // Location: mirrors the parser the check uses, so the hint is accurate.
+  var STATES = {AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',DC:'District of Columbia'};
+  var BYNAME = {}; Object.keys(STATES).forEach(function (k) { BYNAME[STATES[k].toLowerCase()] = STATES[k]; });
+  function locLabel(v) {
+    v = String(v || '').trim(); if (!v) return null;
+    var parts = v.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+    var last = (parts[parts.length - 1] || '').replace(/\./g, '');
+    var st = STATES[last.toUpperCase()] || BYNAME[last.toLowerCase()];
+    if (st) return parts.length > 1 ? parts[0] + ', ' + st : st;
+    return BYNAME[v.toLowerCase()] || null;
+  }
+  function locMode() { return document.querySelector('input[name="loc"]:checked').value; }
+  function refreshLoc() {
+    var local = locMode() === 'local', inp = $('location'), hint = $('loc-hint');
+    inp.hidden = !local; hint.hidden = !local; hint.classList.remove('warn');
+    if (!local) return;
+    var v = inp.value.trim(), l = locLabel(v);
+    if (!v) hint.textContent = 'A US city and state, or a state.';
+    else if (l) hint.textContent = 'Answers will be gathered as a customer in ' + l + ' would see them.';
+    else { hint.textContent = "We can't read that as a US city or state, so we'll check for the whole US."; hint.classList.add('warn'); }
+  }
+  document.querySelectorAll('input[name="loc"]').forEach(function (r) { r.addEventListener('change', function () { refreshLoc(); if (locMode() === 'local') $('location').focus(); }); });
+  $('location').addEventListener('input', refreshLoc);
+
+  // Progress: timed steps while the single request runs.
+  var timer = null;
+  function startProgress() {
+    var t0 = Date.now(), items = Array.prototype.slice.call(document.querySelectorAll('#steps li'));
+    function tick() {
+      var s = (Date.now() - t0) / 1000;
+      items.forEach(function (li, i) {
+        var at = +li.getAttribute('data-at'), next = items[i + 1] ? +items[i + 1].getAttribute('data-at') : Infinity;
+        li.className = s >= next ? 'done' : (s >= at ? 'active' : '');
+      });
+    }
+    tick(); timer = setInterval(tick, 500);
+  }
+  function stopProgress() { clearInterval(timer); }
+
+  function showError(msg) {
+    var e = $('form-error'); e.textContent = msg; e.hidden = false;
+    $('form').hidden = false; $('progress').hidden = true; $('submit').disabled = false;
+  }
+
+  $('form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    $('form-error').hidden = true;
+    var website = $('website').value.trim(), email = $('email').value.trim();
+    if (!/\.[a-z]{2,}/i.test(website)) return showError('Please enter your website, for example yourbusiness.com.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return showError('Please enter a valid email so we can send your results.');
+    var location = locMode() === 'local' ? $('location').value.trim() : '';
+    var body = { website: website, email: email, company: $('company').value.trim(), offer: $('offer').value.trim(), location: location, company_fax: $('company_fax').value };
+    $('submit').disabled = true;
+    $('p-domain').textContent = website.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+    $('form').hidden = true; $('progress').hidden = false; startProgress();
+    track('free_check_start', { location_mode: locMode() });
+    fetch('/api/free-check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false }; }); })
+      .then(function (d) {
+        stopProgress();
+        if (!d || !d.ok) { track('free_check_error', { reason: (d && d.reason) || 'unknown' }); return showError((d && d.message) || "We couldn't finish your check just now. Please try again in a minute."); }
+        track('free_check_complete', { score: d.score, named: d.named });
+        render(d, body);
+      })
+      .catch(function () { stopProgress(); showError("We couldn't reach the check just now. Please try again."); });
+  });
+
+  function scoreClass(s) { return s >= 65 ? 'high' : s >= 35 ? 'mid' : 'low'; }
+
+  function render(d, input) {
+    var who = d.company || d.domain;
+    var headline = d.named === 0
+      ? 'AI didn’t recommend ' + who + ' in any of ' + d.answered + ' answers.'
+      : 'AI named ' + who + ' in ' + d.named + ' of ' + d.answered + ' answers.';
+    var comp = d.competitors || [];
+    var summary = comp.length
+      ? 'When your customers asked, ' + comp.slice(0, 2).map(function (c) { return c.name; }).join(' and ') + (d.named === 0 ? ' came up instead.' : ' came up most often alongside or instead of you.')
+      : 'The answers stayed general and named few providers. That is an opening: the first business these assistants can describe clearly tends to get named.';
+    var trialUrl = '/start.html?em=' + encodeURIComponent(input.email) + '&co=' + encodeURIComponent(d.company || '') + '&url=' + encodeURIComponent(d.domain || input.website);
+
+    var compHtml = comp.length ? comp.map(function (c) {
+      return '<div class="bar-row"><span class="n" title="' + esc(c.name) + '">' + esc(c.name) + '</span><span class="t"><span class="f coral" style="width:' + Math.round(c.n / comp[0].n * 100) + '%"></span></span><span class="c">' + c.n + '</span></div>';
+    }).join('') : '<p class="empty">No other providers were named consistently.</p>';
+    var src = d.sources || [];
+    var srcHtml = src.length ? src.map(function (s) {
+      var own = s.domain === d.domain || s.domain.slice(-(d.domain.length + 1)) === '.' + d.domain;
+      return '<div class="bar-row' + (own ? ' own' : '') + '"><span class="n" title="' + esc(s.domain) + '">' + esc(s.domain) + (own ? ' (you)' : '') + '</span><span class="t"><span class="f" style="width:' + Math.round(s.n / src[0].n * 100) + '%"></span></span><span class="c">' + s.n + '</span></div>';
+    }).join('') : '<p class="empty">No sources were returned.</p>';
+
+    var qHtml = (d.questions || []).map(function (q, i) {
+      return '<div class="q"><div class="q-label">Question ' + (i + 1) + '</div><h3>“' + esc(q.question) + '”</h3><div class="q-cols">' +
+        q.results.map(function (a) {
+          if (!a.ok) return '<div class="ans"><div class="ans-top"><span class="ans-plat">' + esc(a.platform) + '</span><span class="pill na">No answer</span></div><p class="excerpt">This assistant didn’t answer in time, so it isn’t counted.</p></div>';
+          var pill = a.named ? '<span class="pill yes">Named you' + (a.rank ? ' · #' + a.rank : '') + '</span>' : '<span class="pill no">Not named</span>';
+          return '<div class="ans"><div class="ans-top"><span class="ans-plat">' + esc(a.platform) + '</span>' + pill + '</div>' +
+            '<p class="excerpt">“' + esc(a.excerpt) + (a.excerpt.length >= 420 ? '…' : '') + '”</p>' +
+            (a.instead && a.instead.length ? '<p class="meta"><b>Recommended:</b> ' + a.instead.map(esc).join(', ') + '</p>' : '') +
+            (a.sources && a.sources.length ? '<p class="meta"><b>Read:</b> ' + a.sources.map(esc).join(', ') + (a.cited_own_site ? ' (including your site)' : '') + '</p>' : '') +
+            (a.sent ? '<p class="meta">Asked as “' + esc(a.sent) + '”, since this assistant can’t see the customer’s location.</p>' : '') +
+            '</div>';
+        }).join('') + '</div></div>';
+    }).join('');
+
+    // Three plain-language next steps, chosen from what the answers showed.
+    var todo = [];
+    var topOther = src.filter(function (s) { return s.domain !== d.domain; }).slice(0, 2).map(function (s) { return s.domain; });
+    if (!d.ownSiteUsed) todo.push('<b>Make your website quotable.</b> Neither assistant used your site as a source. Say plainly on your key pages what you do, who it’s for, where you work and what it costs, in sentences an AI can lift directly.');
+    else todo.push('<b>Build on the pages AI already reads.</b> Your site was used in ' + d.ownSiteUsed + ' answer' + (d.ownSiteUsed === 1 ? '' : 's') + '. Add clear comparisons and answers to the exact questions above so it names you, not just reads you.');
+    if (topOther.length) todo.push('<b>Show up where AI looks.</b> The answers leaned on ' + topOther.map(esc).join(' and ') + '. Being listed, reviewed or mentioned on sites like these is the most direct way into the answer.');
+    if (comp.length) todo.push('<b>Learn from who’s winning.</b> ' + esc(comp[0].name) + ' was recommended ' + comp[0].n + ' time' + (comp[0].n === 1 ? '' : 's') + '. The full audit shows why, question by question, and turns it into a 90-day plan.');
+    else todo.push('<b>Claim the gap.</b> AI isn’t naming a clear leader for these questions yet. Clear, specific pages about your offer can make you the default answer.');
+
+    $('results').innerHTML =
+      '<div class="res-head"><div><div class="score ' + scoreClass(d.score) + '">' + d.score + '%</div><div class="score-lbl">Quick Citro Score</div></div>' +
+      '<div><h2>' + esc(headline) + '</h2><p>' + esc(summary) + ' We asked ' + (d.questions || []).length + ' customer questions on ChatGPT and Google Gemini' + (d.location && d.location !== 'United States' ? ', as a customer in ' + esc(d.location) : '') + ', with live web search.</p></div></div>' +
+      '<div class="grid2"><div class="panel"><h3>Who AI recommended instead</h3><p class="sub">Businesses named in these answers, and how often.</p>' + compHtml + '</div>' +
+      '<div class="panel"><h3>Where AI looked before answering</h3><p class="sub">The sites the assistants read. This is where you need to be described.</p>' + srcHtml + '</div></div>' +
+      qHtml +
+      '<div class="todo"><h3>What to do first</h3><ol>' + todo.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ol></div>' +
+      '<div class="upsell"><div><h2>This was 3 questions on 2 assistants. Your customers ask many more.</h2>' +
+      '<p>The full Citro audit runs the questions your customers actually ask, on all five major AI assistants, and tells your team exactly what to fix.</p>' +
+      '<ul><li>ChatGPT, Gemini, Claude, Perplexity and Grok</li><li>Your own buyer questions, which you can edit</li><li>Up to 5 local markets side by side</li><li>A 90-day plan built for a small marketing team</li><li>Monthly tracking so you can see it work</li></ul></div>' +
+      '<div><a class="btn" href="' + trialUrl + '" data-track="results">Start my 7-day free trial →</a>' +
+      '<p class="fine">No charge today. Cancel anytime.</p><a class="ghost" href="/sample-audit.html">See a full sample report</a></div></div>';
+
+    $('results').hidden = false;
+    $('card').innerHTML = '<h2>Your check is ready</h2><p class="card-sub" style="margin-bottom:16px;">Scroll down for what ChatGPT and Gemini said about ' + esc(who) + '.</p><a class="btn" href="#results">See my results ↓</a>';
+    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('[data-track]').forEach(function (a) { a.addEventListener('click', function () { track('cta_trial_click', { from: 'free_check_' + a.getAttribute('data-track') }); }); });
+  }
+
+  // Saved result link: /free-check.html?id=...
+  try {
+    var id = new URLSearchParams(location.search).get('id');
+    if (id) fetch('/api/free-check?id=' + encodeURIComponent(id)).then(function (r) { return r.json(); }).then(function (d) { if (d && d.ok) render(d, { email: '', website: d.domain }); });
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

@@ -60,7 +60,7 @@ function sendPaymentFailedEmail(toEmail) {
 <body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
   <div style="max-width:540px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
     <div style="background:#07202B;padding:28px 36px;">
-      <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:400;color:rgba(255,255,255,0.5);">ACE</span>
+      <span style="font-size:20px;font-weight:800;color:#00BDE7;">Citro</span>
     </div>
     <div style="padding:36px;">
       <p style="font-size:20px;font-weight:700;color:#07202B;margin:0 0 16px;">Payment issue with your subscription</p>

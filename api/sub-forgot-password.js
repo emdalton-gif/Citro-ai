@@ -36,7 +36,7 @@ function sendResetEmail(toEmail, resetUrl) {
 <body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
   <div style="max-width:520px;margin:48px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
     <div style="background:#07202B;padding:28px 36px;">
-      <span style="font-size:18px;font-weight:700;color:#fff;">Root</span><span style="font-size:18px;font-weight:800;color:#00BDE7;">ACE</span>
+      <span style="font-size:20px;font-weight:800;color:#00BDE7;">Citro</span>
       <span style="font-size:13px;color:rgba(255,255,255,0.4);margin-left:12px;">Active Optimization</span>
     </div>
     <div style="padding:36px;">

@@ -967,6 +967,7 @@ function gtag(){dataLayer.push(arguments);}
     <img src="/citro-logo-dark.png" alt="Citro" height="32" style="display:block;">
   </a>
   <div class="nav-links">
+    <a href="/free-check.html" class="nav-link">Free check</a>
     <a href="#how-it-works" class="nav-link">How it works</a>
     <a href="/plans.html" class="nav-link">Pricing</a>
     <a href="/sample-audit.html" class="nav-link">Sample audit</a>
@@ -981,6 +982,7 @@ function gtag(){dataLayer.push(arguments);}
   </div>
 </nav>
 <div class="mobile-nav" id="mobile-nav">
+  <a href="/free-check.html" class="mobile-nav-link">Free check</a>
   <a href="#how-it-works" class="mobile-nav-link">How it works</a>
   <a href="/plans.html" class="mobile-nav-link">Pricing</a>
   <a href="/sample-audit.html" class="mobile-nav-link">Sample audit</a>
@@ -996,7 +998,7 @@ function gtag(){dataLayer.push(arguments);}
     <div>
       <div class="hero-eyebrow">
         <span class="hero-eyebrow-dot"></span>
-        AI citation intelligence, built for marketers
+        AI visibility for small marketing teams
       </div>
       <h1 class="hero-title">See what AI tells <br>your buyers. <br><span class="accent">Then be the brand <br>it recommends.</span></h1>
       <p class="hero-sub">Not a generic visibility score. The real picture:</p>
@@ -1006,10 +1008,10 @@ function gtag(){dataLayer.push(arguments);}
         <li>A 90-day plan to become the recommendation</li>
       </ul>
       <div class="hero-actions">
-        <a href="/start.html" class="btn-hero">Build your report free →</a>
+        <a href="/free-check.html" class="btn-hero">Check your business free →</a>
         <a href="/sample-audit.html" class="btn-hero-ghost">See a sample report</a>
       </div>
-      <div class="hero-nocard" style="margin-top:12px;font-size:13px;color:rgba(242,248,250,0.55);font-weight:500;">7-day free trial. No charge today. Cancel anytime.</div>
+      <div class="hero-nocard" style="margin-top:12px;font-size:13px;color:rgba(242,248,250,0.55);font-weight:500;">See what ChatGPT and Gemini say about you in about a minute. No card, no signup.</div>
     </div>
 
     <!-- REPORT CARD (mock of the actual produced report) -->
@@ -1155,7 +1157,7 @@ function gtag(){dataLayer.push(arguments);}
     </figure>
 
     <div class="ev-cta">
-      <a href="/start.html" class="btn-hero">Build your report free</a>
+      <a href="/free-check.html" class="btn-hero">Check your business free</a>
       <a href="/sample-audit.html" class="ev-ghost">See a full sample report</a>
     </div>
   </div>
@@ -1753,7 +1755,7 @@ window._ra_li = function() {
     if(!a) return;
     var href = a.getAttribute('href') || '';
     var label = (a.innerText || '').trim().slice(0, 40);
-    if (href.indexOf('/check.html') !== -1) track('cta_check_click', label);
+    if (href.indexOf('/free-check.html') !== -1 || href.indexOf('/check.html') !== -1) track('cta_check_click', label);
     else if (href.indexOf('/start.html') !== -1) track('cta_trial_click', label);
   }, true);
 })();
