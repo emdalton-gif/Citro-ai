@@ -158,6 +158,23 @@ function gtag(){dataLayer.push(arguments);}
       background: none; color: var(--muted); cursor: pointer; }
     .acct-msg { font-size: 12.5px; margin-top: 7px; min-height: 1em; }
     .acct-msg.err { color: #C63A22; }
+    .upgrade-panel { background: var(--dark); color: #F2F8FA; border-radius: 12px; padding: 24px 26px; margin: -16px 0 36px;
+      display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; align-items: center; }
+    .upgrade-panel[hidden] { display: none; }
+    .upgrade-panel h2 { font-size: 20px; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .upgrade-panel p { font-size: 14px; line-height: 1.6; color: rgba(242,248,250,0.75); margin-bottom: 8px; }
+    .upgrade-panel ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+    .upgrade-panel li { font-size: 13.5px; color: rgba(242,248,250,0.8); }
+    .upgrade-panel li::before { content: '✓ '; color: #4FD8F5; }
+    .up-due { font-size: 13px; color: rgba(242,248,250,0.6); margin-bottom: 4px; }
+    .up-due strong { display: block; font-size: 26px; color: #fff; letter-spacing: -0.02em; }
+    .up-then { font-size: 13px; color: rgba(242,248,250,0.6); margin-bottom: 14px; }
+    .up-confirm { width: 100%; font: inherit; font-size: 15px; font-weight: 700; padding: 12px 18px; border: 0; border-radius: 999px;
+      background: var(--accent); color: #04222E; cursor: pointer; }
+    .up-confirm[disabled] { opacity: 0.6; cursor: default; }
+    .up-cancel { display: block; width: 100%; margin-top: 8px; background: none; border: 0; font: inherit; font-size: 13px; color: rgba(242,248,250,0.6); cursor: pointer; }
+    .up-msg { font-size: 13px; margin-top: 10px; color: #FFB4A3; min-height: 1em; }
+    @media (max-width: 760px) { .upgrade-panel { grid-template-columns: 1fr; } }
     .acct-msg.ok { color: var(--accent-d2, #026F8B); }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
       overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -410,8 +427,29 @@ function gtag(){dataLayer.push(arguments);}
 
       <div class="acct-field">
         <div class="acct-label">Plan</div>
-        <div class="acct-value"><span id="acctPlanText">—</span></div>
+        <div class="acct-value"><span id="acctPlanText">—</span>
+          <button type="button" class="acct-edit" id="upgradeOpen" hidden>Upgrade to Enterprise</button></div>
         <div class="acct-note"><a href="#" class="billing-link" id="billingPortalLink">Billing portal &rarr;</a></div>
+      </div>
+    </div>
+
+    <!-- Upgrade to Enterprise: switches the existing subscription, never a second one -->
+    <div class="upgrade-panel" id="upgradePanel" hidden>
+      <div>
+        <h2>Upgrade to Enterprise</h2>
+        <p>Track up to 10 brands, products or websites, each with its own questions and score history.</p>
+        <ul>
+          <li>Your current business becomes your first brand, with its history and questions</li>
+          <li>Add the other nine from this dashboard</li>
+          <li>One subscription: your Professional plan is replaced, not added to</li>
+        </ul>
+      </div>
+      <div>
+        <div class="up-due">Due today<strong id="upDue">…</strong></div>
+        <div class="up-then" id="upThen">Then $299/month. Cancel anytime.</div>
+        <button type="button" class="up-confirm" id="upgradeConfirm" disabled>Upgrade now</button>
+        <button type="button" class="up-cancel" id="upgradeCancel">Not now</button>
+        <div class="up-msg" id="upgradeMsg" role="status" aria-live="polite"></div>
       </div>
     </div>
 
@@ -594,6 +632,47 @@ function gtag(){dataLayer.push(arguments);}
         show('err', err.message + ' Try again, or email support@getcitro.ai.');
       } finally {
         save.disabled = false; save.textContent = 'Save';
+      }
+    });
+  })();
+
+  // Upgrade to Enterprise on the existing subscription (api/sub-upgrade.js).
+  (function () {
+    const panel = document.getElementById('upgradePanel');
+    const openBtn = document.getElementById('upgradeOpen');
+    const confirmBtn = document.getElementById('upgradeConfirm');
+    const msg = document.getElementById('upgradeMsg');
+    const due = document.getElementById('upDue');
+    const then = document.getElementById('upThen');
+    if (!panel || !openBtn) return;
+    const track = (n, p) => { try { gtag('event', n, p || {}); } catch (e) {} };
+    openBtn.addEventListener('click', async () => {
+      panel.hidden = false; msg.textContent = ''; confirmBtn.disabled = true; due.textContent = '…';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      track('upgrade_open');
+      try {
+        const r = await fetch('/api/sub-upgrade', { headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { due.textContent = '—'; msg.textContent = d.error || 'Could not load the upgrade price.'; return; }
+        due.textContent = d.dueToday || 'Prorated';
+        then.textContent = d.inTrial
+          ? 'Your free trial ends now. Then $299/month. Cancel anytime.'
+          : (d.dueToday ? 'The difference for the rest of this month. Then $299/month.' : 'The difference for the rest of this month, then $299/month.');
+        confirmBtn.disabled = false;
+      } catch (e) { due.textContent = '—'; msg.textContent = 'Could not load the upgrade price. Please try again.'; }
+    });
+    document.getElementById('upgradeCancel').addEventListener('click', () => { panel.hidden = true; });
+    confirmBtn.addEventListener('click', async () => {
+      confirmBtn.disabled = true; confirmBtn.textContent = 'Upgrading…'; msg.textContent = '';
+      try {
+        const r = await fetch('/api/sub-upgrade', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error || 'The upgrade did not go through.');
+        track('upgrade_complete', { value: 299, currency: 'USD' });
+        confirmBtn.textContent = 'Upgraded. Loading Enterprise…';
+        setTimeout(() => window.location.reload(), 900);
+      } catch (e) {
+        msg.textContent = e.message; confirmBtn.disabled = false; confirmBtn.textContent = 'Upgrade now';
       }
     });
   })();
@@ -1351,6 +1430,8 @@ function gtag(){dataLayer.push(arguments);}
       if (acctEmailText) acctEmailText.textContent = data.email || email || '—';
       const acctPlanText = document.getElementById('acctPlanText');
       if (acctPlanText) acctPlanText.textContent = isEnterprise ? 'Enterprise' : 'Professional';
+      const upgradeOpen = document.getElementById('upgradeOpen');
+      if (upgradeOpen) upgradeOpen.hidden = isEnterprise || data.subscriptionStatus === 'canceled';
 
       if (companyName && nameWasChosen) {
         // The subscriber set this deliberately, so it always wins

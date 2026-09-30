@@ -2,12 +2,14 @@
 // Stripe webhook handler for subscription lifecycle events.
 // Keeps subscriber subscription status in sync with Stripe.
 // Events handled:
-//   customer.subscription.updated  → update status (active, past_due, etc.)
+//   customer.subscription.updated  → update status (active, past_due, etc.) and
+//                                    the plan, from the subscription's price
 //   customer.subscription.deleted  → mark canceled
 //   invoice.payment_failed         → mark past_due, send warning email
 
 const crypto = require('crypto');
 const https = require('https');
+const { planForPrice, convertProfileToProperty } = require('./_lib/plan-change');
 
 async function upstashCmd(cmd) {
   const res = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
@@ -39,13 +41,20 @@ async function findSubscriberByCustomerId(customerId) {
   return upstashGet(`subscriber:${email}`);
 }
 
-async function updateSubscriberStatus(customerId, status) {
+async function updateSubscriberStatus(customerId, status, plan) {
   const r = await upstashCmd(['GET', `stripe-customer:${customerId}`]);
   if (!r.result) return false;
   const email = r.result.replace(/^"|"$/g, '');
   const account = await upstashGet(`subscriber:${email}`);
   if (!account) return false;
-  await upstashSet(`subscriber:${email}`, { ...account, subscriptionStatus: status, updatedAt: Date.now() });
+  const next = { ...account, subscriptionStatus: status, updatedAt: Date.now() };
+  if (plan) next.plan = plan;
+  await upstashSet(`subscriber:${email}`, next);
+  // Switched to Enterprise outside the dashboard (e.g. by hand in Stripe):
+  // turn the business into the first brand so the Enterprise dashboard has it.
+  if (plan === 'enterprise' && account.plan !== 'enterprise') {
+    await convertProfileToProperty(email, upstashGet, upstashSet);
+  }
   return email;
 }
 
@@ -64,7 +73,7 @@ function sendPaymentFailedEmail(toEmail) {
     </div>
     <div style="padding:36px;">
       <p style="font-size:20px;font-weight:700;color:#07202B;margin:0 0 16px;">Payment issue with your subscription</p>
-      <p style="font-size:15px;color:#48626E;line-height:1.7;margin:0 0 16px;">We couldn't process your most recent Active Optimization payment. Your account is still active while we retry, but please update your payment method to avoid any interruption.</p>
+      <p style="font-size:15px;color:#48626E;line-height:1.7;margin:0 0 16px;">We couldn't process your most recent Citro payment. Your account is still active while we retry, but please update your payment method to avoid any interruption.</p>
       <a href="https://getcitro.ai/sub-dashboard.html" style="display:inline-block;background:#00BDE7;color:#04222E;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;margin-bottom:24px;">Update Payment Method →</a>
       <p style="font-size:13px;color:#7E959F;line-height:1.7;margin:0;">If you need help, reply to this email or reach us at <a href="mailto:support@rootpartners.co" style="color:#00BDE7;">support@rootpartners.co</a></p>
     </div>
@@ -107,6 +116,8 @@ function verifyStripeSignature(rawBody, sigHeader, secret) {
     if (k === 'v1') signatures.push(v);
   }
   if (!timestamp || signatures.length === 0) return false;
+  // Reject replays of old events (Stripe's default tolerance is 5 minutes).
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
 
   const payload = `${timestamp}.${rawBody}`;
   const expected = crypto.createHmac('sha256', secret).update(payload).digest('hex');
@@ -128,10 +139,14 @@ module.exports = async function handler(req, res) {
   for await (const chunk of req) chunks.push(chunk);
   const rawBody = Buffer.concat(chunks).toString('utf8');
 
-  if (webhookSecret && sigHeader) {
-    if (!verifyStripeSignature(rawBody, sigHeader, webhookSecret)) {
-      return res.status(400).json({ error: 'Invalid signature' });
-    }
+  // Every event must be signed by Stripe. Unsigned requests used to be
+  // processed, which let anyone mark an account paid or upgraded.
+  if (!webhookSecret) {
+    console.error('sub-webhook: STRIPE_SUBSCRIPTION_WEBHOOK_SECRET is not set');
+    return res.status(500).json({ error: 'Webhook not configured' });
+  }
+  if (!sigHeader || !verifyStripeSignature(rawBody, sigHeader, webhookSecret)) {
+    return res.status(400).json({ error: 'Invalid signature' });
   }
 
   let event;
@@ -167,7 +182,8 @@ module.exports = async function handler(req, res) {
 
       case 'customer.subscription.updated': {
         const sub = event.data.object;
-        await updateSubscriberStatus(sub.customer, sub.status);
+        const plan = planForPrice(sub.items?.data?.[0]?.price?.id);
+        await updateSubscriberStatus(sub.customer, sub.status, plan);
         break;
       }
 

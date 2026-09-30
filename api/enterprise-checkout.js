@@ -145,10 +145,18 @@ module.exports = async function handler(req, res) {
         plan:               'enterprise',
         updatedAt:          Date.now(),
       });
+    } else if (existing.subscriptionStatus !== 'canceled' && existing.stripeSubscriptionId) {
+      // Already subscribed. A second checkout would bill them for two plans;
+      // upgrades happen on the existing subscription from the dashboard.
+      return res.status(409).json({
+        error: existing.plan === 'enterprise'
+          ? 'You already have Citro Enterprise. Log in to your dashboard.'
+          : 'You already have a Citro subscription. Log in and choose "Upgrade to Enterprise" on your dashboard, so you are only billed once.',
+      });
     } else {
-      // A live account upgrading. It must prove it owns the email, and nothing
-      // changes until payment completes (trial-activate reads the plan from
-      // the checkout's metadata).
+      // A canceled account coming back. It must prove it owns the email, and
+      // nothing changes until payment completes (trial-activate reads the plan
+      // from the checkout's metadata).
       let ok = false;
       if (existing.passwordHash && existing.salt) {
         const h = await hashPassword(password, existing.salt);
