@@ -863,7 +863,7 @@ function gtag(){dataLayer.push(arguments);}
     .hero-sub { margin-bottom: 26px; }
     .hero-bullets { margin-bottom: 30px; }
 
-    .hero-visual { position: relative; padding: 22px 0 168px 0; }
+    .hero-visual { position: relative; padding: 22px 0 150px 0; }
     .hv-main { margin: 0; background: #FFFFFF; border-radius: 16px; padding: 16px 16px 18px;
       box-shadow: 0 34px 78px -30px rgba(0,0,0,0.8), 0 2px 6px rgba(0,0,0,0.25);
       transform: translateX(9%); }
@@ -879,16 +879,17 @@ function gtag(){dataLayer.push(arguments);}
     .hv-float { position: absolute; left: 0; bottom: 0; width: 76%;
       background: #FFFFFF; border-radius: 14px; padding: 17px 19px 15px;
       box-shadow: 0 36px 84px -26px rgba(0,0,0,0.88), 0 2px 8px rgba(0,0,0,0.3); }
-    .hv-float-h { font-size: 13px; font-weight: 700; color: #07202B; letter-spacing: -0.01em; margin-bottom: 12px; }
-    .hv-row { display: grid; grid-template-columns: 96px 1fr 30px; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .hv-float-h { font-size: 13px; font-weight: 700; color: #07202B; letter-spacing: -0.01em; margin-bottom: 3px; }
+    .hv-float-sub { font-size: 11px; color: #54707C; margin-bottom: 12px; }
+    .hv-row { display: grid; grid-template-columns: 112px 1fr 30px; align-items: center; gap: 10px; margin-bottom: 6px; }
     .hv-row:last-child { margin-bottom: 0; }
     .hv-n { font-size: 11.5px; color: #24505F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .hv-t { height: 7px; border-radius: 999px; background: #E9F3F6; overflow: hidden; }
     .hv-f { display: block; height: 100%; border-radius: 999px; background: #FF6A4D; }
     .hv-v { font-family: var(--mono); font-size: 10.5px; color: #54707C; text-align: right; font-variant-numeric: tabular-nums; }
 
-    /* the chip rides the card's top edge, clear of the score */
-    .hv-chip { position: absolute; left: 2%; top: 6px; z-index: 3;
+    /* the chip sits on the lower right, beside the competitor panel */
+    .hv-chip { position: absolute; right: -2%; bottom: 150px; z-index: 3;
       background: #07202B; color: #F2F8FA; border: 1px solid rgba(0,189,231,0.4);
       border-radius: 999px; padding: 9px 17px; font-size: 12.5px; letter-spacing: -0.01em;
       box-shadow: 0 20px 44px -14px rgba(0,0,0,0.9); white-space: nowrap; }
@@ -901,7 +902,7 @@ function gtag(){dataLayer.push(arguments);}
       .hero-visual { padding: 26px 0 0; }
       .hv-main { transform: none; }
       .hv-float { position: static; width: auto; margin-top: 14px; }
-      .hv-chip { left: 0; top: 0; }
+      .hv-chip { position: static; display: inline-block; margin-top: 12px; }
     }
     /* --- evidence band: real audit output ------------------------------- */
     .evidence-section { background: var(--bg); padding: 96px 24px; border-top: 1px solid var(--border); }
@@ -1027,15 +1028,15 @@ function gtag(){dataLayer.push(arguments);}
       </figure>
 
       <div class="hv-float">
-        <div class="hv-float-h">Visibility by AI platform</div>
-          <div class="hv-row"><span class="hv-n">ChatGPT</span><span class="hv-t"><span class="hv-f" style="width:63%"></span></span><span class="hv-v">63%</span></div>
-          <div class="hv-row"><span class="hv-n">Perplexity</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
-          <div class="hv-row"><span class="hv-n">Google Gemini</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
-          <div class="hv-row"><span class="hv-n">Claude</span><span class="hv-t"><span class="hv-f" style="width:1.4%"></span></span><span class="hv-v">0%</span></div>
-          <div class="hv-row"><span class="hv-n">Grok</span><span class="hv-t"></span><span class="hv-v">brand only</span></div>
+        <div class="hv-float-h">Who AI recommended instead</div>
+        <div class="hv-float-sub">Times each brand was named across 9 buyer questions</div>
+          <div class="hv-row"><span class="hv-n">Pocket Prep</span><span class="hv-t"><span class="hv-f" style="width:100%"></span></span><span class="hv-v">6</span></div>
+          <div class="hv-row"><span class="hv-n">Fisdap</span><span class="hv-t"><span class="hv-f" style="width:66.7%"></span></span><span class="hv-v">4</span></div>
+          <div class="hv-row"><span class="hv-n">Quizlet</span><span class="hv-t"><span class="hv-f" style="width:33.3%"></span></span><span class="hv-v">2</span></div>
+          <div class="hv-row"><span class="hv-n">Limmer Education</span><span class="hv-t"><span class="hv-f" style="width:33.3%"></span></span><span class="hv-v">2</span></div>
       </div>
 
-      <div class="hv-chip"><strong>0%</strong> on every discovery query</div>
+      <div class="hv-chip"><strong>8</strong> competitors named instead</div>
     </div>
   </div>
 </div>
