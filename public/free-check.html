@@ -146,17 +146,28 @@ function gtag(){dataLayer.push(arguments);}
     .meta { font-size: 12px; color: var(--quiet); line-height: 1.5; }
     .meta b { color: var(--ink-2); font-weight: 600; }
 
-    .todo { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin: 28px 0; }
-    .todo h3 { font-size: 18px; margin-bottom: 14px; }
-    .todo ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
-    .todo li { font-size: 15px; line-height: 1.55; color: var(--ink-2); }
+    .todo { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin: 28px 0; scroll-margin-top: 90px; }
+    .todo h3 { font-size: 18px; margin-bottom: 4px; }
+    .todo .sub { font-size: 13px; color: var(--quiet); margin-bottom: 16px; }
+    .step { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--border); }
+    .step:first-of-type { border-top: 0; padding-top: 4px; }
+    .step .ic { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; }
+    .step.open .ic { background: #E3F6EE; color: var(--ok); }
+    .step.locked .ic { background: var(--surface-2); color: var(--quiet); }
+    .step h4 { font-size: 15px; line-height: 1.4; color: var(--ink); margin-bottom: 4px; }
+    .step p { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+    .step.locked p { filter: blur(5px); user-select: none; pointer-events: none; color: var(--quiet); }
+    .lockwrap { position: relative; }
+    .lockwrap .step:first-of-type { border-top: 1px solid var(--border); padding-top: 14px; }
+    .unlock { position: absolute; left: 0; right: 0; bottom: 0; top: 34%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.88) 32%, rgba(255,255,255,0.97) 100%); }
+    .unlock .btn { max-width: 380px; }
+    .unlock .fine { font-size: 13px; color: var(--quiet); margin-top: 8px; }
 
     .upsell { background: var(--dark); color: #F2F8FA; border-radius: 16px; padding: 36px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; margin-bottom: 56px; }
     .upsell h2 { font-size: 28px; line-height: 1.15; margin-bottom: 12px; }
     .upsell p { font-size: 15px; line-height: 1.6; color: rgba(242,248,250,0.72); margin-bottom: 14px; }
-    .upsell ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .upsell li { font-size: 14px; color: rgba(242,248,250,0.8); display: flex; gap: 10px; }
-    .upsell li::before { content: '✓'; color: #4FD8F5; }
+    .upsell .incl { font-size: 13.5px; color: rgba(242,248,250,0.6); margin-bottom: 0; }
     .upsell .fine { color: rgba(242,248,250,0.5); }
     .ghost { display: block; text-align: center; margin-top: 12px; font-size: 14px; color: rgba(242,248,250,0.65); }
 
@@ -378,14 +389,23 @@ function gtag(){dataLayer.push(arguments);}
         }).join('') + '</div></div>';
     }).join('');
 
-    // Three plain-language next steps, chosen from what the answers showed.
-    var todo = [];
-    var topOther = src.filter(function (s) { return s.domain !== d.domain; }).slice(0, 2).map(function (s) { return s.domain; });
-    if (!d.ownSiteUsed) todo.push('<b>Make your website quotable.</b> Neither assistant used your site as a source. Say plainly on your key pages what you do, who it’s for, where you work and what it costs, in sentences an AI can lift directly.');
-    else todo.push('<b>Build on the pages AI already reads.</b> Your site was used in ' + d.ownSiteUsed + ' answer' + (d.ownSiteUsed === 1 ? '' : 's') + '. Add clear comparisons and answers to the exact questions above so it names you, not just reads you.');
-    if (topOther.length) todo.push('<b>Show up where AI looks.</b> The answers leaned on ' + topOther.map(esc).join(' and ') + '. Being listed, reviewed or mentioned on sites like these is the most direct way into the answer.');
-    if (comp.length) todo.push('<b>Learn from who’s winning.</b> ' + esc(comp[0].name) + ' was recommended ' + comp[0].n + ' time' + (comp[0].n === 1 ? '' : 's') + '. The full audit shows why, question by question, and turns it into a 90-day plan.');
-    else todo.push('<b>Claim the gap.</b> AI isn’t naming a clear leader for these questions yet. Clear, specific pages about your offer can make you the default answer.');
+    // The action plan: step 1 is free; the rest are named from this check and unlocked by the trial.
+    var topOther = src.filter(function (s) { return s.domain !== d.domain && s.domain.slice(-(d.domain.length + 1)) !== '.' + d.domain; }).slice(0, 2).map(function (s) { return s.domain; });
+    var first = !d.ownSiteUsed
+      ? { h: 'Make your website quotable.', p: 'Neither assistant used your site as a source. Say plainly on your key pages what you do, who it’s for, where you work and what it costs, in sentences an AI can lift directly.' }
+      : { h: 'Build on the pages AI already reads.', p: 'Your site was used in ' + d.ownSiteUsed + ' answer' + (d.ownSiteUsed === 1 ? '' : 's') + '. Add clear comparisons and answers to the exact questions above so it names you, not just reads you.' };
+    var locked = [];
+    if (comp.length) locked.push({ h: 'Why ' + comp[0].name + ' gets recommended ' + (d.named ? 'more than you' : 'and you don’t'), p: 'The signals behind each recommendation, from review sites and citations to how clearly each business describes what it offers, compared side by side with yours.' });
+    else locked.push({ h: 'How to become the answer AI gives', p: 'No provider is winning these questions yet. The full audit shows what the assistants look for and which of your pages to strengthen first.' });
+    locked.push({ h: 'Where to get listed, reviewed and mentioned' + (topOther.length ? ', starting with ' + topOther[0] : ''), p: 'The directories, review sites and publications these assistants read for your category, ranked by how often they shaped the answer.' });
+    locked.push({ h: 'Pages to add or rewrite on your site', p: 'Specific pages and questions to answer, written so an assistant can quote them, prioritized by the searches your customers run most.' });
+    locked.push({ h: 'Your 90-day plan', p: 'What your team does first, next and last, sized for a small marketing team, with monthly tracking to show what moved.' });
+    var planHtml = '<div class="todo" id="plan"><h3>Your action plan</h3><p class="sub">Built from this check. Step 1 is yours now.</p>' +
+      '<div class="step open"><span class="ic">1</span><div><h4>' + esc(first.h) + '</h4><p>' + esc(first.p) + '</p></div></div>' +
+      '<div class="lockwrap">' + locked.map(function (l) {
+        return '<div class="step locked"><span class="ic" aria-hidden="true">🔒</span><div><h4>' + esc(l.h) + '</h4><p aria-hidden="true">' + esc(l.p) + '</p></div></div>';
+      }).join('') +
+      '<div class="unlock"><a class="btn" href="' + trialUrl + '" data-track="unlock">Unlock your full plan: start free trial</a><p class="fine">7 days free. No charge today.</p></div></div></div>';
 
     $('results').innerHTML =
       '<div class="res-head"><div><div class="score ' + scoreClass(d.score) + '">' + d.score + '%</div><div class="score-lbl">Quick Citro Score</div></div>' +
@@ -393,16 +413,16 @@ function gtag(){dataLayer.push(arguments);}
       '<div class="grid2"><div class="panel"><h3>Who AI recommended instead</h3><p class="sub">Businesses named in these answers, and how often.</p>' + compHtml + '</div>' +
       '<div class="panel"><h3>Where AI looked before answering</h3><p class="sub">The sites the assistants read. This is where you need to be described.</p>' + srcHtml + '</div></div>' +
       qHtml +
-      '<div class="todo"><h3>What to do first</h3><ol>' + todo.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ol></div>' +
+      planHtml +
       '<div class="upsell"><div><h2>This was 3 questions on 2 assistants. Your customers ask many more.</h2>' +
-      '<p>The full Citro audit runs the questions your customers actually ask, on all five major AI assistants, and tells your team exactly what to fix.</p>' +
-      '<ul><li>ChatGPT, Gemini, Claude, Perplexity and Grok</li><li>Your own buyer questions, which you can edit</li><li>Up to 5 local markets side by side</li><li>A 90-day plan built for a small marketing team</li><li>Monthly tracking so you can see it work</li></ul></div>' +
+      '<p>Start your free trial and Citro builds your audit from the questions your customers actually ask, on all five AI assistants, then shows your team exactly what to fix first.</p>' +
+      '<p class="incl">ChatGPT, Gemini, Claude, Perplexity and Grok · your own questions · up to 5 local markets · monthly tracking</p></div>' +
       '<div><a class="btn" href="' + trialUrl + '" data-track="results">Start my 7-day free trial →</a>' +
       '<p class="fine">No charge today. Cancel anytime.</p><a class="ghost" href="/sample-audit.html">See a full sample report</a></div></div>';
 
     $('results').hidden = false;
     $('card').innerHTML = '<h2>Your check is ready</h2><p class="card-sub" style="margin-bottom:16px;">Scroll down for what ChatGPT and Gemini said about ' + esc(who) + '.</p><a class="btn" href="#results">See my results ↓</a>';
-    $('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    ((location.hash === '#plan' && document.getElementById('plan')) || $('results')).scrollIntoView({ behavior: 'smooth', block: 'start' });
     document.querySelectorAll('[data-track]').forEach(function (a) { a.addEventListener('click', function () { track('cta_trial_click', { from: 'free_check_' + a.getAttribute('data-track') }); }); });
   }
 

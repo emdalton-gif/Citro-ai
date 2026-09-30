@@ -189,6 +189,18 @@ function sendResultsEmail(to, r) {
   const trial = `https://getcitro.ai/start.html?em=${encodeURIComponent(to)}&co=${encodeURIComponent(r.company)}&url=${encodeURIComponent(r.domain)}`;
   const color = r.score >= 65 ? '#026F8B' : r.score >= 35 ? '#C97A12' : '#E8452A';
   const comp = r.competitors.slice(0, 3).map(c => esc(c.name)).join(', ');
+  // Same plan as the results page: step 1 in full, the rest named and locked.
+  const first = r.ownSiteUsed
+    ? ['Build on the pages AI already reads.', `Your site was used in ${r.ownSiteUsed} answer${r.ownSiteUsed === 1 ? '' : 's'}. Add clear comparisons and answers to the questions we asked so it names you, not just reads you.`]
+    : ['Make your website quotable.', "Neither assistant used your site as a source. Say plainly on your key pages what you do, who it's for, where you work and what it costs, in sentences an AI can lift directly."];
+  const others = (r.sources || []).map(s => s.domain).filter(dm => dm !== r.domain && !dm.endsWith('.' + r.domain));
+  const lockedTitles = [
+    r.competitors.length ? `Why ${r.competitors[0].name} gets recommended ${r.named ? 'more than you' : "and you don't"}` : 'How to become the answer AI gives',
+    'Where to get listed, reviewed and mentioned' + (others.length ? `, starting with ${others[0]}` : ''),
+    'Pages to add or rewrite on your site',
+    'Your 90-day plan',
+  ];
+  const planLink = `${link}#plan`;
   const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
 <div style="max-width:540px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
 <div style="background:#07202B;padding:24px 32px;"><span style="font-size:20px;font-weight:800;color:#00BDE7;">Citro</span></div>
@@ -196,9 +208,12 @@ function sendResultsEmail(to, r) {
 <p style="font-size:20px;font-weight:700;color:#07202B;margin:0 0 8px;">Your free AI visibility check: ${esc(r.company)}</p>
 <p style="font-size:14px;color:#48626E;margin:0 0 20px;">Quick Citro Score: <strong style="color:${color};font-size:18px;">${r.score}%</strong> &middot; named in ${r.named} of ${r.answered} answers on ChatGPT and Google Gemini.</p>
 ${comp ? `<p style="font-size:15px;color:#48626E;line-height:1.6;margin:0 0 20px;">Recommended instead: <strong style="color:#07202B;">${comp}</strong>.</p>` : ''}
-<a href="${link}" style="display:inline-block;background:#00BDE7;color:#04222E;padding:12px 22px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:24px;">See your full results</a>
-<p style="font-size:14px;color:#48626E;line-height:1.6;margin:0 0 8px;">This check asked 3 questions on 2 assistants. The full Citro audit runs your customers' real questions on all five major AI assistants and gives your team a 90-day plan.</p>
-<p style="margin:0 0 24px;"><a href="${trial}" style="color:#026F8B;font-weight:600;">Start a 7-day free trial</a></p>
+<a href="${link}" style="display:inline-block;background:#00BDE7;color:#04222E;padding:12px 22px;border-radius:999px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:28px;">See your full results</a>
+<p style="font-size:16px;font-weight:700;color:#07202B;margin:0 0 10px;">Your action plan</p>
+<p style="font-size:14px;color:#07202B;line-height:1.6;margin:0 0 14px;"><strong>1. ${esc(first[0])}</strong> ${esc(first[1])}</p>
+${lockedTitles.map((t, i) => `<p style="font-size:14px;color:#7E959F;line-height:1.5;margin:0 0 8px;">&#128274; ${i + 2}. ${esc(t)}</p>`).join('')}
+<p style="margin:14px 0 24px;"><a href="${planLink}" style="color:#026F8B;font-weight:700;">Unlock your full plan with a 7-day free trial</a></p>
+<p style="font-size:14px;color:#48626E;line-height:1.6;margin:0 0 24px;">This check asked 3 questions on 2 assistants. The full Citro audit runs the questions your customers actually ask, on all five major AI assistants, and shows your team exactly what to fix first. <a href="${trial}" style="color:#026F8B;font-weight:600;">Start your free trial</a>.</p>
 <p style="font-size:12px;color:#7E959F;line-height:1.6;margin:0;">You're receiving this because you ran a free check at getcitro.ai. Questions? Reply to this email.</p>
 </div></div></body></html>`;
   const payload = JSON.stringify({ from: 'Citro <audit@getcitro.ai>', to: [to], subject: `Does AI recommend ${r.company}? Your free check`, html });
