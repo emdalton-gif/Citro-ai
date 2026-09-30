@@ -111,7 +111,7 @@ module.exports = async function handler(req, res) {
       // Create a minimal record so the user can still access the dashboard.
       await upstashSet(`subscriber:${email}`, {
         email,
-        plan:                'professional',
+        plan:                session.metadata?.plan === 'enterprise' ? 'enterprise' : 'professional',
         stripeCustomerId:    session.customer || null,
         stripeSubscriptionId: session.subscription || null,
         subscriptionStatus:  'active',
@@ -120,6 +120,7 @@ module.exports = async function handler(req, res) {
     } else {
       await upstashSet(`subscriber:${email}`, {
         ...subscriber,
+        plan:                session.metadata?.plan === 'enterprise' ? 'enterprise' : (subscriber.plan || 'professional'),
         stripeCustomerId:    session.customer    || subscriber.stripeCustomerId,
         stripeSubscriptionId: session.subscription || subscriber.stripeSubscriptionId,
         subscriptionStatus:  'active',

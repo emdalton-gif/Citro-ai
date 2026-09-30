@@ -134,18 +134,30 @@ module.exports = async function handler(req, res) {
         subscriptionStatus:   'pending_payment',
         createdAt:            Date.now(),
       });
-    } else {
-      // Account exists — update plan and status for the new checkout
-      const salt         = existing.salt || crypto.randomBytes(16).toString('hex');
+    } else if (existing.subscriptionStatus === 'pending_payment') {
+      // Never paid (an abandoned checkout): safe to start over with this password.
+      const salt         = crypto.randomBytes(16).toString('hex');
       const passwordHash = await hashPassword(password, salt);
       await upstashSet(`subscriber:${normalized}`, {
         ...existing,
         passwordHash,
         salt,
         plan:               'enterprise',
-        subscriptionStatus: 'pending_payment',
         updatedAt:          Date.now(),
       });
+    } else {
+      // A live account upgrading. It must prove it owns the email, and nothing
+      // changes until payment completes (trial-activate reads the plan from
+      // the checkout's metadata).
+      let ok = false;
+      if (existing.passwordHash && existing.salt) {
+        const h = await hashPassword(password, existing.salt);
+        ok = h.length === existing.passwordHash.length &&
+          crypto.timingSafeEqual(Buffer.from(h, 'hex'), Buffer.from(existing.passwordHash, 'hex'));
+      }
+      if (!ok) {
+        return res.status(409).json({ error: 'An account with this email already exists. Use your Citro password, or log in and upgrade from your dashboard.' });
+      }
     }
 
     // ── 2. Create Stripe Checkout Session ─────────────────────────────────────

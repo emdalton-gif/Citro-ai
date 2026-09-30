@@ -227,6 +227,7 @@ module.exports = async function handler(req, res) {
         // already warned them it restarts their score history. Without this
         // the regenerated set applied to one run and the next run silently
         // went back to the old questions.
+        if (existingProfile?.querySetHistory) profileToSave.querySetHistory = existingProfile.querySetHistory;
         if (newQuerySet && Array.isArray(queries) && queries.length > 0) {
           profileToSave.queries = queries;
           profileToSave.querySetId = querySetId;

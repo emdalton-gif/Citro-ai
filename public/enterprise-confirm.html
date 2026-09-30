@@ -541,6 +541,22 @@
       setStep(3, 'done');
       await delay(400);
 
+      // Visitors who chose Enterprise at the end of the trial sign-up already
+      // described their business there. Start the form from that.
+      try {
+        const pre = JSON.parse(localStorage.getItem('citro_enterprise_prefill') || 'null');
+        if (pre && pre.email && String(pre.email).toLowerCase() === String(subEmail || '').toLowerCase()
+            && Date.now() - (pre.savedAt || 0) < 7 * 24 * 60 * 60 * 1000) {
+          ['companyName:company_name', 'website:website', 'industry:industry', 'offer:offer', 'buyer:buyer', 'geo:geo', 'competitors:competitors']
+            .forEach(pair => {
+              const [id, key] = pair.split(':');
+              const el = document.getElementById(id);
+              if (el && !el.value && pre[key]) el.value = pre[key];
+            });
+        }
+        localStorage.removeItem('citro_enterprise_prefill');
+      } catch (e) {}
+
       // Show profile form
       document.getElementById('stateActivating').style.display = 'none';
       document.getElementById('stateProfile').style.display = 'block';
@@ -631,7 +647,7 @@
         // Save company profile to account
         await fetch('/api/sub-register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
           body: JSON.stringify({
             email: subEmail,
             password: '_noop_update_',

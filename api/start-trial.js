@@ -122,6 +122,15 @@ module.exports = async function handler(req, res) {
     // ── 1. Create / update subscriber record ─────────────────────────────────
     const existing = await upstashGet(`subscriber:${normalized}`);
 
+    if (existing && existing.subscriptionStatus !== 'pending_payment') {
+      // A live account. Don't let a sign-up form overwrite its profile.
+      return res.status(409).json({ error: 'An account with this email already exists. Please log in to your dashboard.' });
+    }
+    if (existing) {
+      // Abandoned checkout: start over with the password entered now.
+      const salt = crypto.randomBytes(16).toString('hex');
+      await upstashSet(`subscriber:${normalized}`, { ...existing, salt, passwordHash: await hashPassword(password, salt), updatedAt: Date.now() });
+    }
     if (!existing) {
       const salt = crypto.randomBytes(16).toString('hex');
       const passwordHash = await hashPassword(password, salt);
@@ -137,8 +146,7 @@ module.exports = async function handler(req, res) {
         createdAt:           Date.now(),
       });
     }
-    // If account exists (e.g. a retry) leave it as-is — trial-activate will
-    // update Stripe IDs and flip status to active.
+    // trial-activate updates Stripe IDs and flips status to active after payment.
 
     // ── 2. Store business profile ─────────────────────────────────────────────
     await upstashSet(`subscriber-profile:${normalized}`, {

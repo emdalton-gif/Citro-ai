@@ -1876,11 +1876,11 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
   let _currentQueries = null;
 
   // ── Query review helpers ──────────────────────────────────────────────────
-  // Enterprise customers can edit the question set: rewrite, add, remove,
-  // change platform and mark brand questions. They know what their buyers ask
+  // Every plan can edit the question set: rewrite, add, remove, change
+  // platform and mark brand questions. Customers know what their buyers ask
   // better than a generator does. Saving a changed set creates a new version
   // (api/sub-update-queries.js) and the dashboard marks where it changed.
-  // Professional keeps the managed set: it can skip a question for one run.
+  // The name _editorEnterprise is historical; the editor is on for all plans.
   const QUERY_PLATFORMS = ['ChatGPT', 'Perplexity', 'Google Gemini', 'Claude', 'Grok'];
   const QUERY_MIN = 5, QUERY_MAX = 15, QUERY_MAX_BRAND = 2;
   let _editorEnterprise = false;     // set when the review screen opens
@@ -2275,7 +2275,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       if (subscriberEmail && !isEnterprise) {
         fetch('/api/sub-register', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
           body: JSON.stringify({ email: subscriberEmail, password: '_noop_update_', profile }),
         }).catch(() => {});
       }
@@ -2323,7 +2323,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
           queries = await genQueries(_currentProfile, personas);
         }
         _currentQueries = queries;
-        _editorEnterprise = !!isEnterprise;
+        _editorEnterprise = true;
         _queriesRegenerated = false;
         _warnedQuerySetKey = null;
         _savedQuerySetKey = saved ? querySetKey(saved) : null;
@@ -2407,7 +2407,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
         return;
       }
 
-      // ── Enterprise: validate, warn, save as a new version, then run ──
+      // ── Validate, warn, save as a new version, then run ──
       const invalid = validateQuerySet(queriesFromCards);
       if (invalid) { setQueryStatus(invalid, 'error'); return; }
 
@@ -2441,7 +2441,7 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
             body: JSON.stringify({
-              propertyId: activePropertyId,
+              propertyId: activePropertyId || undefined,
               queries: queriesFromCards.map(q => ({ text: q.text, platform: q.platform, brand_specific: q.brand_specific })),
               source: _queriesRegenerated ? 'generated' : 'edited',
             }),

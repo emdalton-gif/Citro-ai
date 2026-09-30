@@ -163,6 +163,16 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
 .persona-edit-btn { display: inline-flex; align-items: center; justify-content: center; font-size: 13px; color: var(--accent); background: #EDFAFD; border: 1px solid #BEEEF9; border-radius: 6px; cursor: pointer; font-family: var(--sans); font-weight: 600; padding: 5px 14px; min-height: 44px; }
 
 /* ── TRIAL SUMMARY ── */
+.plan-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+.plan-opt { position: relative; display: block; border: 1.5px solid var(--border, #D7E7ED); border-radius: 12px; padding: 14px 16px 14px 44px; cursor: pointer; background: #fff; transition: border-color .15s, box-shadow .15s; }
+.plan-opt input { position: absolute; left: 16px; top: 17px; width: 16px; height: 16px; accent-color: #026F8B; }
+.plan-opt:has(input:checked) { border-color: #026F8B; box-shadow: 0 0 0 3px rgba(2,111,139,0.12); }
+.plan-opt .po-name { display: block; font-size: 15px; font-weight: 700; color: var(--ink); }
+.plan-opt .po-price { display: block; font-size: 14px; font-weight: 600; color: #026F8B; margin: 2px 0 4px; }
+.plan-opt .po-desc { display: block; font-size: 13px; color: var(--mid); line-height: 1.45; }
+.plan-more { font-size: 13px; color: var(--mid); margin-bottom: 22px; }
+.plan-more a { color: #026F8B; font-weight: 600; }
+@media (max-width: 560px) { .plan-pick { grid-template-columns: 1fr; } }
 .trial-summary { background: var(--dark); border-radius: 12px; padding: 24px; margin-bottom: 24px; color: #fff; }
 .trial-summary-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px; }
 .trial-summary-row:last-child { border-bottom: none; }
@@ -446,8 +456,24 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="step-icon green">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#026F8B" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
-    <h1 class="step-title">You're all set — let's start your free trial.</h1>
-    <p class="step-sub">Review what we set up, then add your card to start your trial. No charge today, nothing until day 8.</p>
+    <h1 class="step-title" id="s5-title">You're all set. Choose your plan.</h1>
+    <p class="step-sub" id="s5-sub">Review what we set up, then add your card. Professional starts with 7 days free: no charge today, nothing until day 8.</p>
+
+    <div class="plan-pick" role="radiogroup" aria-label="Plan">
+      <label class="plan-opt">
+        <input type="radio" name="plan" value="professional" checked onchange="choosePlan(this.value)">
+        <span class="po-name">Professional</span>
+        <span class="po-price">$119/mo · 7 days free</span>
+        <span class="po-desc">One business. All 5 AI assistants, your own buyer questions, monthly tracking.</span>
+      </label>
+      <label class="plan-opt">
+        <input type="radio" name="plan" value="enterprise" onchange="choosePlan(this.value)">
+        <span class="po-name">Enterprise</span>
+        <span class="po-price">$299/mo · billed today</span>
+        <span class="po-desc">Up to 10 brands, products or sites, each with its own questions and score history.</span>
+      </label>
+    </div>
+    <p class="plan-more">Need more than 10 brands? <a href="https://calendly.com/eric-rootpartners/30min" target="_blank" rel="noopener" onclick="trackTrial('trial_talk_to_us', 6)">Talk to us</a>.</p>
 
     <!-- Summary -->
     <div class="trial-summary" id="trial-summary-block">
@@ -465,21 +491,21 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       </div>
       <div class="trial-summary-row">
         <span class="trial-summary-label">Plan</span>
-        <span class="trial-summary-value">Citro Professional</span>
+        <span class="trial-summary-value" id="ts-plan">Citro Professional</span>
       </div>
       <div class="trial-summary-row">
         <span class="trial-summary-label">Due today</span>
-        <span class="trial-summary-value" style="color:#4FD8F5;">$0.00</span>
+        <span class="trial-summary-value" style="color:#4FD8F5;" id="ts-due">$0.00</span>
       </div>
       <div class="trial-summary-row">
-        <span class="trial-summary-label">After trial (day 8)</span>
-        <span class="trial-summary-value">$119.00 / month</span>
+        <span class="trial-summary-label" id="ts-after-label">After trial (day 8)</span>
+        <span class="trial-summary-value" id="ts-after">$119.00 / month</span>
       </div>
     </div>
 
     <div class="trial-callout">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-      <div class="trial-callout-text">
+      <div class="trial-callout-text" id="ts-callout">
         <strong>7 days free, then $119/month.</strong> A temporary $1 authorization confirms your card and is refunded right away. Nothing is charged until day 8, and you can cancel any time before then from your dashboard, no charge, no questions.
       </div>
     </div>
@@ -491,7 +517,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     </button>
     <button class="btn-ghost" onclick="goStep(4)">← Back</button>
 
-    <div class="stripe-row">
+    <div class="stripe-row" id="ts-stripe-row">
       <span class="stripe-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         Secured by Stripe
@@ -500,7 +526,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Card encrypted — never stored on our servers
       </span>
-      <span class="stripe-item">
+      <span class="stripe-item" id="ts-cancel-note">
         Cancel anytime before day 8
       </span>
     </div>
@@ -513,6 +539,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
 <script>
 // ── STATE ──
 let state = {
+  plan: 'professional',
   email: '',
   password: '',
   bizName: '',
@@ -813,7 +840,73 @@ function goStep5() {
 }
 
 // ── START TRIAL ──
+// ── PLAN CHOICE (step 5) ──
+const PLAN_COPY = {
+  professional: {
+    sub: 'Review what we set up, then add your card. Professional starts with 7 days free: no charge today, nothing until day 8.',
+    plan: 'Citro Professional', due: '$0.00', afterLabel: 'After trial (day 8)', after: '$119.00 / month',
+    callout: '<strong>7 days free, then $119/month.</strong> A temporary $1 authorization confirms your card and is refunded right away. Nothing is charged until day 8, and you can cancel any time before then from your dashboard, no charge, no questions.',
+    button: 'Start My 7-Day Free Trial', cancel: 'Cancel anytime before day 8',
+  },
+  enterprise: {
+    sub: 'Review what we set up, then add your card. Enterprise is billed monthly from today.',
+    plan: 'Citro Enterprise', due: '$299.00', afterLabel: 'Then', after: '$299.00 / month',
+    callout: '<strong>$299/month, billed today.</strong> Covers up to 10 brands, products or sites. After payment you set up your first brand, then add the rest from your dashboard. Cancel anytime from your dashboard.',
+    button: 'Continue to Secure Payment', cancel: 'Cancel anytime',
+  },
+};
+function choosePlan(plan) {
+  state.plan = plan === 'enterprise' ? 'enterprise' : 'professional';
+  const c = PLAN_COPY[state.plan];
+  document.getElementById('s5-sub').textContent = c.sub;
+  document.getElementById('ts-plan').textContent = c.plan;
+  document.getElementById('ts-due').textContent = c.due;
+  document.getElementById('ts-after-label').textContent = c.afterLabel;
+  document.getElementById('ts-after').textContent = c.after;
+  document.getElementById('ts-callout').innerHTML = c.callout;
+  document.getElementById('start-trial-label').textContent = c.button;
+  document.getElementById('ts-cancel-note').textContent = c.cancel;
+  document.getElementById('err-5').classList.remove('show');
+  trackTrial('trial_plan_' + state.plan, 6);
+}
+
+// Enterprise pays on day one through its own checkout. What the visitor set up
+// here is kept in this browser so the post-payment setup form starts filled in.
+async function startEnterprise() {
+  const btn   = document.getElementById('start-trial-btn');
+  const label = document.getElementById('start-trial-label');
+  const err   = document.getElementById('err-5');
+  btn.disabled = true;
+  label.textContent = 'Preparing secure payment…';
+  try {
+    try {
+      localStorage.setItem('citro_enterprise_prefill', JSON.stringify({
+        email: state.email,
+        company_name: state.bizName, website: state.bizUrl,
+        industry: state.profile.industry || '', offer: state.profile.offer || state.bizProduct || '',
+        buyer: state.profile.buyer || '', geo: state.profile.geo || '',
+        competitors: state.competitors.join(', '), savedAt: Date.now(),
+      }));
+    } catch (e) {}
+    const resp = await fetch('/api/enterprise-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: state.email, password: state.password }),
+    });
+    const data = await resp.json();
+    if (!resp.ok || !data.url) throw new Error(data.error || 'Could not start checkout. Please try again.');
+    label.textContent = 'Redirecting to secure payment…';
+    window.location.href = data.url;
+  } catch (e) {
+    btn.disabled = false;
+    label.textContent = PLAN_COPY.enterprise.button;
+    err.textContent = e.message;
+    err.classList.add('show');
+  }
+}
+
 async function startTrial() {
+  if (state.plan === 'enterprise') { trackTrial('trial_begin_checkout_enterprise', 6); return startEnterprise(); }
   const btn   = document.getElementById('start-trial-btn');
   const label = document.getElementById('start-trial-label');
   const err   = document.getElementById('err-5');

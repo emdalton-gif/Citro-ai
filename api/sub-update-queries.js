@@ -1,5 +1,6 @@
 // api/sub-update-queries.js
-// Saves an Enterprise property's question set as a new version.
+// Saves a question set as a new version: an Enterprise property's set when a
+// propertyId is sent, otherwise a Professional account's own set.
 //
 // The question set defines a property's score history, so it is only replaced
 // deliberately: the customer edits or regenerates it on the review screen and
@@ -103,7 +104,6 @@ module.exports = async function handler(req, res) {
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
   const { propertyId, queries: rawQueries, source } = req.body || {};
-  if (!propertyId) return res.status(400).json({ error: 'Missing propertyId' });
 
   const queries = Array.isArray(rawQueries) ? rawQueries.map(q => ({
     text: String(q?.text || '').trim().replace(/\s+/g, ' '),
@@ -117,49 +117,48 @@ module.exports = async function handler(req, res) {
   try {
     const account = await upstashGet(`subscriber:${email}`);
     if (!account) return res.status(404).json({ error: 'Account not found' });
-    if (account.plan !== 'enterprise') {
-      return res.status(403).json({ error: 'Editing questions is an Enterprise feature.' });
-    }
     if (account.subscriptionStatus === 'canceled') {
       return res.status(403).json({ error: 'Subscription canceled' });
     }
 
-    const propsKey = `subscriber-properties:${email}`;
-    const properties = await upstashGet(propsKey) || [];
-    const idx = properties.findIndex(p => p.id === propertyId);
-    if (idx === -1) return res.status(404).json({ error: 'Property not found' });
-    const prop = properties[idx];
+    // Enterprise sets live on a property; Professional has one set on its profile.
+    let key, list = null, idx = -1, target;
+    if (account.plan === 'enterprise') {
+      if (!propertyId) return res.status(400).json({ error: 'Missing propertyId' });
+      key = `subscriber-properties:${email}`;
+      list = await upstashGet(key) || [];
+      idx = list.findIndex(p => p.id === propertyId);
+      if (idx === -1) return res.status(404).json({ error: 'Property not found' });
+      target = list[idx];
+    } else {
+      key = `subscriber-profile:${email}`;
+      target = await upstashGet(key) || {};
+    }
 
-    // A property that already has a set but no version number is on version 1.
-    const currentVersion = prop.querySetVersion || (prop.queries?.length ? 1 : 0);
+    // A set that already exists but has no version number is on version 1.
+    const currentVersion = target.querySetVersion || (target.queries?.length ? 1 : 0);
 
-    if (Array.isArray(prop.queries) && prop.queries.length && setKey(prop.queries) === setKey(queries)) {
-      return res.json({ success: true, changed: false, querySetVersion: currentVersion, querySetId: prop.querySetId });
+    if (Array.isArray(target.queries) && target.queries.length && setKey(target.queries) === setKey(queries)) {
+      return res.json({ success: true, changed: false, querySetVersion: currentVersion, querySetId: target.querySetId });
     }
 
     const now = Date.now();
     const querySetId = querySetFingerprint(queries);
     const querySetVersion = currentVersion + 1;
-    const history = Array.isArray(prop.querySetHistory) ? prop.querySetHistory : [];
+    const history = Array.isArray(target.querySetHistory) ? target.querySetHistory : [];
     history.unshift({
       version: querySetVersion,
       querySetId,
       at: now,
       count: queries.length,
       source: source === 'generated' ? 'generated' : 'edited',
-      previousQueries: prop.queries || [],
+      previousQueries: target.queries || [],
     });
     if (history.length > 20) history.length = 20;
 
-    properties[idx] = {
-      ...prop,
-      queries,
-      querySetId,
-      querySetVersion,
-      querySetAt: now,
-      querySetHistory: history,
-    };
-    await upstashSet(propsKey, properties);
+    const updated = { ...target, queries, querySetId, querySetVersion, querySetAt: now, querySetHistory: history };
+    if (list) { list[idx] = updated; await upstashSet(key, list); }
+    else await upstashSet(key, updated);
 
     res.json({ success: true, changed: true, querySetVersion, querySetId });
   } catch (err) {

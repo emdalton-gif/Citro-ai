@@ -455,9 +455,7 @@ function gtag(){dataLayer.push(arguments);}
         body: JSON.stringify({
           email: sessionData.email,
           password: pw,
-          plan: sessionData.plan || 'professional',
-          stripeCustomerId: sessionData.stripeCustomerId,
-          stripeSubscriptionId: sessionData.stripeSubscriptionId,
+          sessionId,
           profile: { company_name: sessionData.profile?.company_name || '', website: sessionData.profile?.website || '' },
         }),
       });

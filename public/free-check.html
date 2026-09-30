@@ -405,7 +405,7 @@ function gtag(){dataLayer.push(arguments);}
       '<div class="lockwrap">' + locked.map(function (l) {
         return '<div class="step locked"><span class="ic" aria-hidden="true">🔒</span><div><h4>' + esc(l.h) + '</h4><p aria-hidden="true">' + esc(l.p) + '</p></div></div>';
       }).join('') +
-      '<div class="unlock"><a class="btn" href="' + trialUrl + '" data-track="unlock">Unlock your full plan: start free trial</a><p class="fine">7 days free. No charge today.</p></div></div></div>';
+      '<div class="unlock"><a class="btn" href="' + trialUrl + '" data-track="unlock">Unlock your full plan: start free trial</a><p class="fine">7 days free, then $119/month. Cancel anytime.</p></div></div></div>';
 
     $('results').innerHTML =
       '<div class="res-head"><div><div class="score ' + scoreClass(d.score) + '">' + d.score + '%</div><div class="score-lbl">Quick Citro Score</div></div>' +
@@ -418,7 +418,7 @@ function gtag(){dataLayer.push(arguments);}
       '<p>Start your free trial and Citro builds your audit from the questions your customers actually ask, on all five AI assistants, then shows your team exactly what to fix first.</p>' +
       '<p class="incl">ChatGPT, Gemini, Claude, Perplexity and Grok · your own questions · up to 5 local markets · monthly tracking</p></div>' +
       '<div><a class="btn" href="' + trialUrl + '" data-track="results">Start my 7-day free trial →</a>' +
-      '<p class="fine">No charge today. Cancel anytime.</p><a class="ghost" href="/sample-audit.html">See a full sample report</a></div></div>';
+      '<p class="fine">7 days free, then $119/month. Cancel anytime.</p><a class="ghost" href="/sample-audit.html">See a full sample report</a></div></div>';
 
     $('results').hidden = false;
     $('card').innerHTML = '<h2>Your check is ready</h2><p class="card-sub" style="margin-bottom:16px;">Scroll down for what ChatGPT and Gemini said about ' + esc(who) + '.</p><a class="btn" href="#results">See my results ↓</a>';
