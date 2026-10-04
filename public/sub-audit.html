@@ -2570,7 +2570,12 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       const apiProfile = data.profile || {};
       let localProfile = null;
       try { localProfile = JSON.parse(localStorage.getItem('rp_sub_profile') || 'null'); } catch(e) {}
-      p = (localProfile?.company_name) ? localProfile : apiProfile;
+      // This browser cache can be left over from another account (e.g. an
+      // earlier sign-up in the same browser). Only trust it for this account,
+      // and never over a profile the server already has.
+      const localMatches = localProfile && localProfile._email && localProfile._email === String(subscriberEmail || '').toLowerCase();
+      if (localProfile && !localMatches) { try { localStorage.removeItem('rp_sub_profile'); } catch(e) {} localProfile = null; }
+      p = (apiProfile.company_name) ? apiProfile : (localProfile?.company_name ? localProfile : apiProfile);
 
       const isFirstRun = !data.runs || data.runs.length === 0;
 

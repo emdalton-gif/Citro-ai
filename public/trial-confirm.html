@@ -256,6 +256,7 @@ h1 { font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 10px; 
     setStep('step-account', 'active');
     try {
       localStorage.setItem('sub_token', verifyData.token);
+      localStorage.removeItem('rp_sub_profile');
       localStorage.setItem('sub_email', verifyData.email || '');
     } catch (e) { /* localStorage blocked — non-fatal */ }
 

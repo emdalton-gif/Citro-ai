@@ -678,7 +678,7 @@ function gtag(){dataLayer.push(arguments);}
     const profileWithPersonas = { ...baseProfile, personas };
 
     // Write to localStorage so sub-audit.html can read it immediately (API-independent)
-    try { localStorage.setItem('rp_sub_profile', JSON.stringify(baseProfile)); } catch(e) {}
+    try { localStorage.setItem('rp_sub_profile', JSON.stringify({ ...baseProfile, _email: String(sessionData.email || '').toLowerCase() })); } catch(e) {}
 
     try {
       await fetch('/api/sub-register', {

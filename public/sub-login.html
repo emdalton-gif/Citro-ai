@@ -196,6 +196,7 @@ function gtag(){dataLayer.push(arguments);}
       }
 
       localStorage.setItem('sub_token', data.token);
+      try { localStorage.removeItem('rp_sub_profile'); } catch (e) {}
       localStorage.setItem('sub_email', data.email);
       window.location.href = '/sub-dashboard.html';
 
