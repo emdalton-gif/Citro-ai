@@ -216,6 +216,24 @@ function pageMeta(html) {
   };
 }
 
+// Links from the homepage to a help center, FAQ or support site on the same
+// domain or a subdomain of it (help.example.com, support.example.com/faq).
+function helpSiteLinks(html, baseUrl) {
+  const base = new URL(baseUrl).hostname.replace(/^www\./, '');
+  const out = new Set();
+  for (const m of String(html || '').matchAll(/<a[^>]+href\s*=\s*["']([^"'#]+)["']/gi)) {
+    try {
+      const u = new URL(m[1], baseUrl);
+      const h = u.hostname.replace(/^www\./, '');
+      const sameSite = h === base || h.endsWith('.' + base);
+      if (!sameSite || !/^https?:$/.test(u.protocol)) continue;
+      const sub = h === base ? '' : h.slice(0, -(base.length + 1));
+      if (/(^|\.)(help|support|faq|faqs|docs|knowledge|kb|answers|customer)(\.|$)/i.test(sub) || (h !== base && /\/(faq|help|support)/i.test(u.pathname))) out.add(u.origin + (u.pathname === '/' ? '' : u.pathname));
+    } catch {}
+  }
+  return [...out].slice(0, 5);
+}
+
 // Internal links on a page, used as a page inventory when there's no sitemap.
 function internalLinks(html, baseUrl) {
   const base = new URL(baseUrl);
@@ -376,6 +394,9 @@ async function checkSite(website, brand) {
 
   const sm = await readSitemaps(origin, (facts.robots && facts.robots.sitemaps) || []);
   const homeLinks = home ? internalLinks(home.text, home.url) : [];
+  // Help centers and FAQ sites often live on a subdomain (help.example.com)
+  // that the main sitemap never lists. Count anything the homepage links to.
+  facts.helpSites = home ? helpSiteLinks(home.text, home.url) : [];
   const inventory = sm.urls.length ? sm.urls : homeLinks;
   const cls = classifyUrls([...new Set([...inventory, ...homeLinks])]);
   facts.sitemap = { status: sm.url ? 'present' : (facts.reachable ? 'missing' : 'unknown'), url: sm.url, urlCount: sm.urls.length, truncated: sm.truncated };
@@ -387,9 +408,18 @@ async function checkSite(website, brand) {
 
   // Schema on a sample of real pages: the homepage plus one of each kind.
   const sample = [];
-  const pick = (kind) => { const u = cls.pages[kind] && cls.pages[kind].find(x => !sample.some(s => s.url === x)); if (u) sample.push({ kind, url: u }); };
-  ['offering', 'pricing', 'faq', 'about', 'comparison'].forEach(pick);
-  const fetched = await Promise.all(sample.slice(0, 5).map(async s => {
+  // For blog and case studies, sample an actual post, not the /blog/ index.
+  const depth = u => { try { return new URL(u).pathname.split('/').filter(Boolean).length; } catch { return 0; } };
+  const pick = (kind) => {
+    const list = (cls.pages[kind] || []).filter(x => !sample.some(s => s.url === x));
+    const u = (kind === 'blog' || kind === 'caseStudies') ? (list.find(x => depth(x) >= 2) || null) : list[0];
+    if (u) sample.push({ kind, url: u });
+  };
+  // One of each kind, plus a second offering page and a blog post: markup
+  // differs by template, and blog posts often carry Article markup that the
+  // homepage doesn't. Claims like "add Article schema to your posts" need a post.
+  ['offering', 'blog', 'caseStudies', 'pricing', 'faq', 'about', 'comparison', 'offering'].forEach(pick);
+  const fetched = await Promise.all(sample.slice(0, 7).map(async s => {
     const r = await getText(s.url);
     return r.ok ? { kind: s.kind, url: r.url, types: extractSchemaTypes(r.text).types } : { kind: s.kind, url: s.url, error: r.error || r.status };
   }));
@@ -409,4 +439,4 @@ async function checkSite(website, brand) {
   return { ok: true, facts };
 }
 
-module.exports = { checkSite, parseLlms, parseRobots, extractSchemaTypes, extractLocs, classifyUrls, internalLinks, pageMeta, normalizeSite, isPrivateIp, AI_BOTS };
+module.exports = { helpSiteLinks, checkSite, parseLlms, parseRobots, extractSchemaTypes, extractLocs, classifyUrls, internalLinks, pageMeta, normalizeSite, isPrivateIp, AI_BOTS };

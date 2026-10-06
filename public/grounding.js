@@ -47,9 +47,9 @@
     { type: 'Service',             re: /\bService (schema|markup|structured data)\b/i, also: ['ProfessionalService'], pageKind: 'offering' },
     { type: 'ProfessionalService', re: /\bProfessionalService\b/i, also: [] },
     { type: 'LocalBusiness',       re: /\bLocalBusiness\b/i, also: [] },
-    { type: 'HowTo',               re: /\bHowTo\b/i, also: [] },
+    { type: 'HowTo',               re: /\bHowTo\b/i, also: [], pageKind: 'blog' },
     { type: 'AggregateRating',     re: /\b(AggregateRating|Review (schema|markup))\b/i, also: ['Review'] },
-    { type: 'Article',             re: /\b(Article|BlogPosting) (schema|markup|structured data)\b/i, also: ['BlogPosting', 'NewsArticle'] },
+    { type: 'Article',             re: /\b(Article|BlogPosting) (schema|markup|structured data)\b/i, also: ['BlogPosting', 'NewsArticle'], pageKind: 'blog' },
     { type: 'BreadcrumbList',      re: /\bBreadcrumb(List)?\b/i, also: [] },
     { type: 'Event',               re: /\bEvent (schema|markup|structured data)\b/i, also: ['EducationEvent', 'BusinessEvent'], pageKind: 'offering' },
     { type: 'Person',              re: /\bPerson (schema|markup|structured data)\b/i, also: [] },
@@ -202,9 +202,12 @@
 
     // FAQ / help pages
     if (/\b(FAQ|frequently asked questions) (page|hub|center|centre|library)\b|\bhelp center\b/i.test(t) && creates(t)) {
+      if ((f && f.helpSites || []).length) return 'Site already has a help center (' + f.helpSites[0] + ')';
       if (!hasInventory(f)) return 'Could not check existing pages for an FAQ page';
       if (countOf(f, 'faq') > 0) return 'Site already has FAQ or help pages (' + pathOf(pagesOf(f, 'faq')[0]) + ')';
     }
+
+    if (/\b(no|zero|none|lacks?|missing|without)\b[^.]{0,40}\b(FAQ|help)\b/i.test(t) && (f && f.helpSites || []).length) return 'Claims there are no FAQ or help pages, but the site has a help center (' + f.helpSites[0] + ')';
 
     // Pricing page
     if (/\b(create|publish|build|add|launch|put up)\b (a |an )?([a-z]+ ){0,2}pricing page\b/i.test(t)) {
@@ -264,18 +267,22 @@
   // "Y publishes case studies AI can parse") were never checked. Remove those
   // sentences; keep the rest of the item.
   G.stripUnverified = function (text, competitors) {
-    var sentences = String(text || '').match(/[^.!?]+[.!?]+(\s*\(Effort:[^)]*\))?|[^.!?]+$/g) || [text];
-    if (sentences.length < 2) return text;
-    var claim = /\b(schema|markup|structured data|json-ld|format(s|ted)?|publish(es)?|carry|carries|deploy(s|ed)?|already (benefit\w*|us\w*|ha(ve|s))|benefit(s|ing)? from|parse|parseable)\b/i;
+    var src = String(text || '');
+    var tagM = src.match(/\s*\(Effort:[^)]*\)\s*$/);
+    var body = tagM ? src.slice(0, tagM.index) : src;
+    // Protect abbreviations and decimals so "e.g." or "3.5" don't end a sentence.
+    var safe = body.replace(/\b(e\.g|i\.e|etc|vs|approx|incl|U\.S|No)\./gi, function (m) { return m.replace(/\./g, '\u0000'); })
+                   .replace(/(\d)\.(\d)/g, '$1\u0000$2');
+    var sentences = safe.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [safe];
+    if (sentences.length < 2) return src;
+    var claim = /\b(schema|markup|structured data|json-ld|format(s|ted)?|publish(es|ing)?|carry|carries|deploy(s|ed)?|already (benefit\w*|us\w*|ha(ve|s))|benefit(s|ing)? from|parse|parseable|structured signals?)\b/i;
     var keep = sentences.filter(function (sen, i) {
       if (i === 0) return true;
       var names = (competitors || []).filter(function (c) { return c && sen.toLowerCase().indexOf(String(c).toLowerCase()) >= 0; });
-      return !(names.length && claim.test(sen) && !/\b(named|recommended|appear(s|ed)?|mentioned|cited|surfac)/i.test(sen.replace(claim, '')) );
+      return !(names.length && claim.test(sen));
     });
-    var out = keep.join('').replace(/\s+/g, ' ').trim();
-    var tag = (String(text).match(/\(Effort:[^)]*\)\s*$/) || [''])[0];
-    if (tag && out.indexOf(tag) < 0) out += ' ' + tag;
-    return out;
+    var out = keep.join('').replace(/\u0000/g, '.').replace(/\s+/g, ' ').trim();
+    return out + (tagM ? ' ' + tagM[0].trim() : '');
   };
 
   // Synthetic persona names mean nothing to the customer. Use the role.
@@ -341,7 +348,8 @@
     var kept = [], dropped = [];
     (items || []).forEach(function (it) {
       var text = typeof it === 'string' ? it : (it && (it.action || it.text)) || '';
-      var why = problem(text, f || {}, ctx || {});
+      var bare = String(text).replace(/\s*(\(Effort:[^)]*\)|\[[^\]]*\])\s*$/i, '').trim();
+      var why = !/[.!?)"'\u201d]$/.test(bare) ? 'Item was cut off' : problem(text, f || {}, ctx || {});
       if (why) dropped.push({ text: text, reason: why }); else kept.push(it);
     });
     return { kept: kept, dropped: dropped };
@@ -374,6 +382,8 @@
     var sch = f.schema || {};
     if (sch.status === 'checked') {
       L.push('- Schema.org types found on the ' + sch.pagesChecked + ' pages checked (' + (sch.sampledKinds || []).join(', ') + '): ' + ((sch.types || []).join(', ') || 'none'));
+      (sch.byPage || []).filter(function (p) { return !p.error; }).forEach(function (p) { L.push('  - ' + p.kind + ' ' + pathOf(p.url) + ': ' + ((p.types || []).join(', ') || 'none')); });
+      L.push('  Only say a type is missing from the kind of page it was checked on. Page kinds not listed here were not checked.');
     } else L.push('- Schema markup: could not be checked');
     if (hasInventory(f)) {
       var show = function (kind, label) {
@@ -382,7 +392,7 @@
       };
       L.push('- Existing pages (from ' + f.pages.source + ', ' + n(f.pages.inventoryCount) + ' pages):');
       L.push('  ' + show('comparison', 'Comparison / "vs" / alternatives pages').slice(2));
-      L.push('  ' + show('faq', 'FAQ or help pages').slice(2));
+      L.push('  ' + show('faq', 'FAQ or help pages').slice(2) + ((f.helpSites || []).length ? '; help center linked from the homepage: ' + f.helpSites.join(', ') : ''));
       L.push('  ' + show('pricing', 'Pricing pages').slice(2));
       L.push('  ' + show('caseStudies', 'Case studies / customer stories').slice(2));
       L.push('  - Blog or resource articles: ' + countOf(f, 'blog'));
@@ -463,7 +473,8 @@
       detail: sch.status !== 'checked' ? 'Could not be checked' : ((sch.types || []).length ? (sch.types || []).slice(0, 8).join(', ') : 'None found') + ' (' + sch.pagesChecked + ' pages checked)' });
     if (hasInventory(f)) {
       rows.push({ label: 'Comparison pages', status: countOf(f, 'comparison') ? 'ok' : 'missing', detail: countOf(f, 'comparison') ? countOf(f, 'comparison') + ' found' : 'None found' });
-      rows.push({ label: 'FAQ or help pages', status: countOf(f, 'faq') ? 'ok' : 'missing', detail: countOf(f, 'faq') ? countOf(f, 'faq') + ' found' : 'None found' });
+      var helpN = countOf(f, 'faq'), hs = f.helpSites || [];
+      rows.push({ label: 'FAQ or help pages', status: helpN || hs.length ? 'ok' : 'missing', detail: hs.length ? 'Help center at ' + hs[0].replace(/^https?:\/\//, '') + (helpN ? ', plus ' + helpN + ' on the main site' : '') : helpN ? helpN + ' found' : 'None found on the main site' });
       rows.push({ label: 'Case studies', status: countOf(f, 'caseStudies') ? 'ok' : 'missing', detail: countOf(f, 'caseStudies') ? countOf(f, 'caseStudies') + ' found' : 'None found' });
     }
     var w = st(f.wikidata);

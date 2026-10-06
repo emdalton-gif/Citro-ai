@@ -1395,11 +1395,19 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 
     // ── Call 1: 3 short narrative fields only (~200-250 tokens output) ────────
     // IMPORTANT: Only 3 string values. Short sentences only. No other output.
-    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 400);
+    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 800);
     let n;
     try {
-      const j1 = raw1.replace(/```json[\s\S]*?```|```/g,'').trim();
-      n = JSON.parse(j1.slice(j1.indexOf('{'), j1.lastIndexOf('}')+1));
+      // Strip code-fence markers only. The old pattern removed a fenced
+      // block whole, JSON included, so the summary went missing whenever the
+      // model fenced its answer.
+      const j1 = String(raw1 || '').replace(/```(?:json)?/gi, '').trim();
+      try { n = JSON.parse(j1.slice(j1.indexOf('{'), j1.lastIndexOf('}')+1)); }
+      catch (e2) {
+        const field = k => { const m = j1.match(new RegExp('"' + k + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"')); return m ? JSON.parse('"' + m[1] + '"') : ''; };
+        n = { executive_summary: field('executive_summary'), key_finding: field('key_finding'), projection_narrative: field('projection_narrative') };
+        if (!n.executive_summary && !n.key_finding) throw e2;
+      }
     } catch(e) {
       console.error('genReport Call 1 parse failed:', e.message, '| raw:', raw1?.slice(0,200));
       n = { executive_summary: '', key_finding: '', projection_narrative: '' };
@@ -1519,6 +1527,10 @@ ${siteBlock}`;
 - Make no claims about what an existing page contains or lacks, beyond the schema types listed in the SITE CHECK.
 - Only name real schema.org types (Organization, EducationalOrganization, Course, EducationalOccupationalProgram, FAQPage, Product, Service, Review, Article, HowTo, Event). There is no "CaseStudy" type.
 - Refer to buyers by role (e.g. "a CHRO", "an HR director"), never by persona name.
+- Only state what AI answered for the questions in this audit. Do not claim who AI recommends for questions, industries or segments that were not tested.
+- Do not name categories or sections on review sites (e.g. a G2 category) and do not claim what the company's profile there contains; neither was checked.
+- Do not call source counts "citation weight" or "score"; say how many answers used the site.
+- Do not claim what AI systems "weight", "prioritize" or "use to rank" unless the audit data shows it. State the action and which tested question or platform it addresses.
 - Each lever (a specific page, a comparison against one competitor, a schema type, a pitch to one outside site) appears ONCE in the whole plan.
 - Every item must state WHY it moves the Citro Score (which gap, platform, or competitor advantage it closes).
 - Genuine levers only. No filler, no vague "improve your SEO," no duplicates, no busywork.
