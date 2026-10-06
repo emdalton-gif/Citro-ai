@@ -325,6 +325,7 @@ function gtag(){dataLayer.push(arguments);}
 
 
   </style>
+<script src="/grounding.js"></script>
 </head>
 <body>
 
@@ -817,7 +818,18 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const gapQueries = organic.filter(x => x.visibility === 'none' || x.visibility === 'low');
     const gapCtx = gapQueries.length ? gapQueries.map(x => `[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
 
-    const raw = await callClaude([{ role: 'user', content: `Write a professional Citro audit report for ${c.company_name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Target buyers: ${buyerCtx}\n- Competitors: ${c.competitors||'not specified'}\n- ${visCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- Query results:\n${queries}\n- Gaps (no or low visibility):\n${gapCtx}\n\nReturn ONLY raw JSON (no markdown, no code fences). Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences summarizing the overall finding and business implication",\n  "key_finding": "Single most important finding in one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence naming the main gap to close and projected improvement"},\n  "technical_recommendations": "2 sentences covering structured data, schema types, llms.txt, knowledge graph, review platform gaps",\n  "content_gaps": "2 sentences identifying specific content types and topics missing",\n  "competitive_analysis": "2 sentences summarizing the competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences explaining why this competitor wins in AI results"}],\n  "recommendations": [{"action": "specific action","impact": "high","effort": "low","category": "technical"},{"action": "specific action","impact": "high","effort": "medium","category": "content"},{"action": "specific action","impact": "high","effort": "medium","category": "distribution"},{"action": "specific action","impact": "medium","effort": "low","category": "technical"},{"action": "specific action","impact": "medium","effort": "medium","category": "content"}],\n  "roadmap_phases": [{"days": "Days 1-30", "theme": "Technical Foundation", "actions": ["2-3 specific actions"]},{"days": "Days 31-60", "theme": "Content and Visibility", "actions": ["2-3 specific actions"]},{"days": "Days 61-90", "theme": "Distribution and Measurement", "actions": ["2-3 specific actions"]}]\n}` }],
+    // Ground every site-level statement in a live check of the client's site.
+    const G = window.CitroGrounding;
+    const siteFacts = await fetch('/api/site-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AUTH_TOKEN}` },
+      body: JSON.stringify({ website: c.website, brand: c.company_name }),
+    }).then(r => r.ok ? r.json() : null).then(j => (j && j.ok ? j.facts : null)).catch(() => null);
+    const sourceDomains = [...new Set(results.flatMap(x => (x.sources || []).map(s => String(s.domain || '').toLowerCase())).filter(Boolean))];
+    const groundCtx = { competitors: comps, sourceDomains, local: !!(c.geo && String(c.geo).trim()), brand: c.company_name, gapQueries: [...new Set(gapQueries.map(x => x.query))] };
+    const siteBlock = G.factsForPrompt(siteFacts, groundCtx);
+
+    const raw = await callClaude([{ role: 'user', content: `Write a professional Citro audit report for ${c.company_name} (${c.industry||'industry not specified'}).\n\n${siteBlock}\n\nContext:\n- Product tested: ${subjectCtx}\n- Target buyers: ${buyerCtx}\n- Competitors: ${c.competitors||'not specified'}\n- ${visCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- Query results:\n${queries}\n- Gaps (no or low visibility):\n${gapCtx}\n\nReturn ONLY raw JSON (no markdown, no code fences). Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences summarizing the overall finding and business implication",\n  "key_finding": "Single most important finding in one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence naming the main gap to close and projected improvement"},\n  "content_gaps": "2 sentences identifying specific content types and topics missing",\n  "competitive_analysis": "2 sentences summarizing the competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences explaining why this competitor wins in AI results"}],\n  "recommendations": [{"action": "specific action","impact": "high","effort": "low","category": "technical"},{"action": "specific action","impact": "high","effort": "medium","category": "content"},{"action": "specific action","impact": "high","effort": "medium","category": "distribution"},{"action": "specific action","impact": "medium","effort": "low","category": "technical"},{"action": "specific action","impact": "medium","effort": "medium","category": "content"}],\n  "roadmap_phases": [{"days": "Days 1-30", "theme": "Technical Foundation", "actions": ["2-3 specific actions"]},{"days": "Days 31-60", "theme": "Content and Visibility", "actions": ["2-3 specific actions"]},{"days": "Days 61-90", "theme": "Distribution and Measurement", "actions": ["2-3 specific actions"]}]\n}` }],
       'You are a senior GTM strategist at Citro, specializing in AI-native go-to-market systems. Write in a confident, senior consultant tone. Be specific and data-driven. Be concise — quality over length. Technical recommendations should reference real implementation details (schema types, file names, platform names).',
       2500
     );
@@ -825,7 +837,15 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const cleaned = raw.replace(/```json|```/g,'').trim();
     const start = cleaned.indexOf('{');
     const end = cleaned.lastIndexOf('}');
-    return JSON.parse(cleaned.slice(start, end + 1));
+    const report = JSON.parse(cleaned.slice(start, end + 1));
+    const removed = [];
+    const g = G.groundItems(report.recommendations || [], siteFacts, groundCtx);
+    removed.push(...g.dropped); report.recommendations = g.kept;
+    (report.roadmap_phases || []).forEach(ph => { const gg = G.groundItems(ph.actions || [], siteFacts, groundCtx); removed.push(...gg.dropped); ph.actions = gg.kept; });
+    report.technical_recommendations = G.technicalText(siteFacts, groundCtx);
+    report.site_check = G.forSave(siteFacts);
+    report.grounding_removed = removed.map(d => ({ reason: d.reason, text: String(d.text || '').slice(0, 300) }));
+    return report;
   }
 
   // ── Render Results ────────────────────────────────────────────────────────

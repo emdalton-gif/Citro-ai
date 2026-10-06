@@ -28,6 +28,7 @@ function gtag(){dataLayer.push(arguments);}
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Archivo:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="/grounding.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -190,6 +191,16 @@ function gtag(){dataLayer.push(arguments);}
     .ql-market { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 10px 0 4px; }
     .qb-sent { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
     .sources-note { font-size: 14px; color: var(--dark); font-weight: 600; margin: 0 0 14px; }
+    .sc-table { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .sc-row { display: grid; grid-template-columns: 28px minmax(140px, 220px) 1fr; gap: 10px; align-items: baseline; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .sc-row:last-child { border-bottom: none; }
+    .sc-ic { font-weight: 700; text-align: center; }
+    .sc-ok .sc-ic { color: #0E7A55; }
+    .sc-missing .sc-ic { color: #C2412D; }
+    .sc-unknown .sc-ic { color: var(--muted); }
+    .sc-l { font-weight: 600; color: var(--dark); }
+    .sc-d { color: var(--muted); }
+    @media (max-width: 600px) { .sc-row { grid-template-columns: 24px 1fr; } .sc-d { grid-column: 2; } }
     .sources-foot { font-size: 12px; color: var(--muted); margin: 12px 0 0; line-height: 1.5; }
     .query-text-static { font-size: 14px; color: var(--dark); font-weight: 500; }
     .query-card.editable { cursor: default; }
@@ -755,6 +766,13 @@ function gtag(){dataLayer.push(arguments);}
       <div class="comp-grid" id="comp-grid"></div>
     </div>
 
+    <div class="result-section" id="section-sitecheck" style="display:none">
+      <div class="rs-label">Site Check</div>
+      <div class="rs-title">What we checked on your site</div>
+      <div id="sitecheck-body"></div>
+      <div class="rs-body" id="sitecheck-text" style="margin-top:14px"></div>
+    </div>
+
     <div class="result-section" id="section-recs">
       <div class="rs-label">Recommendations</div>
       <div class="rs-title">What to do about it</div>
@@ -1289,7 +1307,8 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     return { overall, organic: pooled.organic, markets };
   }
 
-  async function genReport(c, personas, results) {
+  async function genReport(c, personas, results, siteFacts = null) {
+    const G = window.CitroGrounding;
     const visWeights = { high:1.0, medium:0.5, low:0.25, none:0 };
     // Only queries a platform actually answered can be scored. A query that
     // never got a response is not evidence of anything and must not sit in
@@ -1323,7 +1342,15 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const srcCtx = srcTop
       ? `\nWeb sources the AI platforms read before answering (answers using each): ${srcTop}\n${c.company_name}'s own site used as a source in ${ownSiteHits} answers.\nWhen recommending third-party placements, prefer the sites above; do not name review sites or directories that are not relevant to this category.`
       : '';
-    const ctx = `Brand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}${srcCtx}${scores.markets.length ? `\nScores by market (overall score is their simple average): ${scores.markets.map(m => `${m.market} ${m.score === null ? 'no answers' : m.score + '%'}`).join('; ')}. Where markets differ, say which markets are strong and weak and why.` : ''}`;
+    const groundCtx = {
+      competitors: comps,
+      sourceDomains: Object.keys(srcCount),
+      local: hasLocalIntent(c),
+      brand: c.company_name,
+      gapQueries: [...new Set(gapQueries.map(q => q.query))],
+    };
+    const siteBlock = G.factsForPrompt(siteFacts, groundCtx);
+    const ctx = `${siteBlock}\n\nBrand: ${c.company_name} (${c.industry||'industry not specified'})\nProduct: ${subjectCtx}\nBuyers: ${buyerCtx}\n${visCtx}\nCompetitors in AI results: ${comps.join(', ')||'none detected'}\nQuery results:\n${queries}\nGaps:\n${gapCtx}${srcCtx}${scores.markets.length ? `\nScores by market (overall score is their simple average): ${scores.markets.map(m => `${m.market} ${m.score === null ? 'no answers' : m.score + '%'}`).join('; ')}. Where markets differ, say which markets are strong and weak and why.` : ''}`;
 
     // ── Projected score computed in JS — never ask Claude for a number ──────
     const projectedScore = score === 0 ? 18 : Math.min(95, score + Math.round((100 - score) * 0.28));
@@ -1334,7 +1361,9 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const topCompList = topComps.map(n => `${n} (${compFreq[n]}/${results.length} queries)`).join(', ');
     const gapPlatforms = [...new Set(gapQueries.map(q => q.platform))].slice(0, 2).join(' and ');
 
-    const technical_recommendations = `Add Organization, Product, and FAQ schema.org markup to ${c.website} and submit to Google's Rich Results Test to build AI knowledge graph coverage. Deploy an llms.txt file at the domain root listing key pages and their canonical descriptions — this directly guides AI crawlers. Claim and complete your Google Business Profile, and create listings on the review and directory sites AI systems retrieve from when identifying credible vendors in your category. Wikidata requires independent published sources and is not available to most companies until press coverage exists, so treat it as a later step rather than a first one.`;
+    // Written only from the live site check. It used to be one fixed paragraph
+    // telling every customer to add llms.txt and schema, whether or not they had them.
+    const technical_recommendations = G.technicalText(siteFacts, groundCtx);
 
     const content_gaps = gapQueries.length === 0
       ? `Tested queries show adequate coverage; focus on depth and specificity rather than new page creation. Ensure existing pages include concrete ROI data, customer quotes, and use-case specifics that AI systems cite as evidence.`
@@ -1476,34 +1505,38 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 - Competitors in AI results: ${comps.slice(0,4).join(', ') || 'none detected — category underrepresented'}
 - Industry: ${c.industry || 'not specified'}
 - Product: ${c.offer || c.company_name}
-- Buyers: ${buyerCtx}`;
+- Buyers: ${buyerCtx}
+- Sources the AI platforms read (review sites and publications may only be named from this list): ${srcTop || 'none recorded'}
+
+${siteBlock}`;
 
     const qualityBar = `QUALITY BAR — a real customer called a thin plan "mediocre and not quite actionable." Do not repeat that:
 - Every item must be specific to THIS company's real audit data: reference actual query phrases, real platform names, and real competitor names from the findings.
-- Name the exact lever: the exact schema type (e.g. FAQPage, Organization, Product), the exact file (e.g. llms.txt), the exact review site or directory (e.g. G2, Capterra, TrustRadius), the exact publication or roundup to pitch, the exact comparison page to write (e.g. "${c.company_name} vs ${comps[0] || 'a leading competitor'}").
+- Name the exact lever, but ONLY levers the SITE CHECK shows are missing or weak: the exact schema type the check did not find, the exact page to write or improve (by its path if it exists), the exact review site, directory or publication from the sources AI read, the exact comparison page to write if the check shows none for that competitor.
+- Never recommend something the SITE CHECK shows the site already has. A customer was told to create an llms.txt they already had; that destroys trust in the whole report.
 - Every item must state WHY it moves the Citro Score (which gap, platform, or competitor advantage it closes).
 - Genuine levers only. No filler, no vague "improve your SEO," no duplicates, no busywork.
 - 2-4 sentences each, for a capable but non-technical marketer. Plain prose only — no headers, no preamble, no JSON, no quotes around items.`;
 
-    const cyclePrompt = (windowLabel, note) => `Write 10 numbered action items for the ${windowLabel} window of a Citro AI visibility plan for ${c.company_name} (${c.website}).
+    const cyclePrompt = (windowLabel, note) => `Write 13 numbered action items for the ${windowLabel} window of a Citro AI visibility plan for ${c.company_name} (${c.website}).
 
 ${findings}
 
-These ten must be a PRIORITIZED MIX across the three lever types (technical/site changes, content creation, and distribution/authority building), ordered most-impactful first — do NOT batch all of one type together. ${note}
+These thirteen must be a PRIORITIZED MIX across the three lever types (technical/site changes, content creation, and distribution/authority building), ordered most-impactful first — do NOT batch all of one type together. ${note}
 
 ${qualityBar}
 - End EACH item with a tag in EXACTLY this format: (Effort: low, ~2 hours) or (Effort: medium, ~1 day) or (Effort: high, ~1 week).
 
-Return ONLY a JSON array of exactly 10 strings and nothing else — no prose before or after, no objects, no keys like "action" or "why". Each string is one complete, self-contained action (2-4 sentences) that includes why it moves the Citro Score and ENDS with the effort tag. Example: ["Add FAQPage schema to your pricing page so Perplexity can cite your Q&A directly, closing the gap on the query where a competitor currently answers. (Effort: low, ~2 hours)", "..."]`;
+Return ONLY a JSON array of exactly 13 strings and nothing else — no prose before or after, no objects, no keys like "action" or "why". Each string is one complete, self-contained action (2-4 sentences) that includes why it moves the Citro Score and ENDS with the effort tag. Example: ["Publish a page answering the exact gap query, with outcome data and an FAQ section, so Perplexity has something of yours to cite. (Effort: medium, ~1 day)", "..."]`;
 
-    const recsPrompt = `Write the 5 single highest-impact actions ${c.company_name} (${c.website}) should start THIS WEEK to improve how often AI assistants recommend them.
+    const recsPrompt = `Write the 7 single highest-impact actions ${c.company_name} (${c.website}) should start THIS WEEK to improve how often AI assistants recommend them.
 
 ${findings}
 
 ${qualityBar}
-These five are the executive shortlist — a mix of types, ordered most-impactful first. NO effort tag.
+These seven are the executive shortlist — a mix of types, ordered most-impactful first. NO effort tag.
 
-Return ONLY a JSON array of exactly 5 strings and nothing else — no prose before or after, no objects, no keys. Each string is one complete, self-contained action (2-4 sentences) that includes why it matters. Example: ["Publish a comparison page targeting the exact query where a named competitor wins, structured with Organization schema so AI assistants can cite it.", "..."]`;
+Return ONLY a JSON array of exactly 7 strings and nothing else — no prose before or after, no objects, no keys. Each string is one complete, self-contained action (2-4 sentences) that includes why it matters. Example: ["Publish a comparison page targeting the exact query where a named competitor wins, structured with Organization schema so AI assistants can cite it.", "..."]`;
 
     // Robust parser: handles a JSON array of strings, a JSON array of {action, why} objects,
     // a wrapper object containing an array, or a plain numbered list. Drops JSON scaffolding.
@@ -1533,12 +1566,26 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       catch (e) { return []; }
     };
 
-    const [recLines, p1Acts, p2Acts, p3Acts] = await Promise.all([
-      genItems(recsPrompt, 5, 800),
-      genItems(cyclePrompt('Days 1-30',  'These are the highest-impact actions overall — the foundation later months build on.'), 10, 1500),
-      genItems(cyclePrompt('Days 31-60', 'Build on the first 30 days; assume the Days 1-30 work is underway.'), 10, 1500),
-      genItems(cyclePrompt('Days 61-90', 'Assume months 1-2 are done. Include re-running the Citro audit and measuring score movement among these ten.'), 10, 1500),
+    const [recRaw, p1Raw, p2Raw, p3Raw] = await Promise.all([
+      genItems(recsPrompt, 7, 1100),
+      genItems(cyclePrompt('Days 1-30',  'These are the highest-impact actions overall — the foundation later months build on.'), 13, 1900),
+      genItems(cyclePrompt('Days 31-60', 'Build on the first 30 days; assume the Days 1-30 work is underway.'), 13, 1900),
+      genItems(cyclePrompt('Days 61-90', 'Assume months 1-2 are done. Include re-running the Citro audit and measuring score movement among these.'), 13, 1900),
     ]);
+    // Every item is checked against the site facts. Anything recommending what
+    // the site already has, or resting on something we couldn't verify, is
+    // removed. We ask for extra items so the plan stays full after filtering.
+    const groundingRemoved = [];
+    const ground = (items, n) => {
+      const g = G.groundItems(items, siteFacts, groundCtx);
+      groundingRemoved.push(...g.dropped);
+      return g.kept.slice(0, n);
+    };
+    const recLines = ground(recRaw, 5);
+    const p1Acts = ground(p1Raw, 10);
+    const p2Acts = ground(p2Raw, 10);
+    const p3Acts = ground(p3Raw, 10);
+    if (groundingRemoved.length) console.info('Site check removed', groundingRemoved.length, 'recommendation(s):', groundingRemoved);
 
     // Impact/effort/category mapping for the top-5 recommendations
     const impactMap  = ['high','high','high','high','medium'];
@@ -1559,11 +1606,15 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
 
     // Fallback if Claude returns too few items — fill remaining slots with data-driven text
     if (acts.recommendations.length < 3) {
-      acts.recommendations = [
+      const fallbackDirs = Object.keys(srcCount).sort((a, b) => srcCount[b] - srcCount[a]).filter(d => !siteDomain(c) || !d.endsWith(siteDomain(c))).slice(0, 3);
+      const fallback = [
         { action: `Add FAQ schema (JSON-LD, type FAQPage) and ${extraSchema} to ${c.website} and test at search.google.com/test/rich-results — this enables ${primaryGapP} to surface your Q&A content in advisory responses.`, impact:'high', effort:'low', category:'technical' },
         { action: topGapQuery ? `Publish a 1,200-word page targeting "${topGapQuery}" with statistics and buyer-intent FAQ — ${c.company_name} had zero visibility for this query on ${topGapPlatform}.` : `Publish buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit.`, impact:'high', effort:'medium', category:'content' },
-        { action: `Complete your profiles on ${industryDirs} with current product descriptions and pricing — AI systems weight completeness when ranking vendor citations.`, impact:'high', effort:'medium', category:'distribution' },
-      ];
+        fallbackDirs.length ? { action: `Get ${c.company_name} clearly described on ${listJoin(fallbackDirs)}, the sites AI read most often for these questions, with current descriptions of what you offer and who it's for.`, impact:'high', effort:'medium', category:'distribution' } : null,
+      ].filter(Boolean);
+      const kept = G.groundItems(fallback, siteFacts, groundCtx);
+      groundingRemoved.push(...kept.dropped);
+      acts.recommendations = acts.recommendations.concat(kept.kept).slice(0, 5);
     }
 
 
@@ -1576,6 +1627,8 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       competitive_analysis,
       competitor_insights,
       ...acts,
+      site_check: G.forSave(siteFacts),
+      grounding_removed: groundingRemoved.map(d => ({ reason: d.reason, text: String(d.text || '').slice(0, 300) })),
     };
   }
 
@@ -1630,6 +1683,12 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       document.getElementById('competitive-body').textContent = report.competitive_analysis;
       if (report.competitor_insights?.length) document.getElementById('comp-grid').innerHTML = report.competitor_insights.map(ci=>`<div class="comp-card"><div class="comp-name">${esc(ci.competitor)}</div><div class="comp-insight">${esc(ci.insight)}</div></div>`).join('');
       block('section-competitive');
+    }
+    if (report.site_check && window.CitroGrounding) {
+      const scCtx = { local: hasLocalIntent(profile || {}) };
+      document.getElementById('sitecheck-body').innerHTML = window.CitroGrounding.checkedHtml(report.site_check, scCtx);
+      document.getElementById('sitecheck-text').textContent = report.technical_recommendations || '';
+      block('section-sitecheck');
     }
     if (report.recommendations?.length) {
       document.getElementById('recs-list').innerHTML = report.recommendations.map((r,i)=>`<div class="rec-item"><div class="rec-num">${i+1}</div><div><div class="rec-action">${esc(r.action)}</div><div class="rec-tags"><span class="rec-tag impact-${r.impact}">${r.impact} impact</span><span class="rec-tag">${r.effort} effort</span><span class="rec-tag">${r.category}</span></div></div></div>`).join('');
@@ -1771,6 +1830,13 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
     flex('screen-loading');
 
     let simResults, report;
+    // Check the customer's site in parallel with everything else. Every
+    // site-level recommendation in the report is grounded in what this finds.
+    const siteCheckP = fetch('/api/site-check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUB_TOKEN}` },
+      body: JSON.stringify({ website: profile.website, brand: profile.company_name }),
+    }).then(r => r.ok ? r.json() : null).then(j => (j && j.ok ? j.facts : null)).catch(() => null);
     try {
       let personas;
       if (prebuiltPersonas) {
@@ -1797,7 +1863,8 @@ Return ONLY a JSON array of exactly 5 strings and nothing else — no prose befo
       simResults = await runSimulations(profile, personas, queries);
       setPhase(2, 'done'); setPhase(3, 'active');
 
-      report = await genReport(profile, personas, simResults);
+      const siteFacts = await siteCheckP;
+      report = await genReport(profile, personas, simResults, siteFacts);
       setPhase(3, 'done');
 
       // Compute score for saving. Same denominator as the rendered score, or

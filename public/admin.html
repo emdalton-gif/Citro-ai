@@ -28,6 +28,7 @@ function gtag(){dataLayer.push(arguments);}
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="/grounding.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -1102,13 +1103,34 @@ async function genReport(id, results) {
   const visCtx = score===0 ? `The brand has 0% Citro visibility.` : `Weighted Citro Score: ${score}% across ${organic.length} advisory queries.`;
   const gaps = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
   const gapCtx = gaps.length ? gaps.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
-  const raw = await callClaude([{ role:'user', content:`Write a professional Citro audit report for ${c.name} (${c.industry||'industry not specified'}).\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON. Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences max",\n  "key_finding": "one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence"},\n  "technical_recommendations": "2 sentences covering schema, llms.txt, knowledge graph gaps",\n  "content_gaps": "2 sentences on missing content types",\n  "competitive_analysis": "2 sentences on competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences on why they win"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["action 1","action 2","action 3"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["action 1","action 2","action 3"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["action 1","action 2","action 3"]}]\n}` }],
+  // Ground every site-level statement in a live check of the client's site.
+  // Reports used to tell clients to add an llms.txt they already had.
+  const G = window.CitroGrounding;
+  const siteFacts = await fetch('/api/site-check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+    body: JSON.stringify({ website: c.website, brand: c.name }),
+  }).then(r => r.ok ? r.json() : null).then(j => (j && j.ok ? j.facts : null)).catch(() => null);
+  const sourceDomains = [...new Set(results.flatMap(x => (x.sources || []).map(s => String(s.domain || '').toLowerCase())).filter(Boolean))];
+  const groundCtx = { competitors: comps, sourceDomains, local: !!(c.geo && String(c.geo).trim()), brand: c.name, gapQueries: [...new Set(gaps.map(x => x.query))] };
+  const siteBlock = G.factsForPrompt(siteFacts, groundCtx);
+  const raw = await callClaude([{ role:'user', content:`Write a professional Citro audit report for ${c.name} (${c.industry||'industry not specified'}).\n\n${siteBlock}\n\nContext:\n- Product tested: ${subjectCtx}\n- Competitors in AI results: ${comps.join(', ')||'none detected'}\n- ${visCtx}\n- Query results:\n${queries}\n- Gaps:\n${gapCtx}\n\nReturn ONLY raw JSON. Be concise — 1-2 sentences per field, 2-3 actions per roadmap phase:\n{\n  "executive_summary": "2-3 sentences max",\n  "key_finding": "one direct sentence",\n  "visibility_projection": {"current_score": ${score}, "projected_score": <integer>, "projection_narrative": "1 sentence"},\n  "content_gaps": "2 sentences on missing content types",\n  "competitive_analysis": "2 sentences on competitive picture",\n  "competitor_insights": [{"competitor": "name", "insight": "1-2 sentences on why they win"}],\n  "recommendations": [{"action": "...","impact": "high","effort": "low","category": "technical"},{"action":"...","impact":"high","effort":"medium","category":"content"},{"action":"...","impact":"high","effort":"medium","category":"distribution"},{"action":"...","impact":"medium","effort":"low","category":"technical"},{"action":"...","impact":"medium","effort":"medium","category":"content"}],\n  "roadmap_phases": [{"days":"Days 1-30","theme":"Technical Foundation","actions":["action 1","action 2","action 3"]},{"days":"Days 31-60","theme":"Content and Visibility","actions":["action 1","action 2","action 3"]},{"days":"Days 61-90","theme":"Distribution and Measurement","actions":["action 1","action 2","action 3"]}]\n}` }],
     'You are a senior GTM strategist at Citro. Be concise and specific. Quality over length. Return valid complete JSON only.', 2000);
   const cleaned = raw.replace(/```json|```/g,'').trim();
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start === -1 || end === -1) throw new Error('Invalid JSON response from API');
-  return JSON.parse(cleaned.slice(start, end + 1));
+  const report = JSON.parse(cleaned.slice(start, end + 1));
+  // Remove anything that contradicts the site check or rests on what we couldn't verify.
+  const removed = [];
+  const g = G.groundItems(report.recommendations || [], siteFacts, groundCtx);
+  removed.push(...g.dropped); report.recommendations = g.kept;
+  (report.roadmap_phases || []).forEach(ph => { const gg = G.groundItems(ph.actions || [], siteFacts, groundCtx); removed.push(...gg.dropped); ph.actions = gg.kept; });
+  report.technical_recommendations = G.technicalText(siteFacts, groundCtx);
+  report.site_check = G.forSave(siteFacts);
+  report.grounding_removed = removed.map(d => ({ reason: d.reason, text: String(d.text || '').slice(0, 300) }));
+  if (removed.length) console.info('Site check removed', removed.length, 'item(s):', removed);
+  return report;
 }
 
 async function regenReport(id) {
@@ -1274,7 +1296,7 @@ function renderReport(id) {
 
       ${(r.technical_recommendations || r.content_gaps) ? `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
-        ${r.technical_recommendations ? `<div class="chart-card"><div class="rdoc-label">Technical Gaps</div><div style="font-size:12px;line-height:1.7;color:var(--text)">${esc(r.technical_recommendations)}</div></div>` : ''}
+        ${r.technical_recommendations ? `<div class="chart-card"><div class="rdoc-label">Site Check</div><div style="font-size:12px;line-height:1.7;color:var(--text)">${esc(r.technical_recommendations)}</div></div>` : ''}
         ${r.content_gaps ? `<div class="chart-card"><div class="rdoc-label">Content Gaps</div><div style="font-size:12px;line-height:1.7;color:var(--text)">${esc(r.content_gaps)}</div></div>` : ''}
       </div>` : ''}
 
@@ -1490,7 +1512,7 @@ body{font-family:Inter,-apple-system,system-ui,sans-serif;background:#F2F8FA;col
   </div>
   ${topComps.length ? `<div class="cc sec"><div class="lbl">Competitor Mentions</div><canvas id="sa-comp" style="max-height:180px"></canvas></div>` : ''}
   ${r.executive_summary ? `<div class="sec"><div class="lbl">Executive Summary</div><div class="body">${e(r.executive_summary)}</div></div>` : ''}
-  ${(r.technical_recommendations||r.content_gaps) ? `<div class="gg">${r.technical_recommendations?`<div class="cc"><div class="lbl">Technical Gaps</div><div style="font-size:12px;line-height:1.7">${e(r.technical_recommendations)}</div></div>`:''}${r.content_gaps?`<div class="cc"><div class="lbl">Content Gaps</div><div style="font-size:12px;line-height:1.7">${e(r.content_gaps)}</div></div>`:''}</div>` : ''}
+  ${(r.technical_recommendations||r.content_gaps) ? `<div class="gg">${r.technical_recommendations?`<div class="cc"><div class="lbl">Site Check</div><div style="font-size:12px;line-height:1.7">${e(r.technical_recommendations)}</div></div>`:''}${r.content_gaps?`<div class="cc"><div class="lbl">Content Gaps</div><div style="font-size:12px;line-height:1.7">${e(r.content_gaps)}</div></div>`:''}</div>` : ''}
   ${r.competitive_analysis ? `<div class="sec"><div class="lbl">Competitive Analysis</div><div class="body" style="margin-bottom:${r.competitor_insights?.length?'12px':'0'}">${e(r.competitive_analysis)}</div>${r.competitor_insights?.length?`<div class="ig">${r.competitor_insights.map(ci=>`<div style="background:#F2F8FA;border-radius:8px;padding:10px 12px"><div style="font-size:12px;font-weight:700;margin-bottom:4px">${e(ci.competitor)}</div><div style="font-size:11px;color:#48626E;line-height:1.5">${e(ci.insight)}</div></div>`).join('')}</div>`:''}` + '</div>' : ''}
   ${r.recommendations?.length ? `<div class="sec"><div class="lbl">Recommendations</div>${renderRecsStatic(r.recommendations)}</div>` : ''}
   ${r.roadmap_phases?.length ? `<div class="sec"><div class="lbl">90-Day Roadmap</div><div class="rg">${r.roadmap_phases.map(p=>`<div style="background:#fff;border:1px solid #D7E7ED;border-radius:10px;padding:14px 16px"><div style="font-size:10px;font-weight:700;color:#00BDE7;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">${e(p.days)}</div><div style="font-size:13px;font-weight:700;margin-bottom:10px">${e(p.theme)}</div>${(p.actions||[]).map(a=>`<div style="font-size:11px;color:#48626E;padding:5px 0;border-top:1px solid #D7E7ED;line-height:1.4">→ ${e(a)}</div>`).join('')}</div>`).join('')}</div></div>` : ''}
