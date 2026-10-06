@@ -226,6 +226,17 @@
     // site check text covers it as a later step.
     if (/\bwikidata\b/i.test(t)) return 'Wikidata needs independent coverage first; covered in the site check, not the plan';
 
+    // Outreach to a competitor's own site (e.g. a guest post on radicalcandor.com).
+    var doms = t.toLowerCase().match(/\b[a-z0-9-]+\.(?:org|com|net|io|co|edu|ai)\b/g) || [];
+    for (var di = 0; di < doms.length; di++) {
+      var root = doms[di].split('.')[0].replace(/-/g, '');
+      var rival = (ctx.competitors || []).find(function (c) { var w = slugWords(c).join(''); return w.length >= 5 && (root === w || root.indexOf(w) === 0 || (w.indexOf(root) === 0 && root.length >= 6)); });
+      if (rival && /\b(pitch|guest|contribut|partner|reach out|outreach|byline|co-?author|link from)/i.test(t)) return 'Recommends outreach to a competitor\u2019s site (' + doms[di] + ', ' + rival + ')';
+    }
+    // Press-release wires are paid distribution, not publications to pitch.
+    if (/\b(prnewswire|pr newswire|businesswire|business wire|globenewswire)\b/i.test(t) && /\b(pitch|byline|contribut|guest)/i.test(t)) return 'Press-release wires are paid distribution, not a publication to pitch';
+    if (/\breddit\b/i.test(t) && /\b(byline|bylined|pitch)/i.test(t)) return 'Reddit takes participation, not pitched or bylined articles';
+
     // Google Business Profile: only for businesses with local buyers.
     if (/google business profile|google my business|\bGBP\b/i.test(t) && !ctx.local) return 'Google Business Profile only applies to businesses with local buyers';
 
@@ -239,6 +250,30 @@
   }
 
   G.problem = problem;
+
+  // One competitor, one name: "Dale Carnegie Training" -> "Dale Carnegie"
+  // when both appear. Mutates results in place.
+  var SUFFIX = /^(training|learning|inc|llc|ltd|co|corp|corporation|company|group|international|global|institute|consulting|solutions|associates)$/i;
+  G.mergeCompetitorNames = function (results) {
+    var all = {};
+    (results || []).forEach(function (r) { (r.competitors_mentioned || []).forEach(function (n) { all[n] = 1; }); });
+    var names = Object.keys(all), map = {};
+    names.forEach(function (n) {
+      names.forEach(function (m) {
+        if (n === m || m.length >= n.length) return;
+        var rest = n.slice(m.length).trim().replace(/^[,&]\s*/, '');
+        if (n.toLowerCase().indexOf(m.toLowerCase() + ' ') === 0 && rest && rest.split(/\s+/).every(function (w) { return SUFFIX.test(w.replace(/[.,]/g, '')); })) {
+          if (!map[n] || map[n].length > m.length) map[n] = m;
+        }
+      });
+    });
+    (results || []).forEach(function (r) {
+      if (!r.competitors_mentioned) return;
+      var seen = {};
+      r.competitors_mentioned = r.competitors_mentioned.map(function (n) { return map[n] || n; }).filter(function (n) { if (seen[n]) return false; seen[n] = 1; return true; });
+    });
+    return map;
+  };
 
   // Real schema.org types a plan might reasonably name. A CamelCase word used
   // as a type that isn't here (e.g. "CaseStudy schema") is invented.
@@ -310,7 +345,15 @@
     (t.match(/(?:^|\s|\(|')(\/[a-z0-9][a-z0-9\-\/]{3,})/gi) || []).forEach(function (p) { keys.push('path:' + p.replace(/^[\s(']+/, '').replace(/\/+$/, '').toLowerCase()); });
     var own = String(ctx.siteDomain || '').toLowerCase();
     (lower.match(/\b[a-z0-9-]+\.(?:org|com|net|io|co|edu|gov|ai)\b/g) || []).forEach(function (d) { if (!own || d.indexOf(own) < 0) keys.push('site:' + d); });
-    if (creates(t) && /\b(page|article|guide|post)\b/i.test(t)) (t.match(/["\u201c']([^"\u201d']{12,120})["\u201d']/g) || []).forEach(function (q) { keys.push('q:' + q.slice(1, -1).toLowerCase()); });
+    var newPage = CREATE.test(t) && /\b(page|article|guide|post|resource)\b/i.test(t);
+    if (newPage) (t.match(/["\u201c']([^"\u201d']{12,120})["\u201d']/g) || []).forEach(function (q) { keys.push('q:' + q.slice(1, -1).toLowerCase()); });
+    // A new page aimed at a gap question already covered by another new page
+    // is a repeat, however it's worded (three healthcare pages for one query).
+    if (newPage && !isCompare) (ctx.gapQueries || []).forEach(function (gq) {
+      var gt = toks(gq); if (gt.length < 2) return;
+      var it = toks(t); var hit = gt.filter(function (w) { return it.indexOf(w) >= 0; }).length;
+      if (hit / gt.length >= 0.75) keys.push('gap:' + gq.toLowerCase());
+    });
     if (!isCompare && !/\b(page|article|guide|post)\b/i.test(t.split(/[.!?]/)[0])) SCHEMA.forEach(function (s) { if (s.re.test(t)) keys.push('schema:' + s.type); });
     if (/re-?run(ning)? the (citro )?audit/i.test(t)) keys.push('rerun');
     return keys;

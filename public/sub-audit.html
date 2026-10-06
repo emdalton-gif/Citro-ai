@@ -1324,8 +1324,10 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     // writing the report, which it could easily narrate as a bad result.
     const queries = results.map(x=> { const tag = `[${x.platform}${x.market ? ' · ' + x.market : ''}]`; return x.failed
       ? `${tag} "${x.query}" -> NO RESPONSE RECORDED. Not a visibility result. Do not treat as absence.`
-      : `${tag} "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}`; }).join('\n');
-    const buyerCtx = personas.map(p=>`${p.name||'Buyer'} (${p.title||'decision maker'})`).join(', ');
+      : `${tag} "${x.query}" -> ${x.visibility} visibility. ${x.insight||''}${(x.competitors_mentioned || []).length ? ` Named in this answer: ${x.competitors_mentioned.join(', ')}.` : ''}`; }).join('\n');
+    // Roles only. Persona names are synthetic and meant nothing to customers
+    // when they showed up in the summary ("Sandra Kowalski, Marcus Delgado...").
+    const buyerCtx = [...new Set(personas.map(p => p.title || 'decision maker'))].join(', ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
     const visCtx = score===0 ? `The brand has 0% Citro visibility — it did not appear in any advisory AI responses.` : `Weighted Citro Score: ${score}% (High=100%, Medium=50%, Low=25%, None=0% across ${organic.length} advisory queries).`;
     const gapQueries = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
@@ -1509,7 +1511,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const findings = `Audit findings:
 - Citro Score: ${score}% — ${isZeroScore ? 'zero visibility, brand not mentioned in any AI response' : isLowScore ? 'low visibility, appeared in only a fraction of queries' : isMidScore ? 'moderate visibility with platform gaps' : 'strong visibility, focus on defending position'}
 - Platforms with gaps: ${gapPlatformList.join(', ') || 'ChatGPT, Perplexity'}
-- Queries with no visibility: ${gapQueries.slice(0,5).map(q => `"${q.query}" on ${q.platform}`).join('; ') || 'multiple queries'}
+- Queries with no visibility: ${gapQueries.slice(0,5).map(q => `"${q.query}" on ${q.platform}${(q.competitors_mentioned || []).length ? ` (named instead: ${q.competitors_mentioned.join(', ')})` : ''}`).join('; ') || 'multiple queries'}
 - Competitors in AI results: ${comps.slice(0,4).join(', ') || 'none detected — category underrepresented'}
 - Industry: ${c.industry || 'not specified'}
 - Product: ${c.offer || c.company_name}
@@ -1530,6 +1532,10 @@ ${siteBlock}`;
 - Only state what AI answered for the questions in this audit. Do not claim who AI recommends for questions, industries or segments that were not tested.
 - Do not name categories or sections on review sites (e.g. a G2 category) and do not claim what the company's profile there contains; neither was checked.
 - Do not call source counts "citation weight" or "score"; say how many answers used the site.
+- Recommend only actions that match how each outside site works: press-release wires (PR Newswire, Business Wire) are paid distribution, not publications to pitch; forums like Reddit take helpful participation from a disclosed account, not bylined articles; review sites take customer reviews and profile updates.
+- Never recommend pitching, guest posting on or partnering with a competitor's own site.
+- Do not make superlative or market-position claims about the company ("market leader", "objectively the best"). Report what the AI answers said.
+- Name a competitor as appearing for a question only if "Named in this answer" lists it for that question.
 - Do not claim what AI systems "weight", "prioritize" or "use to rank" unless the audit data shows it. State the action and which tested question or platform it addresses.
 - Each lever (a specific page, a comparison against one competitor, a schema type, a pitch to one outside site) appears ONCE in the whole plan.
 - Every item must state WHY it moves the Citro Score (which gap, platform, or competitor advantage it closes).
@@ -1592,7 +1598,7 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
     // claims removed), checked against the site facts, then checked against
     // everything already in the plan so no lever appears twice.
     const groundingRemoved = [];
-    const dedupeCtx = { competitors: comps, siteDomain: siteDomain(c) };
+    const dedupeCtx = { competitors: comps, siteDomain: siteDomain(c), gapQueries: groundCtx.gapQueries };
     const clean = t => G.stripUnverified(G.replacePersonaNames(t, personas), comps);
     const ground = (items, n, seen) => {
       const g = G.groundItems(items.map(clean), siteFacts, groundCtx);
@@ -1649,9 +1655,9 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
 
 
     return {
-      executive_summary: n.executive_summary || '',
-      key_finding: n.key_finding || '',
-      visibility_projection: { current_score: score, projected_score: projectedScore, projection_narrative: n.projection_narrative || '' },
+      executive_summary: G.replacePersonaNames(n.executive_summary || '', personas),
+      key_finding: G.replacePersonaNames(n.key_finding || '', personas),
+      visibility_projection: { current_score: score, projected_score: projectedScore, projection_narrative: G.replacePersonaNames(n.projection_narrative || '', personas) },
       technical_recommendations,
       content_gaps,
       competitive_analysis,
@@ -1891,6 +1897,8 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       setPhase(2, 'active');
 
       simResults = await runSimulations(profile, personas, queries);
+      // "Dale Carnegie" and "Dale Carnegie Training" are one competitor.
+      if (window.CitroGrounding) window.CitroGrounding.mergeCompetitorNames(simResults);
       setPhase(2, 'done'); setPhase(3, 'active');
 
       const siteFacts = await siteCheckP;
