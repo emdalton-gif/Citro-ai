@@ -251,6 +251,17 @@
 
   G.problem = problem;
 
+  // Why the homepage couldn't be read, in plain words.
+  function blockedReason(f) {
+    var e = (f && f.homeError) || {};
+    if ((e.status === 403 || e.status === 429 || e.status === 503) && e.protection) return 'its bot protection (' + e.protection + ') turned our automated check away (HTTP ' + e.status + ')';
+    if (e.status === 403 || e.status === 429) return 'it turned our automated check away (HTTP ' + e.status + ')';
+    if (e.status) return 'it returned an error (HTTP ' + e.status + ')';
+    if (e.error === 'timeout') return 'it did not respond in time';
+    return 'it could not be reached';
+  }
+  G.blockedReason = blockedReason;
+
   // One competitor, one name: "Dale Carnegie Training" -> "Dale Carnegie"
   // when both appear. Mutates results in place.
   var SUFFIX = /^(training|learning|inc|llc|ltd|co|corp|corporation|company|group|international|global|institute|consulting|solutions|associates)$/i;
@@ -401,10 +412,11 @@
   // Plain-text block for prompts: facts first, then rules.
   G.factsForPrompt = function (f, ctx) {
     ctx = ctx || {};
-    if (!f || !f.reachable) {
-      return 'SITE CHECK: the website could not be reached when this report ran. Do not make any recommendation about llms.txt, robots.txt, sitemaps, schema markup or existing pages, because none of it could be verified.';
+    if (!f) {
+      return 'SITE CHECK: the site check did not run. Do not make any recommendation about llms.txt, robots.txt, sitemaps, schema markup or existing pages, because none of it could be verified.';
     }
     var L = [];
+    if (!f.reachable) L.push('NOTE: the homepage could not be read because ' + blockedReason(f) + '. Pages, schema markup and anything else marked "could not be checked" are unknown; make no recommendation about them.');
     var date = (f.checkedAt || '').slice(0, 10);
     L.push('SITE CHECK (fetched live from ' + f.origin + (date ? ' on ' + date : '') + '; these are verified facts, not guesses):');
     var llm = function (x, name) {
@@ -461,16 +473,21 @@
   // The "Technical foundation" paragraph, written only from facts.
   G.technicalText = function (f, ctx) {
     ctx = ctx || {};
-    if (!f || !f.reachable) {
-      return 'We could not reach ' + ((f && f.site) || 'your website') + ' when this report ran, so it makes no site-level technical recommendations. Re-run the audit, or check that the site loads for automated visitors.';
-    }
+    if (!f) return 'The site check did not run for this report, so it makes no site-level technical recommendations. Re-run the audit to include it.';
     var out = [];
+    if (!f.reachable) {
+      var e = f.homeError || {};
+      out.push('We could not read ' + (f.site || 'your homepage') + ' because ' + blockedReason(f) + ', so this report makes no recommendations about your pages or markup.');
+      if (e.protection) out.push('Bot protection like ' + e.protection + ' can also block AI crawlers, separately from robots.txt. It is worth confirming those settings allow the AI crawlers you want, such as GPTBot, OAI-SearchBot, PerplexityBot and ClaudeBot.');
+    }
     if (f.homepage && f.homepage.noindex) out.push('Your homepage carries a noindex tag, which tells search engines not to index it. AI assistants that search the web rely on those indexes, so removing it is the first fix.');
     var bl = blockedBots(f);
     if (st(f.robots) !== 'unknown') {
       out.push(bl.length
         ? 'Your robots.txt blocks ' + listJoin(bl) + '. Those crawlers feed the AI assistants your buyers use, so allowing them is a direct, low-effort fix.'
-        : 'Your robots.txt lets the main AI crawlers in (' + BOT_LABELS.join(', ') + '), so access is not what is holding you back.');
+        : (!f.reachable && f.homeError && f.homeError.protection)
+          ? 'Your robots.txt allows the main AI crawlers (' + BOT_LABELS.join(', ') + '), but that only matters if your bot protection lets them through.'
+          : 'Your robots.txt lets the main AI crawlers in (' + BOT_LABELS.join(', ') + '), so access is not what is holding you back.');
     }
     var l = st(f.llms), lf = st(f.llmsFull);
     if (l === 'present') out.push('Your llms.txt is live (' + f.llms.lines + ' lines, ' + f.llms.links + ' links)' + (lf === 'present' ? ', and so is llms-full.txt' : '') + '. There is nothing to add here; keep ' + (lf === 'present' ? 'them' : 'it') + ' current as pages change.');
@@ -495,8 +512,8 @@
   G.checkedRows = function (f, ctx) {
     ctx = ctx || {};
     if (!f) return [];
-    if (!f.reachable) return [{ label: 'Website', status: 'unknown', detail: 'Could not be reached when this report ran' }];
     var rows = [];
+    if (!f.reachable) rows.push({ label: 'Homepage', status: 'unknown', detail: 'Not read: ' + blockedReason(f).replace(/^it /, '').replace(/^its /, '') });
     var llm = function (x, name, url) {
       var s = st(x);
       rows.push({ label: name, status: s === 'present' ? 'ok' : s === 'missing' ? 'missing' : 'unknown',

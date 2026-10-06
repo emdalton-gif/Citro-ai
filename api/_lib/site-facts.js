@@ -10,7 +10,9 @@
 const dns = require('dns').promises;
 const net = require('net');
 
-const UA = 'Mozilla/5.0 (compatible; CitroSiteCheck/1.0; +https://getcitro.ai)';
+// Browser-style user agent that still names us. Many sites behind bot
+// protection turn away anything that doesn't look like a browser.
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 CitroSiteCheck/1.0 (+https://getcitro.ai)';
 const FETCH_TIMEOUT_MS = 7000;
 const MAX_BYTES = 4 * 1024 * 1024;
 const MAX_REDIRECTS = 5;
@@ -94,7 +96,12 @@ async function getText(url, timeoutMs = FETCH_TIMEOUT_MS) {
       } else {
         text = await r.text();
       }
-      return { ok: r.ok, status: r.status, url: current, type, text };
+      const server = (r.headers.get('server') || '').toLowerCase();
+      const protection = r.headers.get('cf-ray') || server.includes('cloudflare') ? 'Cloudflare'
+        : (r.headers.get('x-sucuri-id') || server.includes('sucuri')) ? 'Sucuri'
+        : server.includes('akamai') || r.headers.get('akamai-grn') ? 'Akamai'
+        : r.headers.get('x-amz-cf-id') ? 'Amazon CloudFront' : null;
+      return { ok: r.ok, status: r.status, url: current, type, text, protection };
     }
     return { ok: false, error: 'too many redirects', url: current };
   } catch (e) {
@@ -288,11 +295,15 @@ async function findOrigin(host) {
   const tries = [`https://${host}/`];
   if (!host.startsWith('www.')) tries.push(`https://www.${host}/`); else tries.push(`https://${host.slice(4)}/`);
   tries.push(`http://${host}/`);
+  let first = null;
   for (const t of tries) {
     const r = await getText(t);
     if (r.ok && r.text) { const u = new URL(r.url); return { origin: u.origin, home: r }; }
+    if (!first) first = r;
   }
-  return { origin: `https://${host}`, home: null };
+  // Keep why the homepage failed: a 403 from Cloudflare is bot protection,
+  // not a site that's down, and the report should say which.
+  return { origin: `https://${host}`, home: null, fail: first ? { status: first.status || null, error: first.error || null, protection: first.protection || null } : null };
 }
 
 // Sitemaps nest: an index can point at more indexes (cruciallearning.com goes
@@ -365,7 +376,8 @@ async function checkSite(website, brand) {
   const startedAt = Date.now();
   const facts = { version: 1, checkedAt: new Date().toISOString(), site: host, reachable: false };
 
-  const { origin, home } = await findOrigin(host);
+  const { origin, home, fail } = await findOrigin(host);
+  if (!home && fail) facts.homeError = fail;
   facts.origin = origin;
   facts.reachable = !!home;
 
