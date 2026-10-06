@@ -137,6 +137,9 @@
       var s = st(fullOnly ? f && f.llmsFull : f && f.llms);
       if (s === 'unknown') return 'Could not check llms.txt on the site';
       if (s === 'present' && creates(t)) return 'Site already has ' + (fullOnly ? 'llms-full.txt' : 'llms.txt');
+      // We don't read what an existing llms.txt lists, so "add X to it" can't be
+      // verified. The site check section already says to keep it current.
+      if (s === 'present') return 'llms.txt is already in place; edits to it are covered in the site check';
     }
 
     // robots.txt and AI crawler access
@@ -151,6 +154,10 @@
       if (st(f && f.sitemap) === 'unknown') return 'Could not check the sitemap';
       if (st(f.sitemap) === 'present') return 'Site already has an XML sitemap';
     }
+
+    // Schema.org types that don't exist
+    var fake = invalidSchemaType(t);
+    if (fake) return fake + ' is not a schema.org type';
 
     // Schema.org markup
     var mentioned = SCHEMA.filter(function (s) { return s.re.test(t); });
@@ -211,12 +218,10 @@
       if (countOf(f, 'caseStudies') > 0) return 'Site already has case studies (' + pathOf(pagesOf(f, 'caseStudies')[0]) + ')';
     }
 
-    // Wikidata
-    if (/\bwikidata\b/i.test(t)) {
-      var w = st(f && f.wikidata);
-      if (w === 'unknown') return 'Could not check Wikidata';
-      if (w === 'present' && creates(t)) return 'Wikidata already has an entry linked to the site (' + f.wikidata.id + ')';
-    }
+    // Wikidata: never a plan item. Its notability rules need independent
+    // published sources, and self-created company entries get deleted. The
+    // site check text covers it as a later step.
+    if (/\bwikidata\b/i.test(t)) return 'Wikidata needs independent coverage first; covered in the site check, not the plan';
 
     // Google Business Profile: only for businesses with local buyers.
     if (/google business profile|google my business|\bGBP\b/i.test(t) && !ctx.local) return 'Google Business Profile only applies to businesses with local buyers';
@@ -231,6 +236,105 @@
   }
 
   G.problem = problem;
+
+  // Real schema.org types a plan might reasonably name. A CamelCase word used
+  // as a type that isn't here (e.g. "CaseStudy schema") is invented.
+  var VALID_TYPES = ('Thing Action CreativeWork Organization Corporation EducationalOrganization CollegeOrUniversity LocalBusiness ProfessionalService OnlineBusiness NGO ' +
+    'WebSite WebPage AboutPage ContactPage CollectionPage ProfilePage ItemPage FAQPage QAPage Question Answer HowTo HowToStep Product ProductGroup Offer AggregateOffer ' +
+    'Service Course CourseInstance EducationalOccupationalProgram EducationEvent Event BusinessEvent Person Review AggregateRating Rating Article BlogPosting NewsArticle ' +
+    'TechArticle Report ScholarlyArticle Dataset BreadcrumbList ItemList ListItem VideoObject ImageObject AudioObject PodcastEpisode SoftwareApplication WebApplication ' +
+    'MobileApplication Brand Place PostalAddress ContactPoint SearchAction SiteNavigationElement Book Occupation JobPosting Recipe MedicalOrganization MedicalClinic Hospital ' +
+    'Physician Dentist LegalService Attorney AccountingService FinancialService FinancialProduct InsuranceAgency RealEstateAgent HomeAndConstructionBusiness Plumber ' +
+    'Electrician HVACBusiness RoofingContractor GeneralContractor Restaurant Store AutoDealer AutoRepair SpeakableSpecification ClaimReview DefinedTerm DefinedTermSet ' +
+    'OfferCatalog Certification EducationalOccupationalCredential Audience BusinessAudience MonetaryAmount PriceSpecification Trip TouristAttraction LodgingBusiness Hotel ' +
+    'SportsActivityLocation ExerciseGym HealthAndBeautyBusiness ChildCare School Preschool ElementarySchool HighSchool EmployerAggregateRating WebContent').split(/\s+/);
+  function invalidSchemaType(t) {
+    var re = /\b([A-Z][a-z]+(?:[A-Z][a-z]+)+)\b(?=(?:\s+(?:and|or|,)?\s*[A-Z][A-Za-z]+){0,3}\s+(?:schema|markup|structured data|type|JSON-LD))/g, m;
+    while ((m = re.exec(t))) { if (VALID_TYPES.indexOf(m[1]) < 0) return m[1]; }
+    var re2 = /\b(?:schema|markup|types?)\s*(?:types?)?\s*(?:like|such as|e\.g\.,?|including|:)\s*([A-Z][A-Za-z]+(?:\s*(?:,|and|or)\s*[A-Z][A-Za-z]+)*)/g;
+    while ((m = re2.exec(t))) {
+      var names = m[1].split(/\s*(?:,|and|or)\s*/);
+      for (var i = 0; i < names.length; i++) if (/^[A-Z][a-z]+[A-Z]/.test(names[i]) && VALID_TYPES.indexOf(names[i]) < 0) return names[i];
+    }
+    return null;
+  }
+  G.invalidSchemaType = invalidSchemaType;
+
+  // Claims about competitors' own sites ("X already carries Course schema",
+  // "Y publishes case studies AI can parse") were never checked. Remove those
+  // sentences; keep the rest of the item.
+  G.stripUnverified = function (text, competitors) {
+    var sentences = String(text || '').match(/[^.!?]+[.!?]+(\s*\(Effort:[^)]*\))?|[^.!?]+$/g) || [text];
+    if (sentences.length < 2) return text;
+    var claim = /\b(schema|markup|structured data|json-ld|format(s|ted)?|publish(es)?|carry|carries|deploy(s|ed)?|already (benefit\w*|us\w*|ha(ve|s))|benefit(s|ing)? from|parse|parseable)\b/i;
+    var keep = sentences.filter(function (sen, i) {
+      if (i === 0) return true;
+      var names = (competitors || []).filter(function (c) { return c && sen.toLowerCase().indexOf(String(c).toLowerCase()) >= 0; });
+      return !(names.length && claim.test(sen) && !/\b(named|recommended|appear(s|ed)?|mentioned|cited|surfac)/i.test(sen.replace(claim, '')) );
+    });
+    var out = keep.join('').replace(/\s+/g, ' ').trim();
+    var tag = (String(text).match(/\(Effort:[^)]*\)\s*$/) || [''])[0];
+    if (tag && out.indexOf(tag) < 0) out += ' ' + tag;
+    return out;
+  };
+
+  // Synthetic persona names mean nothing to the customer. Use the role.
+  G.replacePersonaNames = function (text, personas) {
+    var out = String(text || '');
+    (personas || []).forEach(function (p) {
+      if (!p || !p.name || p.name.length < 4) return;
+      var role = String(p.title || 'buyer').trim();
+      var art = /^[aeiou]/i.test(role) && !/^(uni|use)/i.test(role) ? 'an ' : 'a ';
+      var nm = p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      out = out.replace(new RegExp(nm + '\\s*\\([^)]*\\)', 'g'), art + role)
+               .replace(new RegExp(nm + "'s", 'g'), art + role + "'s")
+               .replace(new RegExp(nm, 'g'), art + role);
+    });
+    return out;
+  };
+
+  // One lever, once. Keys: comparison page per competitor, a page path, an
+  // outside site to pitch or list on, a new page per question, a schema type,
+  // re-running the audit. Also catches near-identical wording.
+  function leverKeys(text, ctx) {
+    var t = String(text || ''), lower = t.toLowerCase(), keys = [];
+    var isCompare = /\b(vs\.?|versus|comparison|compare)\b/i.test(t);
+    (ctx.competitors || []).forEach(function (c) { if (isCompare && c && lower.indexOf(String(c).toLowerCase()) >= 0) keys.push('comp:' + String(c).toLowerCase()); });
+    (t.match(/(?:^|\s|\(|')(\/[a-z0-9][a-z0-9\-\/]{3,})/gi) || []).forEach(function (p) { keys.push('path:' + p.replace(/^[\s(']+/, '').replace(/\/+$/, '').toLowerCase()); });
+    var own = String(ctx.siteDomain || '').toLowerCase();
+    (lower.match(/\b[a-z0-9-]+\.(?:org|com|net|io|co|edu|gov|ai)\b/g) || []).forEach(function (d) { if (!own || d.indexOf(own) < 0) keys.push('site:' + d); });
+    if (creates(t) && /\b(page|article|guide|post)\b/i.test(t)) (t.match(/["\u201c']([^"\u201d']{12,120})["\u201d']/g) || []).forEach(function (q) { keys.push('q:' + q.slice(1, -1).toLowerCase()); });
+    if (!isCompare && !/\b(page|article|guide|post)\b/i.test(t.split(/[.!?]/)[0])) SCHEMA.forEach(function (s) { if (s.re.test(t)) keys.push('schema:' + s.type); });
+    if (/re-?run(ning)? the (citro )?audit/i.test(t)) keys.push('rerun');
+    return keys;
+  }
+  function words(t) { return String(t || '').toLowerCase().replace(/\(effort:[^)]*\)/, '').match(/[a-z0-9]{4,}/g) || []; }
+  function jaccard(a, b) {
+    var A = {}, B = {}, inter = 0, uni = 0, k;
+    a.forEach(function (w) { A[w] = 1; }); b.forEach(function (w) { B[w] = 1; });
+    for (k in A) { uni++; if (B[k]) inter++; }
+    for (k in B) if (!A[k]) uni++;
+    return uni ? inter / uni : 0;
+  }
+  // seen: { keys: {}, texts: [] } shared across phases.
+  G.dedupe = function (items, seen, ctx) {
+    seen = seen || { keys: {}, texts: [] };
+    var kept = [], dropped = [];
+    (items || []).forEach(function (it) {
+      var t = typeof it === 'string' ? it : (it && it.action) || '';
+      var ks = leverKeys(t, ctx || {});
+      var dupKey = ks.find(function (k) { return seen.keys[k]; });
+      var w = words(t);
+      // Wording similarity only decides for items with no distinct lever
+      // (two comparison pages for different competitors read alike but aren't repeats).
+      var near = !ks.length && seen.texts.some(function (x) { return jaccard(x, w) >= 0.5; });
+      if (dupKey || near) { dropped.push({ text: t, reason: 'Repeats an earlier item' + (dupKey ? ' (' + dupKey + ')' : '') }); return; }
+      ks.forEach(function (k) { seen.keys[k] = 1; });
+      seen.texts.push(w);
+      kept.push(it);
+    });
+    return { kept: kept, dropped: dropped, seen: seen };
+  };
 
   // Filter a list of generated recommendations. Returns { kept, dropped }.
   G.groundItems = function (items, f, ctx) {

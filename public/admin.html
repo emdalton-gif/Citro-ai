@@ -1123,9 +1123,17 @@ async function genReport(id, results) {
   const report = JSON.parse(cleaned.slice(start, end + 1));
   // Remove anything that contradicts the site check or rests on what we couldn't verify.
   const removed = [];
+  const clean = t => G.stripUnverified(G.replacePersonaNames(t, (c.personas || [])), comps);
+  (report.recommendations || []).forEach(r => { if (r && r.action) r.action = clean(r.action); });
+  (report.roadmap_phases || []).forEach(ph => { ph.actions = (ph.actions || []).map(clean); });
   const g = G.groundItems(report.recommendations || [], siteFacts, groundCtx);
   removed.push(...g.dropped); report.recommendations = g.kept;
-  (report.roadmap_phases || []).forEach(ph => { const gg = G.groundItems(ph.actions || [], siteFacts, groundCtx); removed.push(...gg.dropped); ph.actions = gg.kept; });
+  const planSeen = { keys: {}, texts: [] };
+  (report.roadmap_phases || []).forEach(ph => {
+    const gg = G.groundItems(ph.actions || [], siteFacts, groundCtx); removed.push(...gg.dropped);
+    const dd = G.dedupe(gg.kept, planSeen, { competitors: comps }); removed.push(...dd.dropped);
+    ph.actions = dd.kept;
+  });
   report.technical_recommendations = G.technicalText(siteFacts, groundCtx);
   report.site_check = G.forSave(siteFacts);
   report.grounding_removed = removed.map(d => ({ reason: d.reason, text: String(d.text || '').slice(0, 300) }));

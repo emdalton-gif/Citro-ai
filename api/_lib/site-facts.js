@@ -233,7 +233,7 @@ function internalLinks(html, baseUrl) {
 
 const PAGE_KINDS = {
   comparison:  /(^|[\/\-_])(vs|versus|compare|comparison|alternatives?)([\/\-_.]|$)/i,
-  faq:         /(^|[\/\-_])(faqs?|frequently-asked(-questions)?|help-center|helpcenter|support)([\/\-_.]|$)/i,
+  faq:         /(^|\/)(faqs?|frequently-asked(-questions)?|help-center|helpcenter|support|help)(\/|$)/i,
   pricing:     /(^|[\/\-_])(pricing|prices|plans)([\/\-_.]|$)/i,
   caseStudies: /(case-stud(y|ies)|customer-stor(y|ies)|success-stor(y|ies)|testimonials?)/i,
   about:       /(^|\/)(about|about-us|company|who-we-are)([\/\-_.]|$)/i,
@@ -250,7 +250,7 @@ function classifyUrls(urls) {
       if (!re.test(path)) continue;
       // A blog post titled "conversations vs confrontations" is not a vendor
       // comparison page. Competitor coverage is checked against every path.
-      if (k === 'comparison' && PAGE_KINDS.blog.test(path)) continue;
+      if ((k === 'comparison' || k === 'faq' || k === 'pricing') && PAGE_KINDS.blog.test(path)) continue;
       counts[k]++; if (pages[k].length < 40) pages[k].push(u);
     }
   }

@@ -1514,14 +1514,23 @@ ${siteBlock}`;
 - Every item must be specific to THIS company's real audit data: reference actual query phrases, real platform names, and real competitor names from the findings.
 - Name the exact lever, but ONLY levers the SITE CHECK shows are missing or weak: the exact schema type the check did not find, the exact page to write or improve (by its path if it exists), the exact review site, directory or publication from the sources AI read, the exact comparison page to write if the check shows none for that competitor.
 - Never recommend something the SITE CHECK shows the site already has. A customer was told to create an llms.txt they already had; that destroys trust in the whole report.
+- Do not include llms.txt, robots.txt, sitemap or Wikidata items at all; the report's site check section covers those.
+- Make no claims about competitors' websites, schema markup or content formats. You only know who the AI answers named and which sites they read.
+- Make no claims about what an existing page contains or lacks, beyond the schema types listed in the SITE CHECK.
+- Only name real schema.org types (Organization, EducationalOrganization, Course, EducationalOccupationalProgram, FAQPage, Product, Service, Review, Article, HowTo, Event). There is no "CaseStudy" type.
+- Refer to buyers by role (e.g. "a CHRO", "an HR director"), never by persona name.
+- Each lever (a specific page, a comparison against one competitor, a schema type, a pitch to one outside site) appears ONCE in the whole plan.
 - Every item must state WHY it moves the Citro Score (which gap, platform, or competitor advantage it closes).
 - Genuine levers only. No filler, no vague "improve your SEO," no duplicates, no busywork.
 - 2-4 sentences each, for a capable but non-technical marketer. Plain prose only — no headers, no preamble, no JSON, no quotes around items.`;
 
-    const cyclePrompt = (windowLabel, note) => `Write 13 numbered action items for the ${windowLabel} window of a Citro AI visibility plan for ${c.company_name} (${c.website}).
+    const cyclePrompt = (windowLabel, note, already = []) => `Write 13 numbered action items for the ${windowLabel} window of a Citro AI visibility plan for ${c.company_name} (${c.website}).
 
 ${findings}
-
+${already.length ? `
+ALREADY IN THE PLAN FOR EARLIER WINDOWS. Do not repeat, reword, extend or split any of these; every item you write must be a different lever:
+${already.map((a, i) => `${i + 1}. ${String(a).replace(/\s*\(Effort:[^)]*\)\s*$/, '').slice(0, 220)}`).join('\n')}
+` : ''}
 These thirteen must be a PRIORITIZED MIX across the three lever types (technical/site changes, content creation, and distribution/authority building), ordered most-impactful first — do NOT batch all of one type together. ${note}
 
 ${qualityBar}
@@ -1534,9 +1543,10 @@ Return ONLY a JSON array of exactly 13 strings and nothing else — no prose bef
 ${findings}
 
 ${qualityBar}
-These seven are the executive shortlist — a mix of types, ordered most-impactful first. NO effort tag.
+These seven are the executive shortlist — a mix of types, ordered most-impactful first.
+- End EACH item with a tag in EXACTLY this format, judged from the work the item actually involves: [impact: high|medium; effort: low|medium|high; type: technical|content|distribution]. Writing new pages is content; schema and site changes are technical; pitches, listings and community posts are distribution.
 
-Return ONLY a JSON array of exactly 7 strings and nothing else — no prose before or after, no objects, no keys. Each string is one complete, self-contained action (2-4 sentences) that includes why it matters. Example: ["Publish a comparison page targeting the exact query where a named competitor wins, structured with Organization schema so AI assistants can cite it.", "..."]`;
+Return ONLY a JSON array of exactly 7 strings and nothing else — no prose before or after, no objects, no keys. Each string is one complete, self-contained action (2-4 sentences) that includes why it matters and ends with the tag. Example: ["Publish a comparison page against the competitor named most often, so AI assistants have your side to cite. [impact: high; effort: medium; type: content]", "..."]`;
 
     // Robust parser: handles a JSON array of strings, a JSON array of {action, why} objects,
     // a wrapper object containing an array, or a plain numbered list. Drops JSON scaffolding.
@@ -1566,42 +1576,50 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       catch (e) { return []; }
     };
 
-    const [recRaw, p1Raw, p2Raw, p3Raw] = await Promise.all([
-      genItems(recsPrompt, 7, 1100),
-      genItems(cyclePrompt('Days 1-30',  'These are the highest-impact actions overall — the foundation later months build on.'), 13, 1900),
-      genItems(cyclePrompt('Days 31-60', 'Build on the first 30 days; assume the Days 1-30 work is underway.'), 13, 1900),
-      genItems(cyclePrompt('Days 61-90', 'Assume months 1-2 are done. Include re-running the Citro audit and measuring score movement among these.'), 13, 1900),
-    ]);
-    // Every item is checked against the site facts. Anything recommending what
-    // the site already has, or resting on something we couldn't verify, is
-    // removed. We ask for extra items so the plan stays full after filtering.
+    // Each item is cleaned (persona names -> roles, unverified competitor
+    // claims removed), checked against the site facts, then checked against
+    // everything already in the plan so no lever appears twice.
     const groundingRemoved = [];
-    const ground = (items, n) => {
-      const g = G.groundItems(items, siteFacts, groundCtx);
+    const dedupeCtx = { competitors: comps, siteDomain: siteDomain(c) };
+    const clean = t => G.stripUnverified(G.replacePersonaNames(t, personas), comps);
+    const ground = (items, n, seen) => {
+      const g = G.groundItems(items.map(clean), siteFacts, groundCtx);
       groundingRemoved.push(...g.dropped);
-      return g.kept.slice(0, n);
+      if (!seen) return g.kept.slice(0, n);
+      const d = G.dedupe(g.kept, seen, dedupeCtx);
+      groundingRemoved.push(...d.dropped);
+      return d.kept.slice(0, n);
     };
-    const recLines = ground(recRaw, 5);
-    const p1Acts = ground(p1Raw, 10);
-    const p2Acts = ground(p2Raw, 10);
-    const p3Acts = ground(p3Raw, 10);
+    // The three windows are written in order, each told what is already
+    // planned. Written in parallel they repeated the same moves four times.
+    const planSeen = { keys: {}, texts: [] };
+    const [recRaw, p1Raw] = await Promise.all([
+      genItems(recsPrompt, 7, 1100),
+      genItems(cyclePrompt('Days 1-30', 'These are the highest-impact actions overall — the foundation later months build on.'), 13, 1900),
+    ]);
+    const p1Acts = ground(p1Raw, 10, planSeen);
+    const p2Acts = ground(await genItems(cyclePrompt('Days 31-60', 'Build on the first 30 days; assume the Days 1-30 work is underway.', p1Acts), 13, 1900), 10, planSeen);
+    const p3Acts = ground(await genItems(cyclePrompt('Days 61-90', 'Assume months 1-2 are done. Include re-running the Citro audit and measuring score movement among these.', [...p1Acts, ...p2Acts]), 13, 1900), 10, planSeen);
+
+    // The shortlist carries its own tags; they used to be fixed by position,
+    // so "low effort, technical" could land on writing two comparison pages.
+    const recSeen = { keys: {}, texts: [] };
+    const tagRe = /\s*\[\s*impact:\s*(high|medium|low)\s*;\s*effort:\s*(low|medium|high)\s*;\s*type:\s*(technical|content|distribution)\s*\]\s*$/i;
+    const recItems = ground(recRaw, 7, recSeen).map(line => {
+      const m = String(line).match(tagRe);
+      const action = String(line).replace(tagRe, '').replace(/\s*\[[^\]]*\]\s*$/, '').trim();
+      return m ? { action, impact: m[1].toLowerCase(), effort: m[2].toLowerCase(), category: m[3].toLowerCase() } : { action };
+    }).filter(r => r.action);
     if (groundingRemoved.length) console.info('Site check removed', groundingRemoved.length, 'recommendation(s):', groundingRemoved);
 
-    // Impact/effort/category mapping for the top-5 recommendations
-    const impactMap  = ['high','high','high','high','medium'];
-    const effortMap  = ['low','medium','low','medium','medium'];
-    const catMap     = ['technical','content','distribution','technical','content'];
-
     const acts = {
-      recommendations: recLines.slice(0,5).map((action, i) => ({
-        action, impact: impactMap[i], effort: effortMap[i], category: catMap[i],
-      })).filter(r => r.action),
+      recommendations: recItems.slice(0, 5),
       // 90-day plan: three 30-day cycles, each a prioritized mix of ~10 substantial actions.
       roadmap_phases: [
         { days: 'Days 1-30',  theme: 'Highest-impact moves',      actions: p1Acts },
         { days: 'Days 31-60', theme: 'Build on the foundation',   actions: p2Acts },
         { days: 'Days 61-90', theme: 'Compound gains and measure', actions: p3Acts },
-      ]
+      ].filter(ph => ph.actions.length)
     };
 
     // Fallback if Claude returns too few items — fill remaining slots with data-driven text
@@ -1691,7 +1709,7 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       block('section-sitecheck');
     }
     if (report.recommendations?.length) {
-      document.getElementById('recs-list').innerHTML = report.recommendations.map((r,i)=>`<div class="rec-item"><div class="rec-num">${i+1}</div><div><div class="rec-action">${esc(r.action)}</div><div class="rec-tags"><span class="rec-tag impact-${r.impact}">${r.impact} impact</span><span class="rec-tag">${r.effort} effort</span><span class="rec-tag">${r.category}</span></div></div></div>`).join('');
+      document.getElementById('recs-list').innerHTML = report.recommendations.map((r,i)=>`<div class="rec-item"><div class="rec-num">${i+1}</div><div><div class="rec-action">${esc(r.action)}</div>${(r.impact || r.effort || r.category) ? `<div class="rec-tags">${r.impact ? `<span class="rec-tag impact-${esc(r.impact)}">${esc(r.impact)} impact</span>` : ''}${r.effort ? `<span class="rec-tag">${esc(r.effort)} effort</span>` : ''}${r.category ? `<span class="rec-tag">${esc(r.category)}</span>` : ''}</div>` : ''}</div></div>`).join('');
       block('section-recs');
     }
     if (report.roadmap_phases?.length) {
