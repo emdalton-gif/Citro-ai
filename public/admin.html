@@ -1123,7 +1123,7 @@ async function genReport(id, results) {
   const report = JSON.parse(cleaned.slice(start, end + 1));
   // Remove anything that contradicts the site check or rests on what we couldn't verify.
   const removed = [];
-  const clean = t => G.stripUnverified(G.replacePersonaNames(t, (c.personas || [])), comps);
+  const clean = t => G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, (c.personas || [])), comps), siteFacts);
   (report.recommendations || []).forEach(r => { if (r && r.action) r.action = clean(r.action); });
   (report.roadmap_phases || []).forEach(ph => { ph.actions = (ph.actions || []).map(clean); });
   const g = G.groundItems(report.recommendations || [], siteFacts, groundCtx);

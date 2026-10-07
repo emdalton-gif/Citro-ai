@@ -38,22 +38,28 @@
   function n(x) { return Number(x || 0).toLocaleString('en-US'); }
 
   // Organization has many subtypes; a site using one of them has Organization markup.
+  // A type counts when "schema", "markup" or "structured data" follows in the
+  // same clause, so "Organization and Course schema" names both.
+  function sre(names) { return new RegExp('\\b(' + names + ')\\b(?=[^.;:]{0,50}\\b(schema|markup|structured data)\\b)', 'i'); }
   var SCHEMA = [
     { type: 'FAQPage',             re: /\bFAQ ?Page\b|\bFAQ (schema|markup|structured data)\b/i, also: [] },
-    { type: 'Organization',        re: /\bOrgani[sz]ation (schema|markup|structured data)\b/i, also: ['Corporation', 'EducationalOrganization', 'LocalBusiness', 'NGO', 'OnlineBusiness', 'ProfessionalService', 'NewsMediaOrganization'] },
-    { type: 'Product',             re: /\bProduct (schema|markup|structured data)\b/i, also: ['ProductGroup', 'IndividualProduct'], pageKind: 'offering' },
-    { type: 'Course',              re: /\bCourse (schema|markup|structured data)\b/i, also: ['CourseInstance'], pageKind: 'offering' },
+    { type: 'Organization',        re: sre('Organi[sz]ation|EducationalOrganization|Corporation'), also: ['Corporation', 'EducationalOrganization', 'LocalBusiness', 'NGO', 'OnlineBusiness', 'ProfessionalService', 'NewsMediaOrganization'] },
+    { type: 'Product',             re: sre('Product'), also: ['ProductGroup', 'IndividualProduct'], pageKind: 'offering' },
+    // Course, CourseInstance and EducationalOccupationalProgram describe the
+    // same thing (a training program) and are one lever.
+    { type: 'Course',              re: /\b(CourseInstance|EducationalOccupationalProgram)\b/i, also: ['CourseInstance', 'EducationalOccupationalProgram'], pageKind: 'offering' },
+    { type: 'Course',              re: sre('Course'), also: ['CourseInstance', 'EducationalOccupationalProgram'], pageKind: 'offering' },
     { type: 'SoftwareApplication', re: /\bSoftwareApplication\b/i, also: ['WebApplication', 'MobileApplication'], pageKind: 'offering' },
-    { type: 'Service',             re: /\bService (schema|markup|structured data)\b/i, also: ['ProfessionalService'], pageKind: 'offering' },
+    { type: 'Service',             re: sre('Service'), also: ['ProfessionalService'], pageKind: 'offering' },
     { type: 'ProfessionalService', re: /\bProfessionalService\b/i, also: [] },
     { type: 'LocalBusiness',       re: /\bLocalBusiness\b/i, also: [] },
     { type: 'HowTo',               re: /\bHowTo\b/i, also: [], pageKind: 'blog' },
     { type: 'AggregateRating',     re: /\b(AggregateRating|Review (schema|markup))\b/i, also: ['Review'] },
-    { type: 'Article',             re: /\b(Article|BlogPosting) (schema|markup|structured data)\b/i, also: ['BlogPosting', 'NewsArticle'], pageKind: 'blog' },
+    { type: 'Article',             re: sre('Article|BlogPosting'), also: ['BlogPosting', 'NewsArticle'], pageKind: 'blog' },
     { type: 'BreadcrumbList',      re: /\bBreadcrumb(List)?\b/i, also: [] },
-    { type: 'Event',               re: /\bEvent (schema|markup|structured data)\b/i, also: ['EducationEvent', 'BusinessEvent'], pageKind: 'offering' },
-    { type: 'Person',              re: /\bPerson (schema|markup|structured data)\b/i, also: [] },
-    { type: 'WebSite',             re: /\bWebSite (schema|markup|structured data)\b/i, also: [] },
+    { type: 'Event',               re: sre('Event|EducationEvent'), also: ['EducationEvent', 'BusinessEvent'], pageKind: 'offering' },
+    { type: 'Person',              re: sre('Person'), also: [] },
+    { type: 'WebSite',             re: sre('WebSite'), also: [] },
   ];
   var GENERIC_SCHEMA = /\b(schema\.org|schema markup|structured data|json-ld|rich results?)\b/i;
 
@@ -224,7 +230,7 @@
     // Wikidata: never a plan item. Its notability rules need independent
     // published sources, and self-created company entries get deleted. The
     // site check text covers it as a later step.
-    if (/\bwikidata\b/i.test(t)) return 'Wikidata needs independent coverage first; covered in the site check, not the plan';
+    if (/\bwikidata\b/i.test(t)) return 'Wikidata needs independent coverage first; not a plan item';
 
     // Outreach to a competitor's own site (e.g. a guest post on radicalcandor.com).
     var doms = t.toLowerCase().match(/\b[a-z0-9-]+\.(?:org|com|net|io|co|edu|ai)\b/g) || [];
@@ -245,11 +251,58 @@
       if (DIRS[k].re.test(t) && !sourcesInclude(ctx.sourceDomains, DIRS[k].domain)) return DIRS[k].domain + ' was not among the sources AI read for these questions';
     }
 
+    var fake = unknownPaths(t, f);
+    if (fake.length) return 'Cites ' + fake[0] + ' as an existing page, but the site has no such page';
+
     if (!siteOk && /\b(your|the) (site|website|homepage|pages?)\b/i.test(t) && /\b(markup|schema|llms|robots|sitemap|crawl)/i.test(t)) return 'Site could not be reached to verify';
     return null;
   }
 
   G.problem = problem;
+
+  // Paths in an item that are cited as existing pages but are not on the site.
+  // A path proposed for a new page ("a new page at /vs/x/") is fine.
+  var PATH_RE = /(^|[\s(,'"\u201c\u2018])(\/[a-z0-9][a-z0-9\-\/._]*[a-z0-9\/])/gi;
+  function normPath(p) { return String(p).toLowerCase().replace(/[.,;:]+$/, '').replace(/\/+$/, '') || '/'; }
+  function pathSet(f) {
+    if (!hasPaths(f)) return null;
+    if (!f._pathSet) { var o = {}; f.paths.forEach(function (p) { o[normPath(p)] = 1; }); Object.defineProperty(f, '_pathSet', { value: o, enumerable: false }); }
+    return f._pathSet;
+  }
+  function citedAsNew(text, idx) {
+    var win = text.slice(Math.max(0, idx - 90), idx).replace(/\b(e\.g|i\.e)\./gi, 'eg');
+    if (/\b(existing|current|live)\b[^.]{0,40}$/i.test(win)) return false;
+    return /\bnew\b[^.]{0,60}$|\b(such as|path like|titled|slug|url like)\b[^.]{0,20}$/i.test(win) ||
+      /\b(write|publish|create|build|launch|add|commission|stand up|put up)\b[^.]{0,80}\b(at|under)\s*$/i.test(win);
+  }
+  function unknownPaths(text, f) {
+    var set = pathSet(f); if (!set) return [];
+    var t = String(text || ''), out = [], m;
+    PATH_RE.lastIndex = 0;
+    while ((m = PATH_RE.exec(t))) {
+      var p = m[2], idx = m.index + m[1].length;
+      if (/\.(txt|xml|json|js|css|pdf|png|jpe?g|svg)$/i.test(p)) continue;
+      if (p.split('/').filter(Boolean).length === 0) continue;
+      if (set[normPath(p)] || citedAsNew(t, idx)) continue;
+      out.push(p);
+    }
+    return out;
+  }
+  G.unknownPaths = unknownPaths;
+
+  // Repair rather than drop: invented example paths inside "(e.g., ...)" are
+  // removed from the example, and the parenthetical goes if nothing is left.
+  G.fixPaths = function (text, f) {
+    var t = String(text || '');
+    if (!pathSet(f)) return t;
+    return t.replace(/\s*\((e\.g\.,?|for example,?|such as|like)\s+([^()]*)\)/gi, function (all, lead, body) {
+      var bad = unknownPaths(' ' + body, f);
+      if (!bad.length) return all;
+      var parts = body.split(/\s*(?:,|\band\b|\bor\b)\s*/).filter(function (x) { return x && bad.indexOf(x.trim().replace(/[.,;]+$/, '')) < 0; });
+      var kept = parts.filter(function (x) { return /^\//.test(x.trim()); });
+      return kept.length ? ' (' + lead + ' ' + kept.join(', ') + ')' : '';
+    });
+  };
 
   // Why the homepage couldn't be read, in plain words.
   function blockedReason(f) {
@@ -313,7 +366,10 @@
   // "Y publishes case studies AI can parse") were never checked. Remove those
   // sentences; keep the rest of the item.
   G.stripUnverified = function (text, competitors) {
-    var src = String(text || '');
+    // Items are filtered and reordered after writing, so "item 10 above" points nowhere.
+    var src = String(text || '')
+      .replace(/\s*\((?:see |from |per )?items? \d+(?:\s*(?:and|,|-)\s*\d+)*(?: above| below)?\)/gi, '')
+      .replace(/,?\s*\b(?:as in|from|see|per) items? \d+(?: above| below)?\b/gi, '');
     var tagM = src.match(/\s*\(Effort:[^)]*\)\s*$/);
     var body = tagM ? src.slice(0, tagM.index) : src;
     // Protect abbreviations and decimals so "e.g." or "3.5" don't end a sentence.
@@ -349,6 +405,7 @@
   // One lever, once. Keys: comparison page per competitor, a page path, an
   // outside site to pitch or list on, a new page per question, a schema type,
   // re-running the audit. Also catches near-identical wording.
+  var MARKUP_ITEM = /^\s*(add|adding|implement|implementing|deploy|apply|mark up|layer|extend)\b[^.]{0,90}\b(schema|markup|structured data)\b/i;
   function leverKeys(text, ctx) {
     var t = String(text || ''), lower = t.toLowerCase(), keys = [];
     var isCompare = /\b(vs\.?|versus|comparison|compare)\b/i.test(t);
@@ -365,7 +422,13 @@
       var it = toks(t); var hit = gt.filter(function (w) { return it.indexOf(w) >= 0; }).length;
       if (hit / gt.length >= 0.75) keys.push('gap:' + gq.toLowerCase());
     });
-    if (!isCompare && !/\b(page|article|guide|post)\b/i.test(t.split(/[.!?]/)[0])) SCHEMA.forEach(function (s) { if (s.re.test(t)) keys.push('schema:' + s.type); });
+    // An item whose first clause adds markup claims those schema types, wherever
+    // it puts them (three HowTo items on three different pages are one lever).
+    var first = t.split(/(?<!\b(?:e\.g|i\.e|vs))[.!?](?:\s|$)/)[0];
+    if (!isCompare && MARKUP_ITEM.test(first)) SCHEMA.forEach(function (s) { if (s.re.test(first)) keys.push('schema:' + s.type); });
+    // Reviews on one site, or taking part on Reddit, is one lever however often it is reworded.
+    DIRS.forEach(function (d) { if (d.re.test(first)) keys.push('site:' + d.domain); });
+    if (/\breddit\b/i.test(first)) keys.push('site:reddit.com');
     if (/re-?run(ning)? the (citro )?audit/i.test(t)) keys.push('rerun');
     return keys;
   }
@@ -446,6 +509,7 @@
         return '- ' + label + ': ' + (countOf(f, kind) ? countOf(f, kind) + ' found, e.g. ' + p.slice(0, 6).join(', ') : 'none found');
       };
       L.push('- Existing pages (from ' + f.pages.source + ', ' + n(f.pages.inventoryCount) + ' pages):');
+      L.push('  ' + show('offering', 'Program, product or service pages').slice(2));
       L.push('  ' + show('comparison', 'Comparison / "vs" / alternatives pages').slice(2));
       L.push('  ' + show('faq', 'FAQ or help pages').slice(2) + ((f.helpSites || []).length ? '; help center linked from the homepage: ' + f.helpSites.join(', ') : ''));
       L.push('  ' + show('pricing', 'Pricing pages').slice(2));
@@ -457,14 +521,14 @@
         L.push('- Existing pages that already target gap questions (recommend improving these by path, not writing new pages): ' + (cover.length ? cover.slice(0, 8).join('; ') : 'none found'));
       }
     } else L.push('- Existing pages: could not be listed');
-    var w = st(f.wikidata);
-    L.push('- Wikidata: ' + (w === 'present' ? 'entry ' + f.wikidata.id + ' linked to this site' : w === 'missing' ? 'no entry linked to this site' : 'could not be checked'));
     L.push('');
     L.push('RULES FOR USING THE SITE CHECK (mandatory):');
     L.push('- Never recommend creating, adding or deploying anything the site check shows as PRESENT or found. You may recommend a specific improvement to it, and you must say it already exists.');
     L.push('- Never say something is missing unless the site check says it is missing or not found.');
     L.push('- If the site check says "could not be checked", make no recommendation about that item.');
     L.push('- Before recommending a new page, check the existing pages above; if a similar page exists, recommend improving that page by its path instead.');
+    L.push('- When you cite an existing page, use only a path listed above. Never guess a URL. Give a new page\'s path only when proposing that new page.');
+    L.push('- Never refer to other items by number ("item 3 above"); items are reordered and filtered after writing.');
     L.push('- Only recommend Google Business Profile if the business serves local customers' + (ctx.local ? ' (it does).' : ' (it does not, so do not mention it).'));
     L.push('- Only name review sites, directories or publications that appear in the list of sources the AI platforms read.');
     return L.join('\n');
@@ -496,17 +560,20 @@
     if (sch.status === 'checked') {
       var found = sch.types || [];
       var orgLike = ['Organization', 'Corporation', 'EducationalOrganization', 'LocalBusiness', 'ProfessionalService', 'OnlineBusiness'].some(function (x) { return found.indexOf(x) >= 0; });
-      out.push('On the ' + sch.pagesChecked + ' pages we checked, the structured data we found was ' + (found.length ? listJoin(found.slice(0, 10)) : 'none') + '.' + (orgLike ? '' : ' None of them declares your organization (name, logo, website and social profiles in Organization markup), which is how AI systems tie the brand to its site; that is the markup worth adding first.'));
+      var shown = shownTypes(found);
+      out.push('On the ' + sch.pagesChecked + ' pages we checked, the structured data we found was ' + (shown.length ? listJoin(shown) : 'none') + '.' + (orgLike ? '' : ' None of them declares your organization (name, logo, website and social profiles in Organization markup), which is how AI systems tie the brand to its site; that is the markup worth adding first.'));
     }
     var sm = st(f.sitemap);
     if (sm === 'present') out.push('Your XML sitemap lists ' + n(f.sitemap.urlCount) + ' pages.');
     else if (sm === 'missing') out.push('We found no XML sitemap at the usual locations or in robots.txt. Publishing one helps search engines, and the AI assistants that rely on them, find every page.');
-    var w = st(f.wikidata);
-    if (w === 'present') out.push('Wikidata has an entry for you (' + f.wikidata.id + ') linked to your site.');
-    else if (w === 'missing') out.push('There is no Wikidata entry linked to your site. Wikidata requires independent published sources, so treat it as a later step once you have press coverage.');
     if (ctx.local) out.push('Because your buyers search locally, confirm your Google Business Profile is claimed and complete; that is the one item here we cannot check from outside.');
     return out.join(' ');
   };
+
+  // Types worth naming to a customer. Search boxes and images inside the markup
+  // (EntryPoint, SearchAction, ImageObject...) are parts of other types, not markup choices.
+  var HELPER_TYPES = /^(EntryPoint|PropertyValueSpecification|ReadAction|SearchAction|CommentAction|ListItem|ImageObject|WPHeader|WPFooter|WPSideBar|SiteNavigationElement|ContactPoint|PostalAddress|GeoCoordinates|Offer|AggregateOffer|Rating|Answer|Question|Thing|ItemList|VideoObject|MonetaryAmount|QuantitativeValue|Language|Place|Country|DefinedTerm|InteractionCounter)$/;
+  function shownTypes(types) { return (types || []).filter(function (x) { return !HELPER_TYPES.test(x); }).slice(0, 12); }
 
   // Rows for the "What we checked on your site" box.
   G.checkedRows = function (f, ctx) {
@@ -530,15 +597,13 @@
       detail: sm === 'present' ? n(f.sitemap.urlCount) + ' pages listed' : sm === 'missing' ? 'Not found' : 'Could not be checked' });
     var sch = f.schema || {};
     rows.push({ label: 'Structured data (schema.org)', status: sch.status !== 'checked' ? 'unknown' : (sch.types || []).length ? 'ok' : 'missing',
-      detail: sch.status !== 'checked' ? 'Could not be checked' : ((sch.types || []).length ? (sch.types || []).slice(0, 8).join(', ') : 'None found') + ' (' + sch.pagesChecked + ' pages checked)' });
+      detail: sch.status !== 'checked' ? 'Could not be checked' : (shownTypes(sch.types).length ? shownTypes(sch.types).join(', ') : 'None found') + ' (' + sch.pagesChecked + ' pages checked)' });
     if (hasInventory(f)) {
       rows.push({ label: 'Comparison pages', status: countOf(f, 'comparison') ? 'ok' : 'missing', detail: countOf(f, 'comparison') ? countOf(f, 'comparison') + ' found' : 'None found' });
       var helpN = countOf(f, 'faq'), hs = f.helpSites || [];
       rows.push({ label: 'FAQ or help pages', status: helpN || hs.length ? 'ok' : 'missing', detail: hs.length ? 'Help center at ' + hs[0].replace(/^https?:\/\//, '') + (helpN ? ', plus ' + helpN + ' on the main site' : '') : helpN ? helpN + ' found' : 'None found on the main site' });
       rows.push({ label: 'Case studies', status: countOf(f, 'caseStudies') ? 'ok' : 'missing', detail: countOf(f, 'caseStudies') ? countOf(f, 'caseStudies') + ' found' : 'None found' });
     }
-    var w = st(f.wikidata);
-    rows.push({ label: 'Wikidata entry', status: w === 'present' ? 'ok' : w === 'missing' ? 'missing' : 'unknown', detail: w === 'present' ? f.wikidata.id : w === 'missing' ? 'None linked to your site' : 'Could not be checked' });
     if (ctx.local) rows.push({ label: 'Google Business Profile', status: 'unknown', detail: 'Cannot be checked from outside; confirm it is claimed' });
     return rows;
   };

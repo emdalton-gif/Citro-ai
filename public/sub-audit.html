@@ -1599,7 +1599,7 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
     // everything already in the plan so no lever appears twice.
     const groundingRemoved = [];
     const dedupeCtx = { competitors: comps, siteDomain: siteDomain(c), gapQueries: groundCtx.gapQueries };
-    const clean = t => G.stripUnverified(G.replacePersonaNames(t, personas), comps);
+    const clean = t => G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps), siteFacts);
     const ground = (items, n, seen) => {
       const g = G.groundItems(items.map(clean), siteFacts, groundCtx);
       groundingRemoved.push(...g.dropped);

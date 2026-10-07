@@ -839,7 +839,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const end = cleaned.lastIndexOf('}');
     const report = JSON.parse(cleaned.slice(start, end + 1));
     const removed = [];
-    const clean = t => G.stripUnverified(G.replacePersonaNames(t, personas), comps);
+    const clean = t => G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps), siteFacts);
   (report.recommendations || []).forEach(r => { if (r && r.action) r.action = clean(r.action); });
   (report.roadmap_phases || []).forEach(ph => { ph.actions = (ph.actions || []).map(clean); });
   const g = G.groundItems(report.recommendations || [], siteFacts, groundCtx);
