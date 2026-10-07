@@ -1329,7 +1329,12 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     // when they showed up in the summary ("Sandra Kowalski, Marcus Delgado...").
     const buyerCtx = [...new Set(personas.map(p => p.title || 'decision maker'))].join(', ');
     const subjectCtx = c.offer ? `${c.offer} (by ${c.company_name})` : c.company_name;
-    const visCtx = score===0 ? `The brand has 0% Citro visibility — it did not appear in any advisory AI responses.` : `Weighted Citro Score: ${score}% (High=100%, Medium=50%, Low=25%, None=0% across ${organic.length} advisory queries).`;
+    const W = { high: 1, medium: 0.5, low: 0.25, none: 0 };
+    const platPct = {};
+    organic.forEach(x => { (platPct[x.platform] = platPct[x.platform] || []).push(W[x.visibility] || 0); });
+    const platLine = Object.entries(platPct).map(([p, a]) => `${p} ${Math.round(a.reduce((s, v) => s + v, 0) / a.length * 100)}% (${a.length} ${a.length === 1 ? 'query' : 'queries'})`).join('; ');
+    const visCtx = (score===0 ? `The brand has 0% Citro visibility — it did not appear in any advisory AI responses.` : `Weighted Citro Score: ${score}% (High=100%, Medium=50%, Low=25%, None=0% across ${organic.length} advisory queries).`)
+      + (platLine ? `\nScore by platform: ${platLine}. Say a platform gives zero visibility only if its score here is 0%.` : '');
     const gapQueries = organic.filter(x=>x.visibility==='none'||x.visibility==='low');
     const gapCtx = gapQueries.length ? gapQueries.map(x=>`[${x.platform}] "${x.query}" — ${x.visibility}. ${x.insight||''}`).join('\n') : 'No gaps identified.';
     const sys = 'You are a senior GTM strategist at Citro. Write in a confident, direct consultant tone. Be specific to this company — never give generic advice that could apply to any business. Name actual page types, platforms, content formats, and directories relevant to their industry. Output ONLY the JSON requested — no prose before or after.';
@@ -1535,7 +1540,8 @@ ${siteBlock}`;
 - Recommend only actions that match how each outside site works: press-release wires (PR Newswire, Business Wire) are paid distribution, not publications to pitch; forums like Reddit take helpful participation from a disclosed account, not bylined articles; review sites take customer reviews and profile updates.
 - Never recommend pitching, guest posting on or partnering with a competitor's own site.
 - Do not make superlative or market-position claims about the company ("market leader", "objectively the best"). Report what the AI answers said.
-- Name a competitor as appearing for a question only if "Named in this answer" lists it for that question.
+- Name a competitor as appearing for a question only if "Named in this answer" lists it for that question. Never call one competitor "the only" or "the one" named unless it is the only name listed.
+- Outreach goes to publications, directories, review sites and communities. Do not ask other vendors or software companies that sell to the same buyers (other training providers, coaching apps) to mention the company.
 - Do not claim what AI systems "weight", "prioritize" or "use to rank" unless the audit data shows it. State the action and which tested question or platform it addresses.
 - Each lever (a specific page, a comparison against one competitor, a schema type, a pitch to one outside site) appears ONCE in the whole plan.
 - Every item must state WHY it moves the Citro Score (which gap, platform, or competitor advantage it closes).
@@ -1634,9 +1640,9 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       recommendations: recItems.slice(0, 5),
       // 90-day plan: three 30-day cycles, each a prioritized mix of ~10 substantial actions.
       roadmap_phases: [
-        { days: 'Days 1-30',  theme: 'Highest-impact moves',      actions: p1Acts },
-        { days: 'Days 31-60', theme: 'Build on the foundation',   actions: p2Acts },
-        { days: 'Days 61-90', theme: 'Compound gains and measure', actions: p3Acts },
+        { days: 'Days 1-30',  theme: 'Highest-impact moves',      actions: G.alignPaths(recItems.map(r => r.action), p1Acts, dedupeCtx) },
+        { days: 'Days 31-60', theme: 'Build on the foundation',   actions: G.alignPaths(recItems.map(r => r.action), p2Acts, dedupeCtx) },
+        { days: 'Days 61-90', theme: 'Compound gains and measure', actions: G.alignPaths(recItems.map(r => r.action), p3Acts, dedupeCtx) },
       ].filter(ph => ph.actions.length)
     };
 

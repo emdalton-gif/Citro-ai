@@ -251,6 +251,7 @@
       if (DIRS[k].re.test(t) && !sourcesInclude(ctx.sourceDomains, DIRS[k].domain)) return DIRS[k].domain + ' was not among the sources AI read for these questions';
     }
 
+    if (/\bnot (named|listed|included|found|cited|among)\b[^.)]{0,30}\bsources\b/i.test(t)) return 'Names a site the AI answers did not read';
     var fake = unknownPaths(t, f);
     if (fake.length) return 'Cites ' + fake[0] + ' as an existing page, but the site has no such page';
 
@@ -440,6 +441,7 @@
     for (k in B) if (!A[k]) uni++;
     return uni ? inter / uni : 0;
   }
+  var OUTREACH = /^\s*(brief|reach out|engage with|contact|email|submit|pitch|send)\b[^.]{0,80}\b[a-z0-9-]+\.(?:org|com|net|io|co|me|ai)\b/i;
   // seen: { keys: {}, texts: [] } shared across phases.
   G.dedupe = function (items, seen, ctx) {
     seen = seen || { keys: {}, texts: [] };
@@ -453,11 +455,37 @@
       // (two comparison pages for different competitors read alike but aren't repeats).
       var near = !ks.length && seen.texts.some(function (x) { return jaccard(x, w) >= 0.5; });
       if (dupKey || near) { dropped.push({ text: t, reason: 'Repeats an earlier item' + (dupKey ? ' (' + dupKey + ')' : '') }); return; }
+      // Briefing individual third-party sites: two in a 90-day plan is plenty.
+      if (OUTREACH.test(t.split(/(?<!\b(?:e\.g|i\.e|vs))[.!?](?:\s|$)/)[0])) {
+        seen.outreach = (seen.outreach || 0) + 1;
+        if (seen.outreach > 2) { dropped.push({ text: t, reason: 'More than two site outreach items' }); return; }
+      }
       ks.forEach(function (k) { seen.keys[k] = 1; });
       seen.texts.push(w);
       kept.push(it);
     });
     return { kept: kept, dropped: dropped, seen: seen };
+  };
+
+  // The shortlist and the plan are written separately, so the same new page
+  // could get two URLs (/vs/dale-carnegie/ and /solutions/...-vs-dale-carnegie/).
+  // Give plan items the shortlist's path for the same lever.
+  function newPathOf(t) {
+    var m; PATH_RE.lastIndex = 0;
+    while ((m = PATH_RE.exec(t))) { if (citedAsNew(t, m.index + m[1].length)) return m[2]; }
+    return null;
+  }
+  G.alignPaths = function (recTexts, planItems, ctx) {
+    var byKey = {};
+    (recTexts || []).forEach(function (r) {
+      var p = newPathOf(String(r || '')); if (!p) return;
+      leverKeys(r, ctx || {}).forEach(function (k) { if (/^(comp|gap|q):/.test(k) && !byKey[k]) byKey[k] = p; });
+    });
+    return (planItems || []).map(function (it) {
+      var t = String(it || ''), p = newPathOf(t); if (!p) return it;
+      var k = leverKeys(t, ctx || {}).find(function (x) { return byKey[x]; });
+      return k && byKey[k] !== p ? t.split(p).join(byKey[k]) : it;
+    });
   };
 
   // Filter a list of generated recommendations. Returns { kept, dropped }.
