@@ -206,6 +206,22 @@
       }
     }
 
+    // A new page whose topic an existing program page already covers, e.g. a new
+    // /solutions/communication-training-for-healthcare/ when the site has
+    // /solutions/crucial-conversations-for-dialogue/healthcare/.
+    var np = newPathOf(t);
+    if (np && hasPaths(f) && !/\b(vs\.?|versus|comparison|compare|alternatives?)\b/i.test(t)) {
+      var topic = toks(np.replace(/[\/\-_.]+/g, ' ')).filter(function (w) { return !GENERICISH.test(w) && !/^(solution|resource|page|communication|vs|new|research|blog|article)$/.test(w); });
+      if (topic.length) {
+        var cover = f.paths.find(function (p) {
+          if (!OFFERING_PAGE.test(p) || normPath(p) === normPath(np)) return false;
+          var pt = toks(p.replace(/[\/\-_.]+/g, ' '));
+          return topic.every(function (w) { return pt.indexOf(w) >= 0; });
+        });
+        if (cover) return 'Site already has a page for this (' + cover + ')';
+      }
+    }
+
     // FAQ / help pages
     if (/\b(FAQ|frequently asked questions) (page|hub|center|centre|library)\b|\bhelp center\b/i.test(t) && creates(t)) {
       if ((f && f.helpSites || []).length) return 'Site already has a help center (' + f.helpSites[0] + ')';
@@ -241,6 +257,7 @@
     }
     // Press-release wires are paid distribution, not publications to pitch.
     if (/\b(prnewswire|pr newswire|businesswire|business wire|globenewswire)\b/i.test(t) && /\b(pitch|byline|contribut|guest)/i.test(t)) return 'Press-release wires are paid distribution, not a publication to pitch';
+    if (/\b(pitch|byline|bylined|contribut|guest)/i.test(t) && /\b[a-z0-9-]+\.(edu|gov)\b/i.test(t)) return 'Universities and government sites do not publish vendor-written articles';
     if (/\breddit\b/i.test(t) && /\b(byline|bylined|pitch)/i.test(t)) return 'Reddit takes participation, not pitched or bylined articles';
 
     // Google Business Profile: only for businesses with local buyers.
@@ -370,7 +387,8 @@
     // Items are filtered and reordered after writing, so "item 10 above" points nowhere.
     var src = String(text || '')
       .replace(/\s*\((?:see |from |per )?items? \d+(?:\s*(?:and|,|-)\s*\d+)*(?: above| below)?\)/gi, '')
-      .replace(/,?\s*\b(?:as in|from|see|per) items? \d+(?: above| below)?\b/gi, '');
+      .replace(/,?\s*\b(?:as in|from|see|per) items? \d+(?: above| below)?\b/gi, '')
+      .replace(/\s+(?:recommended|covered|described) (?:separately|elsewhere(?: in (?:this|the) plan)?|above|below)\b/gi, '');
     var tagM = src.match(/\s*\(Effort:[^)]*\)\s*$/);
     var body = tagM ? src.slice(0, tagM.index) : src;
     // Protect abbreviations and decimals so "e.g." or "3.5" don't end a sentence.
@@ -429,7 +447,7 @@
     if (!isCompare && MARKUP_ITEM.test(first)) SCHEMA.forEach(function (s) { if (s.re.test(first)) keys.push('schema:' + s.type); });
     // Reviews on one site, or taking part on Reddit, is one lever however often it is reworded.
     DIRS.forEach(function (d) { if (d.re.test(first)) keys.push('site:' + d.domain); });
-    if (/\breddit\b/i.test(first)) keys.push('site:reddit.com');
+    if (/\breddit\b|(^|\s)r\/[a-z]/i.test(first)) keys.push('site:reddit.com');
     if (/re-?run(ning)? the (citro )?audit/i.test(t)) keys.push('rerun');
     return keys;
   }
@@ -441,7 +459,7 @@
     for (k in B) if (!A[k]) uni++;
     return uni ? inter / uni : 0;
   }
-  var OUTREACH = /^\s*(brief|reach out|engage with|contact|email|submit|pitch|send)\b[^.]{0,80}\b[a-z0-9-]+\.(?:org|com|net|io|co|me|ai)\b/i;
+  var OUTREACH = /^\s*(brief|reach out|engage with|contact|email|submit|pitch|send)\b[^.]{0,200}\b[a-z0-9-]+\.(?:org|com|net|io|co|me|ai|edu|gov)\b/i;
   // seen: { keys: {}, texts: [] } shared across phases.
   G.dedupe = function (items, seen, ctx) {
     seen = seen || { keys: {}, texts: [] };
