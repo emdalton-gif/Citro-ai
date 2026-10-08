@@ -1239,10 +1239,12 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         // an unanswered query is not evidence the brand was absent.
         if (!isLive) {
           if (dot) dot.className = 'ql-dot fail';
+          // The provider's own error (billing, rate limits, account IDs) is for us, not the customer's report.
+          console.warn('No live answer from', q.platform, '-', liveError);
           return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, market: marketLabel,
                    is_live: false, failed: true, visibility: null, mentions_client: null,
                    mention_rank: null, competitors_mentioned: [], response: '',
-                   insight: `No response recorded from ${q.platform}: ${liveError}. Excluded from the score.` };
+                   insight: `No response recorded from ${q.platform} this run, so this question is left out of the score.` };
         }
 
         // ── Evaluate the response ──

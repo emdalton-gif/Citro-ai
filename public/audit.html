@@ -791,7 +791,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         // An unanswered query is not evidence the brand was absent. Scoring it
         // "none" made an outage look like bad visibility (fixed in sub-audit on
         // Sept 9; this page had kept the old behaviour).
-        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, failed: true, visibility: null, mentions_client: null, mention_rank: null, insight: `No response recorded from ${q.platform}: ${e.message || 'unknown error'}. Excluded from the score.`, response: '', is_live: false, competitors_mentioned: [] };
+        return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, failed: true, visibility: null, mentions_client: null, mention_rank: null, insight: `No response recorded from ${q.platform} this run, so this question is left out of the score.`, response: '', is_live: false, competitors_mentioned: [] };
       }
     }));
 
