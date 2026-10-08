@@ -1352,6 +1352,8 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const groundCtx = {
       competitors: comps,
       sourceDomains: Object.keys(srcCount),
+      sourceCounts: srcCount,
+      siteDomain: siteDomain(c),
       local: hasLocalIntent(c),
       brand: c.company_name,
       gapQueries: [...new Set(gapQueries.map(q => q.query))],
@@ -1661,9 +1663,9 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
 
 
     return {
-      executive_summary: G.replacePersonaNames(n.executive_summary || '', personas),
-      key_finding: G.replacePersonaNames(n.key_finding || '', personas),
-      visibility_projection: { current_score: score, projected_score: projectedScore, projection_narrative: G.replacePersonaNames(n.projection_narrative || '', personas) },
+      executive_summary: G.cleanNarrative(G.replacePersonaNames(n.executive_summary || '', personas)),
+      key_finding: G.cleanNarrative(G.replacePersonaNames(n.key_finding || '', personas)),
+      visibility_projection: { current_score: score, projected_score: projectedScore, projection_narrative: G.cleanNarrative(G.replacePersonaNames(n.projection_narrative || '', personas), `Closing the gaps in this plan is projected to lift the Citro Score from ${score}% to ${projectedScore}% within 90 days.`) },
       technical_recommendations,
       content_gaps,
       competitive_analysis,

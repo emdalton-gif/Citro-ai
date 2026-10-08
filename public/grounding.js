@@ -257,6 +257,13 @@
     }
     // Press-release wires are paid distribution, not publications to pitch.
     if (/\b(prnewswire|pr newswire|businesswire|business wire|globenewswire)\b/i.test(t) && /\b(pitch|byline|contribut|guest)/i.test(t)) return 'Press-release wires are paid distribution, not a publication to pitch';
+    // Outreach to a site only one answer used: too thin to be worth a plan item.
+    var first0 = t.split(/(?<!\b(?:e\.g|i\.e|vs))[.!?](?:\s|$)/)[0];
+    if (ctx.sourceCounts && OUTREACH.test(first0)) {
+      var own0 = String(ctx.siteDomain || '').toLowerCase();
+      var od = (first0.toLowerCase().match(/\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:org|com|net|io|co|me|ai|edu|gov)\b/g) || []).filter(function (d) { return !own0 || d.indexOf(own0) < 0; });
+      if (od.length && od.every(function (d) { return (ctx.sourceCounts[d] || 0) < 2; })) return 'Outreach to ' + od[0] + ', which only one answer used';
+    }
     if (/\b(pitch|byline|bylined|contribut|guest)/i.test(t) && /\b[a-z0-9-]+\.(edu|gov)\b/i.test(t)) return 'Universities and government sites do not publish vendor-written articles';
     if (/\breddit\b/i.test(t) && /\b(byline|bylined|pitch)/i.test(t)) return 'Reddit takes participation, not pitched or bylined articles';
 
@@ -407,6 +414,19 @@
   };
 
   // Synthetic persona names mean nothing to the customer. Use the role.
+  // Summary, key finding and projection are prose, not plan items, so they
+  // never went through the site check. A projection once said "by expanding
+  // the existing llms.txt". Drop any sentence that touches the site-check
+  // items; use the fallback if nothing is left.
+  var SITE_CHECK_TERMS = /llms(-full)?\.txt|\bllms\b|robots\.txt|\bsitemap\b|\bwikidata\b|ai crawlers?/i;
+  G.cleanNarrative = function (text, fallback) {
+    var t = String(text || '').trim();
+    if (!SITE_CHECK_TERMS.test(t)) return t;
+    var safe = t.replace(/\b(e\.g|i\.e|etc|vs|approx|incl|U\.S|No)\./gi, function (m) { return m.replace(/\./g, '\u0000'); });
+    var kept = (safe.match(/(?:[^.!?]|[.!?](?!\s|$))+[.!?]*(?:\s+|$)/g) || []).filter(function (x) { return !SITE_CHECK_TERMS.test(x); }).join('').replace(/\u0000/g, '.').trim();
+    return kept || String(fallback || '');
+  };
+
   G.replacePersonaNames = function (text, personas) {
     var out = String(text || '');
     (personas || []).forEach(function (p) {
@@ -459,7 +479,7 @@
     for (k in B) if (!A[k]) uni++;
     return uni ? inter / uni : 0;
   }
-  var OUTREACH = /^\s*(brief|reach out|engage with|contact|email|submit|pitch|send)\b[^.]{0,200}\b[a-z0-9-]+\.(?:org|com|net|io|co|me|ai|edu|gov)\b/i;
+  var OUTREACH = /^\s*(brief|reach out|engage with|contact|email|submit|pitch|send|get|pursue|expand|secure|request|ensure|confirm)\b[^.]{0,200}\b[a-z0-9-]+\.(?:org|com|net|io|co|me|ai|edu|gov)\b/i;
   // seen: { keys: {}, texts: [] } shared across phases.
   G.dedupe = function (items, seen, ctx) {
     seen = seen || { keys: {}, texts: [] };
