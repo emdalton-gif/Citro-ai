@@ -417,6 +417,7 @@
       .replace(/\s*\((?:see |from |per )?items? \d+(?:\s*(?:and|,|-)\s*\d+)*(?: above| below)?\)/gi, '')
       .replace(/,?\s*\b(?:as in|from|see|per) items? \d+(?: above| below)?\b/gi, '')
       .replace(/\s+(?:recommended|covered|described) (?:separately|elsewhere(?: in (?:this|the) plan)?|above|below)\b/gi, '');
+    src = src.replace(/\bcitation weight\b/gi, 'visibility');
     var tagM = src.match(/\s*\(Effort:[^)]*\)\s*$/);
     var body = tagM ? src.slice(0, tagM.index) : src;
     // Protect abbreviations and decimals so "e.g." or "3.5" don't end a sentence.
@@ -445,6 +446,32 @@
     var safe = t.replace(/\b(e\.g|i\.e|etc|vs|approx|incl|U\.S|No)\./gi, function (m) { return m.replace(/\./g, '\u0000'); });
     var kept = (safe.match(/(?:[^.!?]|[.!?](?!\s|$))+[.!?]*(?:\s+|$)/g) || []).filter(function (x) { return !SITE_CHECK_TERMS.test(x); }).join('').replace(/\u0000/g, '.').trim();
     return kept || String(fallback || '');
+  };
+
+  // Sentences that call a platform a total miss when it scored above 0%
+  // ("zero presence on Claude and Grok" with Claude at 25%). Per-question
+  // claims ("zero visibility for this query") are fine.
+  var ZERO_CLAIM = /\b(zero|no|complete(ly)?|entire(ly)?|total(ly)?|fully)\b[^.]{0,25}\b(presence|visibility|absent|absence|invisible|invisibility|missing)\b|\b(absent|invisible|missing) (from|on|in)\b/i;
+  var PER_QUESTION = /\b(query|queries|question|questions|prompt|for ['"\u2018\u201c])/i;
+  function sentencesOf(t) {
+    var safe = String(t || '').replace(/\b(e\.g|i\.e|etc|vs|approx|incl|U\.S|No)\./gi, function (m) { return m.replace(/\./g, '\u0000'); }).replace(/(\w)\.(\w)/g, '$1\u0000$2');
+    return (safe.match(/(?:[^.!?]|[.!?](?!\s|$))+[.!?]*(?:\s+|$)/g) || []).map(function (x) { return x.replace(/\u0000/g, '.'); });
+  }
+  G.platformClaimIssues = function (text, pct) {
+    var out = [];
+    sentencesOf(text).forEach(function (sen) {
+      if (!ZERO_CLAIM.test(sen) || PER_QUESTION.test(sen)) return;
+      Object.keys(pct || {}).forEach(function (p) {
+        var name = p.replace(/^Google /, '');
+        if (pct[p] > 0 && new RegExp('\\b' + name + '\\b', 'i').test(sen)) out.push({ platform: p, pct: pct[p], sentence: sen.trim() });
+      });
+    });
+    return out;
+  };
+  G.dropPlatformClaims = function (text, pct) {
+    var bad = G.platformClaimIssues(text, pct).map(function (x) { return x.sentence; });
+    if (!bad.length) return text;
+    return sentencesOf(text).filter(function (s) { return bad.indexOf(s.trim()) < 0; }).join('').trim();
   };
 
   // Synthetic persona names mean nothing to the customer. Use the role.
@@ -555,6 +582,30 @@
       var k = alignKeys(t, ctx).find(function (x) { return byKey[x]; });
       return k && byKey[k] !== p ? t.split(p).join(byKey[k]) : it;
     });
+  };
+
+  // Items that build on "the new /path/ page" when no item in the plan creates
+  // that page (a case-study item cross-linking to a SaaS page nobody proposed).
+  var THE_NEW = /\bthe new (?:[a-z\-]+ )?(?:page (?:at )?)?(\/[a-z0-9][a-z0-9\-\/._]*)/gi;
+  function referencedPaths(t) { var out = [], m; THE_NEW.lastIndex = 0; while ((m = THE_NEW.exec(String(t || '')))) out.push(normPath(m[1])); return out; }
+  function createdPath(t) {
+    var p = newPathOf(String(t || '')); if (!p) return null;
+    // "a new /x/ page" creates it; "the new /x/ page" points back to another item.
+    return referencedPaths(t).indexOf(normPath(p)) >= 0 ? null : normPath(p);
+  }
+  G.dropOrphanReferences = function (lists) {
+    var created = {};
+    lists.forEach(function (l) { (l || []).forEach(function (it) { var p = createdPath(typeof it === 'string' ? it : it && it.action); if (p) created[p] = 1; }); });
+    var dropped = [];
+    var kept = lists.map(function (l) {
+      return (l || []).filter(function (it) {
+        var t = typeof it === 'string' ? it : (it && it.action) || '';
+        var orphan = referencedPaths(t).find(function (p) { return !created[p]; });
+        if (orphan) { dropped.push({ text: t, reason: 'Builds on ' + orphan + ', which no item in the plan creates' }); return false; }
+        return true;
+      });
+    });
+    return { kept: kept, dropped: dropped };
   };
 
   // Filter a list of generated recommendations. Returns { kept, dropped }.

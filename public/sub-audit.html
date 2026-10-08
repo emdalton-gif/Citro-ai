@@ -1404,23 +1404,36 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 
     // ── Call 1: 3 short narrative fields only (~200-250 tokens output) ────────
     // IMPORTANT: Only 3 string values. Short sentences only. No other output.
-    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nThe audit tests five AI platforms (ChatGPT, Perplexity, Google Gemini, Claude, Grok); never say six or any other number. Make no claims about how platforms are trained.\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 800);
-    let n;
-    try {
-      // Strip code-fence markers only. The old pattern removed a fenced
-      // block whole, JSON included, so the summary went missing whenever the
-      // model fenced its answer.
-      const j1 = String(raw1 || '').replace(/```(?:json)?/gi, '').trim();
-      try { n = JSON.parse(j1.slice(j1.indexOf('{'), j1.lastIndexOf('}')+1)); }
-      catch (e2) {
-        const field = k => { const m = j1.match(new RegExp('"' + k + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"')); return m ? JSON.parse('"' + m[1] + '"') : ''; };
-        n = { executive_summary: field('executive_summary'), key_finding: field('key_finding'), projection_narrative: field('projection_narrative') };
-        if (!n.executive_summary && !n.key_finding) throw e2;
+    const narrativePrompt = note => `Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nThe audit tests five AI platforms (ChatGPT, Perplexity, Google Gemini, Claude, Grok); never say six or any other number. Make no claims about how platforms are trained.${note ? '\n\n' + note : ''}\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}`;
+    const parseNarrative = raw1 => {
+      try {
+        // Strip code-fence markers only. The old pattern removed a fenced
+        // block whole, JSON included, so the summary went missing whenever the
+        // model fenced its answer.
+        const j1 = String(raw1 || '').replace(/```(?:json)?/gi, '').trim();
+        try { return JSON.parse(j1.slice(j1.indexOf('{'), j1.lastIndexOf('}')+1)); }
+        catch (e2) {
+          const field = k => { const m = j1.match(new RegExp('"' + k + '"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"')); return m ? JSON.parse('"' + m[1] + '"') : ''; };
+          const n = { executive_summary: field('executive_summary'), key_finding: field('key_finding'), projection_narrative: field('projection_narrative') };
+          if (!n.executive_summary && !n.key_finding) throw e2;
+          return n;
+        }
+      } catch(e) {
+        console.error('genReport Call 1 parse failed:', e.message, '| raw:', String(raw1 || '').slice(0,200));
+        return { executive_summary: '', key_finding: '', projection_narrative: '' };
       }
-    } catch(e) {
-      console.error('genReport Call 1 parse failed:', e.message, '| raw:', raw1?.slice(0,200));
-      n = { executive_summary: '', key_finding: '', projection_narrative: '' };
+    };
+    // Platform scores as numbers, for checking claims like "zero on Claude".
+    const pctMap = Object.fromEntries(Object.entries(platPct).map(([p, a]) => [p, Math.round(a.reduce((x, v) => x + v, 0) / a.length * 100)]));
+    let n = parseNarrative(await callClaude([{ role:'user', content: narrativePrompt('') }], sys, 800));
+    const narrativeIssues = x => ['executive_summary', 'key_finding', 'projection_narrative'].flatMap(k => G.platformClaimIssues(x[k], pctMap));
+    const issues = narrativeIssues(n);
+    if (issues.length) {
+      const fix = [...new Set(issues.map(i => `${i.platform} scored ${i.pct}%, so do not describe it as zero, absent or invisible overall; describe the specific question where the brand was missing.`))].join(' ');
+      const n2 = parseNarrative(await callClaude([{ role:'user', content: narrativePrompt('CORRECTION: ' + fix) }], sys, 800));
+      if (n2.executive_summary && narrativeIssues(n2).length < issues.length) n = n2;
     }
+    ['executive_summary', 'key_finding', 'projection_narrative'].forEach(k => { n[k] = G.dropPlatformClaims(n[k] || '', pctMap); });
 
     // ── Recommendations + roadmap — data-driven JS generation ────────────────
     // Each action branches on actual audit results: score, gap queries by name,
@@ -1641,6 +1654,11 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
     }).filter(r => r.action);
     if (groundingRemoved.length) console.info('Site check removed', groundingRemoved.length, 'recommendation(s):', groundingRemoved);
 
+    {
+      const o = G.dropOrphanReferences([recItems, p1Acts, p2Acts, p3Acts]);
+      groundingRemoved.push(...o.dropped);
+      [recItems, p1Acts, p2Acts, p3Acts].forEach((l, i) => { l.splice(0, l.length, ...o.kept[i]); });
+    }
     const acts = {
       recommendations: recItems.slice(0, 5),
       // 90-day plan: three 30-day cycles, each a prioritized mix of ~10 substantial actions.
