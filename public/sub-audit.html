@@ -1651,9 +1651,15 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       ].filter(ph => ph.actions.length)
     };
 
+    // Too few survived the checks: take the next Days 1-30 items, which passed
+    // the same checks, before falling back to templates.
+    if (acts.recommendations.length < 3) {
+      const extra = G.dedupe(p1Acts.map(t => String(t).replace(/\s*\(Effort:[^)]*\)\s*$/, '')), recSeen, dedupeCtx).kept;
+      acts.recommendations = acts.recommendations.concat(extra.slice(0, 3 - acts.recommendations.length).map(action => ({ action })));
+    }
     // Fallback if Claude returns too few items — fill remaining slots with data-driven text
     if (acts.recommendations.length < 3) {
-      const fallbackDirs = Object.keys(srcCount).sort((a, b) => srcCount[b] - srcCount[a]).filter(d => !siteDomain(c) || !d.endsWith(siteDomain(c))).slice(0, 3);
+      const fallbackDirs = Object.keys(srcCount).sort((a, b) => srcCount[b] - srcCount[a]).filter(d => (!siteDomain(c) || !d.endsWith(siteDomain(c))) && !G.isCompetitorDomain(d, comps)).slice(0, 3);
       const fallback = [
         { action: `Add FAQ schema (JSON-LD, type FAQPage) and ${extraSchema} to ${c.website} and test at search.google.com/test/rich-results — this enables ${primaryGapP} to surface your Q&A content in advisory responses.`, impact:'high', effort:'low', category:'technical' },
         { action: topGapQuery ? `Publish a 1,200-word page targeting "${topGapQuery}" with statistics and buyer-intent FAQ — ${c.company_name} had zero visibility for this query on ${topGapPlatform}.` : `Publish buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit.`, impact:'high', effort:'medium', category:'content' },

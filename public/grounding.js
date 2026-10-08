@@ -212,6 +212,10 @@
     var np = newPathOf(t);
     if (np && hasPaths(f) && !/\b(vs\.?|versus|comparison|compare|alternatives?)\b/i.test(t)) {
       var topic = toks(np.replace(/[\/\-_.]+/g, ' ')).filter(function (w) { return !GENERICISH.test(w) && !/^(solution|resource|page|communication|vs|new|research|blog|article)$/.test(w); });
+      // Words in many program URLs ("crucial", "conversations") name the brand
+      // or product line, not a topic; only rarer words decide.
+      var offering = f._offering || (f._offering = f.paths.filter(function (p) { return OFFERING_PAGE.test(p); }));
+      topic = topic.filter(function (w) { return offering.filter(function (p) { return toks(p.replace(/[\/\-_.]+/g, ' ')).indexOf(w) >= 0; }).length < 3; });
       if (topic.length) {
         var cover = f.paths.find(function (p) {
           if (!OFFERING_PAGE.test(p) || normPath(p) === normPath(np)) return false;
@@ -291,6 +295,16 @@
   }
 
   G.problem = problem;
+
+  // A domain that belongs to a named competitor (dalecarnegie.com, shop.ccl.org).
+  G.isCompetitorDomain = function (domain, competitors) {
+    var parts = String(domain || '').toLowerCase().split('.');
+    return (competitors || []).some(function (c) {
+      var w = slugWords(c).join(''); if (w.length < 3) return false;
+      var initials = String(c).split(/\s+/).filter(function (x) { return /^[A-Z]/.test(x); }).map(function (x) { return x[0]; }).join('').toLowerCase();
+      return parts.some(function (p) { p = p.replace(/-/g, ''); return p === w || (w.length >= 5 && (p.indexOf(w) === 0 || (w.indexOf(p) === 0 && p.length >= 6))) || (initials.length >= 3 && p === initials); });
+    });
+  };
 
   // Paths in an item that are cited as existing pages but are not on the site.
   // A path proposed for a new page ("a new page at /vs/x/") is fine.
