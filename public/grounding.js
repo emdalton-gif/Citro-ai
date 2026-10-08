@@ -229,6 +229,7 @@
       if (countOf(f, 'faq') > 0) return 'Site already has FAQ or help pages (' + pathOf(pagesOf(f, 'faq')[0]) + ')';
     }
 
+    if (np && /^\/(faq|faqs|help|support)(\/|$)/i.test(np) && ((f && f.helpSites || []).length || countOf(f, 'faq') > 0)) return 'Site already has a help center or FAQ pages';
     if (/\b(no|zero|none|lacks?|missing|without)\b[^.]{0,40}\b(FAQ|help)\b/i.test(t) && (f && f.helpSites || []).length) return 'Claims there are no FAQ or help pages, but the site has a help center (' + f.helpSites[0] + ')';
 
     // Pricing page
@@ -275,7 +276,13 @@
       if (DIRS[k].re.test(t) && !sourcesInclude(ctx.sourceDomains, DIRS[k].domain)) return DIRS[k].domain + ' was not among the sources AI read for these questions';
     }
 
-    if (/\bnot (named|listed|included|found|cited|among)\b[^.)]{0,30}\bsources\b/i.test(t)) return 'Names a site the AI answers did not read';
+    if (/\bnot (named|listed|included|found|cited|among)\b[^.)]{0,30}\bsources\b|\bneither\b[^.]{0,80}\b(appeared|appear|is|was|were)\b[^.]{0,30}\bsources\b|\b(did not|didn't|does not|doesn't) appear\b[^.]{0,30}\bsources\b/i.test(t)) return 'Names a site the AI answers did not read';
+    // A pitch has to name a publication the AI answers actually read.
+    if (/\b(pitch|bylined?|contributed (article|piece)|guest (post|article))\b/i.test(t) && (ctx.sourceDomains || []).length) {
+      var named = (t.toLowerCase().match(/\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:org|com|net|io|co|me|ai|edu|gov)\b/g) || []).some(function (d) { return sourcesInclude(ctx.sourceDomains, d); }) ||
+        DIRS.some(function (d) { return d.re.test(t) && sourcesInclude(ctx.sourceDomains, d.domain); });
+      if (!named) return 'Pitch to a publication that is not among the sources AI read';
+    }
     var fake = unknownPaths(t, f);
     if (fake.length) return 'Cites ' + fake[0] + ' as an existing page, but the site has no such page';
 
@@ -400,7 +407,7 @@
     var body = tagM ? src.slice(0, tagM.index) : src;
     // Protect abbreviations and decimals so "e.g." or "3.5" don't end a sentence.
     var safe = body.replace(/\b(e\.g|i\.e|etc|vs|approx|incl|U\.S|No)\./gi, function (m) { return m.replace(/\./g, '\u0000'); })
-                   .replace(/(\d)\.(\d)/g, '$1\u0000$2');
+                   .replace(/(\w)\.(\w)/g, '$1\u0000$2');
     var sentences = safe.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [safe];
     if (sentences.length < 2) return src;
     var claim = /\b(schema|markup|structured data|json-ld|format(s|ted)?|publish(es|ing)?|carry|carries|deploy(s|ed)?|already (benefit\w*|us\w*|ha(ve|s))|benefit(s|ing)? from|parse|parseable|structured signals?)\b/i;
@@ -413,7 +420,6 @@
     return out + (tagM ? ' ' + tagM[0].trim() : '');
   };
 
-  // Synthetic persona names mean nothing to the customer. Use the role.
   // Summary, key finding and projection are prose, not plan items, so they
   // never went through the site check. A projection once said "by expanding
   // the existing llms.txt". Drop any sentence that touches the site-check
@@ -427,6 +433,7 @@
     return kept || String(fallback || '');
   };
 
+  // Synthetic persona names mean nothing to the customer. Use the role.
   G.replacePersonaNames = function (text, personas) {
     var out = String(text || '');
     (personas || []).forEach(function (p) {
@@ -448,7 +455,10 @@
   function leverKeys(text, ctx) {
     var t = String(text || ''), lower = t.toLowerCase(), keys = [];
     var isCompare = /\b(vs\.?|versus|comparison|compare)\b/i.test(t);
-    (ctx.competitors || []).forEach(function (c) { if (isCompare && c && lower.indexOf(String(c).toLowerCase()) >= 0) keys.push('comp:' + String(c).toLowerCase()); });
+    (ctx.competitors || []).forEach(function (c) {
+      var slug = slugWords(c).join('-');
+      if (isCompare && c && (lower.indexOf(String(c).toLowerCase()) >= 0 || (slug.length >= 5 && lower.indexOf(slug) >= 0))) keys.push('comp:' + String(c).toLowerCase());
+    });
     (t.match(/(?:^|\s|\(|')(\/[a-z0-9][a-z0-9\-\/]{3,})/gi) || []).forEach(function (p) { keys.push('path:' + p.replace(/^[\s(']+/, '').replace(/\/+$/, '').toLowerCase()); });
     var own = String(ctx.siteDomain || '').toLowerCase();
     (lower.match(/\b[a-z0-9-]+\.(?:org|com|net|io|co|edu|gov|ai)\b/g) || []).forEach(function (d) { if (!own || d.indexOf(own) < 0) keys.push('site:' + d); });
@@ -513,15 +523,22 @@
     while ((m = PATH_RE.exec(t))) { if (citedAsNew(t, m.index + m[1].length)) return m[2]; }
     return null;
   }
+  // A comparison page shares its path only with the same comparison; a topic
+  // page only with a page for the same question. (A Dale Carnegie comparison
+  // that quoted the SaaS question once handed its URL to the SaaS page.)
+  function alignKeys(t, ctx) {
+    var cmp = /\b(vs\.?|versus|comparison|compare)\b/i.test(t);
+    return leverKeys(t, ctx || {}).filter(function (k) { return cmp ? /^comp:/.test(k) : /^(gap|q):/.test(k); });
+  }
   G.alignPaths = function (recTexts, planItems, ctx) {
     var byKey = {};
     (recTexts || []).forEach(function (r) {
       var p = newPathOf(String(r || '')); if (!p) return;
-      leverKeys(r, ctx || {}).forEach(function (k) { if (/^(comp|gap|q):/.test(k) && !byKey[k]) byKey[k] = p; });
+      alignKeys(String(r), ctx).forEach(function (k) { if (!byKey[k]) byKey[k] = p; });
     });
     return (planItems || []).map(function (it) {
       var t = String(it || ''), p = newPathOf(t); if (!p) return it;
-      var k = leverKeys(t, ctx || {}).find(function (x) { return byKey[x]; });
+      var k = alignKeys(t, ctx).find(function (x) { return byKey[x]; });
       return k && byKey[k] !== p ? t.split(p).join(byKey[k]) : it;
     });
   };

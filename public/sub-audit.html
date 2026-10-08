@@ -1404,7 +1404,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 
     // ── Call 1: 3 short narrative fields only (~200-250 tokens output) ────────
     // IMPORTANT: Only 3 string values. Short sentences only. No other output.
-    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 800);
+    const raw1 = await callClaude([{ role:'user', content:`Write 3 short narrative fields for a Citro audit report. Context:\n${ctx}${projectionRule}\n\nThe audit tests five AI platforms (ChatGPT, Perplexity, Google Gemini, Claude, Grok); never say six or any other number. Make no claims about how platforms are trained.\n\nReturn ONLY this exact JSON — 3 string fields, nothing else:\n{"executive_summary":"2-3 sentences: what the data shows and why it matters for the business","key_finding":"one direct sentence — the single most important finding","projection_narrative":"one sentence: which specific gaps to close and what improvement to expect"}` }], sys, 800);
     let n;
     try {
       // Strip code-fence markers only. The old pattern removed a fenced
@@ -1608,8 +1608,10 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
     const groundingRemoved = [];
     const dedupeCtx = { competitors: comps, siteDomain: siteDomain(c), gapQueries: groundCtx.gapQueries };
     const clean = t => G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps), siteFacts);
+    let recAlign = [];
     const ground = (items, n, seen) => {
-      const g = G.groundItems(items.map(clean), siteFacts, groundCtx);
+      // Same page, same URL as the shortlist, before checks and repeats.
+      const g = G.groundItems(G.alignPaths(recAlign, items.map(clean), dedupeCtx), siteFacts, groundCtx);
       groundingRemoved.push(...g.dropped);
       if (!seen) return g.kept.slice(0, n);
       const d = G.dedupe(g.kept, seen, dedupeCtx);
@@ -1623,6 +1625,7 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       genItems(recsPrompt, 7, 1100),
       genItems(cyclePrompt('Days 1-30', 'These are the highest-impact actions overall — the foundation later months build on.'), 13, 1900),
     ]);
+    recAlign = recRaw.map(clean);
     const p1Acts = ground(p1Raw, 10, planSeen);
     const p2Acts = ground(await genItems(cyclePrompt('Days 31-60', 'Build on the first 30 days; assume the Days 1-30 work is underway.', p1Acts), 13, 1900), 10, planSeen);
     const p3Acts = ground(await genItems(cyclePrompt('Days 61-90', 'Assume months 1-2 are done. Include re-running the Citro audit and measuring score movement among these.', [...p1Acts, ...p2Acts]), 13, 1900), 10, planSeen);
@@ -1642,9 +1645,9 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       recommendations: recItems.slice(0, 5),
       // 90-day plan: three 30-day cycles, each a prioritized mix of ~10 substantial actions.
       roadmap_phases: [
-        { days: 'Days 1-30',  theme: 'Highest-impact moves',      actions: G.alignPaths(recItems.map(r => r.action), p1Acts, dedupeCtx) },
-        { days: 'Days 31-60', theme: 'Build on the foundation',   actions: G.alignPaths(recItems.map(r => r.action), p2Acts, dedupeCtx) },
-        { days: 'Days 61-90', theme: 'Compound gains and measure', actions: G.alignPaths(recItems.map(r => r.action), p3Acts, dedupeCtx) },
+        { days: 'Days 1-30',  theme: 'Highest-impact moves',      actions: p1Acts },
+        { days: 'Days 31-60', theme: 'Build on the foundation',   actions: p2Acts },
+        { days: 'Days 61-90', theme: 'Compound gains and measure', actions: p3Acts },
       ].filter(ph => ph.actions.length)
     };
 
