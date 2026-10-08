@@ -183,7 +183,15 @@ function gtag(){dataLayer.push(arguments);}
       .hero h1 { font-size: 34px; }
       .hero-sub { font-size: 16px; }
       .card { padding: 20px; }
-      .row2, .grid2, .q-cols, .upsell { grid-template-columns: 1fr; }
+      .grid2, .q-cols, .upsell { grid-template-columns: 1fr; }
+      /* Phones: the form is why ad visitors came. Get the website field and
+         the button onto the first screen, and don't lead with the paid trial. */
+      .nav-cta { display: none; }
+      .hero { padding-top: 24px; }
+      .hero-inner { gap: 20px; }
+      .hero h1 { font-size: 30px; margin-bottom: 12px; }
+      .hero .eyebrow, .hero-sub, .hero-points { display: none; }
+      .row2 { gap: 8px; }
       .results { padding: 32px 16px 16px; }
       .res-head { grid-template-columns: 1fr; padding: 24px; gap: 12px; }
       .score { font-size: 52px; }
@@ -235,7 +243,7 @@ function gtag(){dataLayer.push(arguments);}
           </div>
           <div class="field">
             <label for="offer">What you sell <span class="opt">(optional)</span></label>
-            <input type="text" id="offer" name="offer" placeholder="e.g. emergency plumbing" />
+            <input type="text" id="offer" name="offer" placeholder="e.g. roofing" />
           </div>
         </div>
         <div class="field">
