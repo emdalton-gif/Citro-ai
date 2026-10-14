@@ -209,6 +209,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
 
 /* ── MOBILE ── */
 @media (max-width: 640px) {
+  .research-summary { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
   nav { padding: 0 20px; }
   .progress-wrap { padding: 0 20px; }
   .ps-label { display: none; }
@@ -666,6 +667,14 @@ async function runResearch() {
     document.getElementById('rc-buyer').value = data.buyer || '';
     document.getElementById('rc-geo').value   = data.geo   || '';
     renderCompetitorTags();
+    // Same inputs confirmProfile() will send if nothing is edited.
+    prefetchPersonas({
+      industry: data.industry,
+      offer: document.getElementById('rc-offer').value.trim(),
+      buyer: document.getElementById('rc-buyer').value.trim(),
+      geo:   document.getElementById('rc-geo').value.trim(),
+      competitors: state.competitors.join(', '),
+    });
 
     // Show Phase C
     document.getElementById('research-loading').style.display = 'none';
@@ -727,6 +736,25 @@ async function confirmProfile() {
 }
 
 // ── GENERATE PERSONAS ──
+// Personas used to start only after "This looks right", a second wait of ~15s
+// on a phone. They now start as soon as the profile appears; if the visitor
+// edits the profile, they are generated again from the edited version.
+function personaBody(p) {
+  return JSON.stringify({
+    company_name: state.bizName,
+    offer:        p.offer || '',
+    buyer:        p.buyer || '',
+    industry:     p.industry || '',
+    geo:          p.geo || '',
+    competitors:  p.competitors || state.competitors.join(', '),
+  });
+}
+let personaPrefetch = null;
+function prefetchPersonas(p) {
+  const body = personaBody(p);
+  personaPrefetch = { body, promise: fetch('/api/gen-personas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }).then(r => r.json()) };
+  personaPrefetch.promise.catch(() => {});
+}
 async function generatePersonas() {
   document.getElementById('personas-loading').style.display = 'flex';
   document.getElementById('personas-content').style.display = 'none';
@@ -734,19 +762,10 @@ async function generatePersonas() {
   const p = state.profile;
 
   try {
-    const resp = await fetch('/api/gen-personas', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        company_name: state.bizName,
-        offer:        p.offer || '',
-        buyer:        p.buyer || '',
-        industry:     p.industry || '',
-        geo:          p.geo || '',
-        competitors:  p.competitors || state.competitors.join(', '),
-      }),
-    });
-    const data = await resp.json();
+    const body = personaBody(p);
+    const data = (personaPrefetch && personaPrefetch.body === body)
+      ? await personaPrefetch.promise
+      : await fetch('/api/gen-personas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body }).then(r => r.json());
     state.personas = data.personas || [];
     if (!state.personas.length) throw new Error('No personas returned');
     renderPersonas();
@@ -958,18 +977,29 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Pre-fill from the free check so the visitor does not re-enter what we already know.
-(function prefillFromCheck(){
+function prefillFromCheck(){
   try {
     var q = new URLSearchParams(window.location.search);
     var em = q.get('em'), co = q.get('co'), url = q.get('url');
     if (em) { var e = document.getElementById('f-email');    if (e) e.value = em; }
     if (co) { var b = document.getElementById('f-biz-name');  if (b) b.value = co; }
     if (url){ var u = document.getElementById('f-biz-url');   if (u && !u.value) u.value = url; }
+    // From the free check we already have the email and the business. Asking
+    // for them again, then making the visitor press "Look up my business",
+    // was two screens before anything new. Go straight to the lookup.
+    if (em && co && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) {
+      state.email = em;
+      var d2 = document.getElementById('email-display-2'); if (d2) d2.textContent = em;
+      goStep(2);
+      trackTrial('trial_step3_business', 2);
+      runResearch();
+    }
   } catch (e) {}
-})();
+}
 
 // Fire once on load: visitor has entered the trial flow (step 1).
 trackTrial('trial_step1_start', 1);
+prefillFromCheck();
 </script>
 </body>
 </html>
