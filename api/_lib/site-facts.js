@@ -418,6 +418,20 @@ async function checkSite(website, brand) {
   // before saving; it is only needed while the plan is being written.
   facts.paths = [...new Set([...inventory, ...homeLinks].map(u => { try { return new URL(u).pathname.toLowerCase(); } catch { return null; } }).filter(Boolean))].slice(0, 8000);
 
+  // Page titles, so "write a page on best X tools" is checked against a page
+  // titled "Best X Tools" even when its URL is shorter (/x.html). Blog posts
+  // are skipped; only buyer pages count as covering a question.
+  const titleUrls = [...new Set([...inventory, ...homeLinks])]
+    .filter(u => { try { const p = new URL(u).pathname; return p !== '/' && !PAGE_KINDS.blog.test(p); } catch { return false; } })
+    .slice(0, 30);
+  facts.titles = {};
+  await Promise.all(titleUrls.map(async u => {
+    const r = await getText(u, 5000);
+    if (!r.ok) return;
+    const t = pageMeta(r.text).title;
+    if (t) { try { facts.titles[new URL(u).pathname.toLowerCase()] = t; } catch { /* skip */ } }
+  }));
+
   // Schema on a sample of real pages: the homepage plus one of each kind.
   const sample = [];
   // For blog and case studies, sample an actual post, not the /blog/ index.

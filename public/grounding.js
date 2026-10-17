@@ -105,6 +105,15 @@
   // Blog posts, ebooks and similar are not the buyer page a question needs.
   var NOT_BUYER_PAGE = /(^|\/)(blog|news|articles?|insights|posts?|press|podcasts?|webinars?|events?|careers?|jobs?|tag|category|author|lp)(\/|$)|ebook|download|whitepaper/;
   var OFFERING_PAGE = /(^|\/)(solutions?|courses?|training|programs?|services?|products?|offerings?|workshops?|certifications?)(\/|$)/;
+  // Words in a page's URL plus its title, when the site check read the title.
+  function titleOf(p, f) {
+    var t = f && f.titles; if (!t) return '';
+    return t[p] || t[String(p).replace(/\/+$/, '')] || t[String(p).replace(/\/?$/, '/')] || '';
+  }
+  function pageToks(p, f) {
+    var title = titleOf(p, f).replace(/\s[|–—-]\s[^|–—]*$/, '');
+    return toks(p.replace(/[\/\-_.]+/g, ' ') + ' ' + title);
+  }
   function bestPage(phrase, f) {
     var q = toks(phrase);
     var core = q.filter(function (w) { return !GENERICISH.test(w); });
@@ -112,7 +121,7 @@
     var best = null;
     f.paths.forEach(function (p) {
       if (NOT_BUYER_PAGE.test(p) || p === '/') return;
-      var pt = toks(p.replace(/[\/\-_.]+/g, ' '));
+      var pt = pageToks(p, f);
       if (!core.every(function (w) { return pt.indexOf(w) >= 0; })) return;
       var hit = q.filter(function (w) { return pt.indexOf(w) >= 0; }).length;
       // Prefer the page that sells the thing (solutions, courses, services)
@@ -211,7 +220,7 @@
     // /solutions/crucial-conversations-for-dialogue/healthcare/.
     var np = newPathOf(t);
     if (np && hasPaths(f) && !/\b(vs\.?|versus|comparison|compare|alternatives?)\b/i.test(t)) {
-      var topic = toks(np.replace(/[\/\-_.]+/g, ' ')).filter(function (w) { return !GENERICISH.test(w) && !/^(solution|resource|page|communication|vs|new|research|blog|article)$/.test(w); });
+      var topic = toks(np.replace(/[\/\-_.]+/g, ' ')).filter(function (w) { return !GENERICISH.test(w) && !/^(solution|resource|page|communication|vs|new|research|blog|article|html?|php|aspx?)$/.test(w); });
       // Words in many program URLs ("crucial", "conversations") name the brand
       // or product line, not a topic; only rarer words decide.
       var offering = f._offering || (f._offering = f.paths.filter(function (p) { return OFFERING_PAGE.test(p); }));
@@ -223,6 +232,21 @@
           return topic.every(function (w) { return pt.indexOf(w) >= 0; });
         });
         if (cover) return 'Site already has a page for this (' + cover + ')';
+      }
+    }
+
+    // A new page whose topic an existing page's title already covers, whatever
+    // its URL ("/blog/ai-search-visibility-audit-tools-2026" when the site has
+    // /ai-search-visibility.html titled "Best AI Search Visibility Audit Tools").
+    if (np && hasPaths(f) && f.titles) {
+      var ttopic = toks(np.replace(/[\/\-_.]+/g, ' ')).filter(function (w) { return !GENERICISH.test(w) && !/^(solution|resource|page|communication|vs|versus|new|research|blog|article|html?|php|aspx?)$/.test(w); });
+      if (ttopic.length >= 2) {
+        var titled = f.paths.find(function (p) {
+          if (NOT_BUYER_PAGE.test(p) || p === '/' || normPath(p) === normPath(np) || !titleOf(p, f)) return false;
+          var pt = pageToks(p, f);
+          return ttopic.every(function (w) { return pt.indexOf(w) >= 0; });
+        });
+        if (titled) return 'Site already has a page for this (' + titled + ', "' + titleOf(titled, f) + '")';
       }
     }
 
@@ -256,10 +280,13 @@
     // Outreach to a competitor's own site (e.g. a guest post on radicalcandor.com).
     var doms = t.toLowerCase().match(/\b[a-z0-9-]+\.(?:org|com|net|io|co|edu|ai)\b/g) || [];
     for (var di = 0; di < doms.length; di++) {
-      var root = doms[di].split('.')[0].replace(/-/g, '');
-      var rival = (ctx.competitors || []).find(function (c) { var w = slugWords(c).join(''); return w.length >= 5 && (root === w || root.indexOf(w) === 0 || (w.indexOf(root) === 0 && root.length >= 6)); });
-      if (rival && /\b(pitch|guest|contribut|partner|reach out|outreach|byline|co-?author|link from)/i.test(t)) return 'Recommends outreach to a competitor\u2019s site (' + doms[di] + ', ' + rival + ')';
+      var rival = competitorFor(doms[di], ctx.competitors);
+      if (rival && /\b(pitch|guest|contribut|partner|reach out|outreach|byline|co-?author|link from|submit|list(ed|ing)?|director(y|ies)|mention|feature|described|review(ed)?)/i.test(t)) return 'Recommends getting onto a competitor\u2019s site (' + doms[di] + ', ' + rival + ')';
     }
+    // Research archives and preprint servers publish papers, not vendor listings.
+    var arch = t.toLowerCase().match(ARCHIVE_RE);
+    if (arch && /\b(get|submit|pitch|list(ed|ing)?|described|outreach|reach out|contribut|publish|mention)/i.test(t)) return arch[0] + ' publishes research papers, not vendor descriptions';
+    if (/\breddit\b/i.test(t) && (/\b(solicit\w*|request\w*|ask\w*|invit\w*|encourag\w*|recruit\w*|incentiv\w*)\b[^.]{0,80}\b(users?|customers?|clients?|reviews?|testimonials?|commentary|comments)\b/i.test(t) || /\b(listed and reviewed|reviews?|reviewed)\b[^.]{0,25}\bon reddit/i.test(t))) return 'Asking customers to post on Reddit breaks community rules; Reddit takes genuine, disclosed participation only';
     // Press-release wires are paid distribution, not publications to pitch.
     if (/\b(prnewswire|pr newswire|businesswire|business wire|globenewswire)\b/i.test(t) && /\b(pitch|byline|contribut|guest)/i.test(t)) return 'Press-release wires are paid distribution, not a publication to pitch';
     // Outreach to a site only one answer used: too thin to be worth a plan item.
@@ -296,15 +323,45 @@
 
   G.problem = problem;
 
+  // The scorer sometimes counts a similarly named product (GetCito for Citro)
+  // as the brand. A mention only counts if the answer actually contains one of
+  // the brand's names or its web address.
+  G.confirmMention = function (ev, text, names, brand) {
+    if (!ev || (!ev.mentions_client && ev.mention_rank == null)) return ev;
+    var t = String(text || '').toLowerCase();
+    var ok = (names || []).map(function (n) { return String(n || '').trim().toLowerCase(); })
+      .filter(function (n) { return n.length > 2; })
+      .some(function (n) { return t.indexOf(n) >= 0; });
+    if (ok) return ev;
+    var comps = (ev.competitors_mentioned || []).slice(0, 3);
+    ev.mentions_client = false; ev.mention_rank = null; ev.visibility = 'none'; ev.sentiment = 'neutral';
+    ev.insight = (brand || 'The brand') + ' is not named in this answer' + (comps.length ? '; it recommends ' + listJoin(comps) + ' instead.' : '.');
+    ev.mention_unconfirmed = true;
+    return ev;
+  };
+
   // A domain that belongs to a named competitor (dalecarnegie.com, shop.ccl.org).
-  G.isCompetitorDomain = function (domain, competitors) {
+  // The competitor a domain belongs to (dalecarnegie.com, shop.ccl.org,
+  // tryprofound.com for Profound, peec.ai for Peec AI), or null.
+  var ARCHIVE_RE = /\b(arxiv\.org|ssrn\.com|researchgate\.net|doi\.org|ncbi\.nlm\.nih\.gov|pubmed\.ncbi\.nlm\.nih\.gov|scholar\.google\.com|semanticscholar\.org|jstor\.org)\b/;
+  function competitorFor(domain, competitors) {
     var parts = String(domain || '').toLowerCase().split('.');
-    return (competitors || []).some(function (c) {
+    parts = parts.slice(0, Math.max(1, parts.length - 1));
+    var roots = [];
+    parts.forEach(function (p) {
+      p = p.replace(/-/g, ''); roots.push(p);
+      var bare = p.replace(/^(try|get|use|go|join|meet|hey|with)(?=[a-z]{4,})/, '').replace(/(hq|app)$/, '');
+      if (bare !== p && bare.length >= 4) roots.push(bare);
+    });
+    return (competitors || []).find(function (c) {
       var w = slugWords(c).join(''); if (w.length < 3) return false;
       var initials = String(c).split(/\s+/).filter(function (x) { return /^[A-Z]/.test(x); }).map(function (x) { return x[0]; }).join('').toLowerCase();
-      return parts.some(function (p) { p = p.replace(/-/g, ''); return p === w || (w.length >= 5 && (p.indexOf(w) === 0 || (w.indexOf(p) === 0 && p.length >= 6))) || (initials.length >= 3 && p === initials); });
-    });
-  };
+      return roots.some(function (p) { return p === w || (w.length >= 5 && (p.indexOf(w) === 0 || (w.indexOf(p) === 0 && p.length >= 6))) || (initials.length >= 3 && p === initials); });
+    }) || null;
+  }
+  G.competitorFor = competitorFor;
+  G.isCompetitorDomain = function (domain, competitors) { return !!competitorFor(domain, competitors); };
+  G.isArchiveDomain = function (domain) { return ARCHIVE_RE.test(String(domain || '').toLowerCase()) || /\.(edu|gov)$/.test(String(domain || '').toLowerCase()); };
 
   // Paths in an item that are cited as existing pages but are not on the site.
   // A path proposed for a new page ("a new page at /vs/x/") is fine.
@@ -679,6 +736,8 @@
     L.push('- Never refer to other items by number ("item 3 above"); items are reordered and filtered after writing.');
     L.push('- Only recommend Google Business Profile if the business serves local customers' + (ctx.local ? ' (it does).' : ' (it does not, so do not mention it).'));
     L.push('- Only name review sites, directories or publications that appear in the list of sources the AI platforms read.');
+    L.push('- Reddit and other forums are for genuine participation from a disclosed account. Never suggest asking customers or users to post reviews or comments there, and never call them review sites.');
+    L.push('- Never recommend getting listed or mentioned on a competitor\'s own website, or on research archives such as arxiv.org.');
     return L.join('\n');
   };
 

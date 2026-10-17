@@ -782,6 +782,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
           evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))]
             .filter(n => !own.includes(String(n).toLowerCase()));
         }
+        window.CitroGrounding.confirmMention(evaluated, simResponse, [c.company_name, ...(String(c.brand_aliases || '').split(',')), dom], c.company_name);
 
         if (dot) dot.className = 'ql-dot done';
         return { query: q.text, platform: q.platform, brand_specific: q.brand_specific, response: simResponse, is_live: queryIsLive,

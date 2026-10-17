@@ -1260,6 +1260,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
           evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))]
             .filter(n => !own.includes(String(n).toLowerCase()));
         }
+        window.CitroGrounding.confirmMention(evaluated, platformResponse, [...brandNames(c), dom], c.company_name);
         if (dot) dot.className = 'ql-dot done';
         const citedOwnSite = !!dom && liveMeta.sources.some(s => {
           const d = String(s.domain || '').toLowerCase();
@@ -1679,10 +1680,13 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
     }
     // Fallback if Claude returns too few items — fill remaining slots with data-driven text
     if (acts.recommendations.length < 3) {
-      const fallbackDirs = Object.keys(srcCount).sort((a, b) => srcCount[b] - srcCount[a]).filter(d => (!siteDomain(c) || !d.endsWith(siteDomain(c))) && !G.isCompetitorDomain(d, comps)).slice(0, 3);
+      // Sites a vendor can actually get described on: not its own, not a
+      // competitor's, not a research archive, and not Reddit (participation only).
+      const fallbackDirs = Object.keys(srcCount).sort((a, b) => srcCount[b] - srcCount[a]).filter(d => (!siteDomain(c) || !d.endsWith(siteDomain(c))) && !G.isCompetitorDomain(d, comps) && !G.isArchiveDomain(d) && !/(^|\.)reddit\.com$/.test(d)).slice(0, 3);
+      const topGapPage = topGapQuery ? G.bestPage(topGapQuery, siteFacts || {}) : null;
       const fallback = [
         { action: `Add FAQ schema (JSON-LD, type FAQPage) and ${extraSchema} to ${c.website} and test at search.google.com/test/rich-results — this enables ${primaryGapP} to surface your Q&A content in advisory responses.`, impact:'high', effort:'low', category:'technical' },
-        { action: topGapQuery ? `Publish a 1,200-word page targeting "${topGapQuery}" with statistics and buyer-intent FAQ — ${c.company_name} had zero visibility for this query on ${topGapPlatform}.` : `Publish buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit.`, impact:'high', effort:'medium', category:'content' },
+        { action: topGapPage ? `Update ${topGapPage}, your existing page on this topic, so it answers "${topGapQuery}" directly, with current statistics and a short buyer FAQ. ${c.company_name} had zero visibility for this query on ${topGapPlatform}.` : topGapQuery ? `Publish a 1,200-word page targeting "${topGapQuery}" with statistics and buyer-intent FAQ. ${c.company_name} had zero visibility for this query on ${topGapPlatform}.` : `Publish buyer-intent pages targeting the ${gapQueries.length} gap queries from this audit.`, impact:'high', effort:'medium', category:'content' },
         fallbackDirs.length ? { action: `Get ${c.company_name} clearly described on ${listJoin(fallbackDirs)}, the sites AI read most often for these questions, with current descriptions of what you offer and who it's for.`, impact:'high', effort:'medium', category:'distribution' } : null,
       ].filter(Boolean);
       const kept = G.groundItems(fallback, siteFacts, groundCtx);
