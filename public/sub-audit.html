@@ -1370,7 +1370,8 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
 
     // ── JS-generated analysis fields (data-driven, no token risk) ────────────
     const topComps = comps.slice(0, 3);
-    const topCompList = topComps.map(n => `${n} (${compFreq[n]}/${results.length} queries)`).join(', ');
+    const answeredN = results.filter(r => !r.failed).length;
+    const topCompList = topComps.map(n => `${n} (${compFreq[n]} of ${answeredN} answers)`).join(', ');
     const gapPlatforms = [...new Set(gapQueries.map(q => q.platform))].slice(0, 2).join(' and ');
 
     // Written only from the live site check. It used to be one fixed paragraph
@@ -1623,7 +1624,7 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
     // everything already in the plan so no lever appears twice.
     const groundingRemoved = [];
     const dedupeCtx = { competitors: comps, siteDomain: siteDomain(c), gapQueries: groundCtx.gapQueries };
-    const clean = t => G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps), siteFacts);
+    const clean = t => G.fixQueryCounts(G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps, siteFacts), siteFacts), results.filter(r => !r.failed).length, results.length);
     let recAlign = [];
     const ground = (items, n, seen) => {
       // Same page, same URL as the shortlist, before checks and repeats.

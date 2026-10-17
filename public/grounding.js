@@ -323,6 +323,19 @@
 
   G.problem = problem;
 
+  // "Otterly appeared in four of the five tested queries" when the audit ran
+  // nine and eight were answered: the count is invented. Keep the point, drop
+  // the numbers.
+  var NUMW = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
+  function numOf(w) { w = String(w).toLowerCase(); return /^\d+$/.test(w) ? parseInt(w, 10) : NUMW.indexOf(w); }
+  G.fixQueryCounts = function (text, answered, total) {
+    return String(text || '').replace(/\b(\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty) of the (\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty) ((?:tested |audited |AI[- ]platform |AI )?(?:queries|questions|answers))\b/gi, function (m, a, b, noun) {
+      var n = numOf(a), d = numOf(b);
+      if (n < 0 || d < 0 || ((d === answered || d === total) && n <= d)) return m;
+      return (n === 1 ? 'one' : 'several') + ' of the ' + (/answers/i.test(noun) ? 'answers' : 'tested questions');
+    });
+  };
+
   // The scorer sometimes counts a similarly named product (GetCito for Citro)
   // as the brand. A mention only counts if the answer actually contains one of
   // the brand's names or its web address.
@@ -468,7 +481,28 @@
   // Claims about competitors' own sites ("X already carries Course schema",
   // "Y publishes case studies AI can parse") were never checked. Remove those
   // sentences; keep the rest of the item.
-  G.stripUnverified = function (text, competitors) {
+  // A later sentence about one page's markup ("Add FAQPage schema to this
+  // page; the site check shows it is absent") when that page was never
+  // checked: the claim can't be backed, and the type may already be there.
+  var ABSENT = /\b(absent|missing|lacks?|lacking|without|not (have|carry|include)|does ?n[o']t (have|carry|include)|no [A-Za-z]+ (schema|markup))\b/i;
+  function unverifiedSchemaSentence(sen, firstPath, f) {
+    if (!f || !f.schema || f.schema.status !== 'checked') return false;
+    var types = SCHEMA.filter(function (x) { return x.re.test(sen); });
+    if (!types.length) return false;
+    var found = f.schema.types || [];
+    var onSite = types.some(function (m) { return [m.type].concat(m.also).some(function (x) { return found.indexOf(x) >= 0; }); });
+    var own = (sen.match(/(?:^|[\s(])(\/[a-z0-9][a-z0-9\-\/._]*[a-z0-9\/])/i) || [])[1];
+    var page = own || (/\b(this|that|the same) page\b/i.test(sen) ? firstPath : null);
+    var absent = ABSENT.test(sen);
+    if (page) {
+      var checked = (f.schema.byPage || []).filter(function (x) { return !x.error; }).map(function (x) { return normPath(pathOf(x.url)); });
+      if (checked.indexOf(normPath(page)) < 0) return absent || onSite;
+      return false;
+    }
+    return absent && onSite;
+  }
+
+  G.stripUnverified = function (text, competitors, f) {
     // Items are filtered and reordered after writing, so "item 10 above" points nowhere.
     var src = String(text || '')
       .replace(/\s*\((?:see |from |per )?items? \d+(?:\s*(?:and|,|-)\s*\d+)*(?: above| below)?\)/gi, '')
@@ -483,10 +517,12 @@
     var sentences = safe.match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [safe];
     if (sentences.length < 2) return src;
     var claim = /\b(schema|markup|structured data|json-ld|format(s|ted)?|publish(es|ing)?|carry|carries|deploy(s|ed)?|already (benefit\w*|us\w*|ha(ve|s))|benefit(s|ing)? from|parse|parseable|structured signals?)\b/i;
+    var firstPath = (body.match(/(?:^|[\s(])(\/[a-z0-9][a-z0-9\-\/._]*[a-z0-9\/])/i) || [])[1] || null;
     var keep = sentences.filter(function (sen, i) {
       if (i === 0) return true;
       var names = (competitors || []).filter(function (c) { return c && sen.toLowerCase().indexOf(String(c).toLowerCase()) >= 0; });
-      return !(names.length && claim.test(sen));
+      if (names.length && claim.test(sen)) return false;
+      return !unverifiedSchemaSentence(sen.replace(/\u0000/g, '.'), firstPath, f);
     });
     var out = keep.join('').replace(/\u0000/g, '.').replace(/\s+/g, ' ').trim();
     return out + (tagM ? ' ' + tagM[0].trim() : '');
@@ -575,7 +611,7 @@
     if (!isCompare && MARKUP_ITEM.test(first)) SCHEMA.forEach(function (s) { if (s.re.test(first)) keys.push('schema:' + s.type); });
     // Reviews on one site, or taking part on Reddit, is one lever however often it is reworded.
     DIRS.forEach(function (d) { if (d.re.test(first)) keys.push('site:' + d.domain); });
-    if (/\breddit\b|(^|\s)r\/[a-z]/i.test(first)) keys.push('site:reddit.com');
+    if (/\breddit\b|\bsubreddits?\b|(^|\s)r\/[a-z]/i.test(first)) keys.push('site:reddit.com');
     if (/re-?run(ning)? the (citro )?audit/i.test(t)) keys.push('rerun');
     return keys;
   }
