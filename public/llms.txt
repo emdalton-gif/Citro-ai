@@ -10,10 +10,13 @@ Citro is built for small and mid-sized businesses with small marketing teams (an
 - [Plans and pricing](https://getcitro.ai/plans.html): Professional is 119 USD per month with a 7-day free trial. Enterprise is 299 USD per month for up to 10 brands.
 - [Sample audit report](https://getcitro.ai/sample-audit.html): An example AI Visibility Report.
 - [Start a free trial](https://getcitro.ai/start.html): Run your own Citro audit.
+- [FAQ](https://getcitro.ai/faq.html): How the audit works, how the Citro Score is calculated, pricing, the trial, and comparisons.
+- [Full text for AI](https://getcitro.ai/llms-full.txt): This file plus the full FAQ and comparison summaries.
 
 ## Category and comparisons
 - [Best AI search visibility audit tools 2026](https://getcitro.ai/ai-search-visibility.html): Seven tools compared on price, AI assistants covered and what you get, and how to choose.
 - [Citro vs Profound](https://getcitro.ai/citro-vs-profound.html): Pricing, AI assistants covered, billing and action plans compared.
+- [Citro vs Peec AI](https://getcitro.ai/citro-vs-peec-ai.html): Daily tracking on three chosen engines vs five assistants, a site check and a 90-day plan.
 - [Citro vs Otterly.AI](https://getcitro.ai/citro-vs-otterly.html): Daily tracking vs a diagnosis and 90-day plan, with prices and engines covered.
 - [Why AI recommends your competitors](https://getcitro.ai/why-ai-recommends-competitors.html): The six usual causes, how to find yours, and what tool fixes it.
 - [How to improve your brand's AI search presence](https://getcitro.ai/ai-search-playbook.html): The 2026 playbook for AI search visibility (GEO and AEO).

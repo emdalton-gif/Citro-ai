@@ -258,7 +258,7 @@ function internalLinks(html, baseUrl) {
 
 const PAGE_KINDS = {
   comparison:  /(^|[\/\-_])(vs|versus|compare|comparison|alternatives?)([\/\-_.]|$)/i,
-  faq:         /(^|\/)(faqs?|frequently-asked(-questions)?|help-center|helpcenter|support|help)(\/|$)/i,
+  faq:         /(^|\/)(faqs?|frequently-asked(-questions)?|help-center|helpcenter|support|help)(\/|\.html?$|\.php$|\.aspx?$|$)/i,
   pricing:     /(^|[\/\-_])(pricing|prices|plans)([\/\-_.]|$)/i,
   caseStudies: /(case-stud(y|ies)|customer-stor(y|ies)|success-stor(y|ies)|testimonials?)/i,
   about:       /(^|\/)(about|about-us|company|who-we-are)([\/\-_.]|$)/i,
@@ -425,11 +425,19 @@ async function checkSite(website, brand) {
     .filter(u => { try { const p = new URL(u).pathname; return p !== '/' && !PAGE_KINDS.blog.test(p); } catch { return false; } })
     .slice(0, 30);
   facts.titles = {};
+  facts.pageFeatures = {};
   await Promise.all(titleUrls.map(async u => {
     const r = await getText(u, 5000);
     if (!r.ok) return;
     const t = pageMeta(r.text).title;
-    if (t) { try { facts.titles[new URL(u).pathname.toLowerCase()] = t; } catch { /* skip */ } }
+    let path; try { path = new URL(u).pathname.toLowerCase(); } catch { return; }
+    if (t) facts.titles[path] = t;
+    // What the page already has, so "expand this page by adding a comparison
+    // table and an FAQ" isn't recommended for a page that has both.
+    facts.pageFeatures[path] = {
+      table: /<table[\s>]/i.test(r.text),
+      faq: /"@type"\s*:\s*"FAQPage"/.test(r.text) || /<h[1-4][^>]*>[^<]*(frequently asked|common questions|\bFAQs?\b)/i.test(r.text),
+    };
   }));
 
   // Schema on a sample of real pages: the homepage plus one of each kind.

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+(function(){
+  var c=null;
+  try{c=JSON.parse(localStorage.getItem('ra_cc'));}catch(e){}var eea=true;try{eea=((Intl.DateTimeFormat().resolvedOptions().timeZone)||'').indexOf('Europe/')===0;}catch(e){}
+  gtag('consent','default',{
+    analytics_storage: (c?!!c.a:!eea)?'granted':'denied',
+    ad_storage:        (c?!!c.m:!eea)?'granted':'denied',
+    ad_user_data:      (c?!!c.m:!eea)?'granted':'denied',
+    ad_personalization:(c?!!c.m:!eea)?'granted':'denied',
+    wait_for_update: 500
+  });
+})();
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');gtag('config','AW-18148918651');</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9LYVMPB7R3"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');gtag('config','AW-18148918651');</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Citro FAQ: How It Works, Pricing and Comparisons | Citro</title>
+  <meta name="description" content="Answers about Citro: how the AI visibility audit works, which assistants it tests, how the Citro Score is calculated, pricing, the free trial, and how it compares with other tools." />
+  <link rel="canonical" href="https://getcitro.ai/faq.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:          #F7FBFC;
+      --ink:         #07202B;
+      --ink-2:       #123545;
+      --mid:         #48626E;
+      --quiet:       #54707C;
+      --border:      rgba(7,32,43,0.08);
+      --accent:      #00BDE7;
+      --accent-d:    #026F8B;
+      --green:       #026F8B;
+      --green-bg:    rgba(2,111,139,0.08);
+      --sans:        'Inter', system-ui, sans-serif;
+      --display:     'Archivo', 'Inter', system-ui, sans-serif;
+      --on-accent:   #04222E;
+      --accent-soft: #8FE3F6;
+      --accent-d2:   #026F8B;
+    }
+    h1, h2, h3, h4, h5, h6 { font-family: var(--display); letter-spacing: -0.025em; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(250,250,250,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { text-decoration: none; display: flex; align-items: center; }
+    .nav-logo-root { font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -0.3px; }
+    .nav-logo-ace  { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .nav-logo-citro { font-size: 18px; font-weight: 800; color: var(--accent); letter-spacing: -0.3px; }
+    .nav-cta { background: var(--ink); color: #fff; padding: 9px 20px; border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; letter-spacing: -0.1px; }
+    .nav-cta:hover { background: var(--ink-2); }
+
+    .page { max-width: 860px; margin: 0 auto; padding: 72px 24px 96px; }
+
+    .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-d2); margin-bottom: 16px; }
+    h1 { font-size: 42px; font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 20px; }
+    .intro { font-size: 17px; color: var(--mid); line-height: 1.75; max-width: 640px; margin-bottom: 56px; }
+
+    /* SUMMARY CARDS */
+    .summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 56px; }
+    .summary-card { border: 1px solid var(--border); border-radius: 14px; padding: 28px; background: #fff; }
+    .summary-card.winner { border-color: rgba(0,189,231,0.3); background: rgba(0,189,231,0.03); }
+    .card-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--quiet); margin-bottom: 10px; }
+    .card-name { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 6px; }
+    .card-tagline { font-size: 14px; color: var(--mid); line-height: 1.55; margin-bottom: 16px; }
+    .card-price { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+    .card-price span { font-size: 14px; font-weight: 400; color: var(--mid); }
+    .winner-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,189,231,0.1); color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; border-radius: 100px; margin-bottom: 12px; }
+
+    /* COMPARISON TABLE */
+    h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 24px; }
+    .table-wrap { border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 56px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 16px 20px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--quiet); background: #F2F8FA; border-bottom: 1px solid var(--border); }
+    thead th:not(:first-child) { text-align: center; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 14px 20px; font-size: 14px; color: var(--ink); vertical-align: middle; }
+    tbody td:first-child { font-weight: 500; color: var(--mid); }
+    tbody td:not(:first-child) { text-align: center; }
+    .check { color: var(--green); font-size: 18px; font-weight: 700; }
+    .cross { color: #E8452A; font-size: 18px; }
+    .neutral { color: var(--mid); font-size: 13px; }
+    .highlight-col { background: rgba(0,189,231,0.03); }
+
+    /* NARRATIVE SECTIONS */
+    .section { margin-bottom: 56px; }
+    .section h2 { margin-bottom: 16px; }
+    .section p { font-size: 15px; color: var(--mid); line-height: 1.75; margin-bottom: 12px; }
+    .section p strong { color: var(--ink); }
+
+    /* VERDICT */
+    .verdict { background: var(--ink); border-radius: 16px; padding: 40px; margin-bottom: 56px; }
+    .verdict h2 { color: #fff; margin-bottom: 16px; }
+    .verdict p { font-size: 15px; color: rgba(255,255,255,0.65); line-height: 1.75; margin-bottom: 20px; }
+    .verdict-cta { display: inline-block; background:var(--accent);color:#04222E; padding: 14px 28px; border-radius: 999px; font-size: 15px; font-weight: 600; text-decoration: none; letter-spacing: -0.1px; }
+    .verdict-cta:hover { background: var(--accent-d); }
+    .verdict-note { font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 12px; }
+
+    /* FAQ */
+    .faq-item { border-bottom: 1px solid var(--border); padding: 20px 0; }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-q { font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+    .faq-a { font-size: 14px; color: var(--mid); line-height: 1.7; }
+
+    footer { text-align: center; padding: 40px 24px; font-size: 13px; color: var(--quiet); border-top: 1px solid var(--border); }
+    footer a { color: var(--quiet); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 28px; }
+      .summary-row { grid-template-columns: 1fr; }
+      .page { padding: 48px 20px 72px; }
+    }
+    /* dark ink on any surface filled with the accent */
+    .verdict-cta, .verdict-cta * { color: #04222E; }
+    /* --- contrast corrections ------------------------------------------- */
+    /* accent-coloured links sit on light grounds; use the darker accent */
+    .diff-intro a, .signin-link a, .new-link a, .rp-cta-row a,
+    .article-wrap a, .lead a, .body-copy a { color: var(--accent-d2); }
+    /* anything FILLED with the accent takes dark ink, children included */
+    .cta-block, .cta-block *, .hero-cta, .hero-cta *, .btn-primary, .btn-primary *,
+    .btn, .btn *, .stepnum, .stepnum *, .step-num, .step-num *,
+    .verdict-cta, .verdict-cta *, .ra-btn-accept, .ra-save-btn { color: #04222E; }
+    /* the deficit glyph was a shade light against white */
+    .cross { color: #C63A22; }
+    /* --- final contrast pass --------------------------------------------- */
+    /* element selectors inside an accent-filled block out-specify ".block *" */
+    .cta-block h2, .cta-block h3, .cta-block h4, .cta-block p, .cta-block a,
+    .hero-cta h3, .hero-cta p { color: #04222E; }
+    /* small accent labels that the first sweep missed */
+    .card-eyebrow, .gi-n, .unlock-note, .stat-cap { color: var(--accent-d2); }
+    /* deficit figures need to clear 3:1 against white */
+    .rp-score-pct, .rp-hbar-name, .rp-comp-you { color: #E8452A; }
+    /* the cookie banner sits on a dark ground; its muted text needs to be light */
+    .ra-btn-reject, #ra-cb .ra-cb-text, #ra-cb small, #ra-modal .ra-muted { color: #B9D2DB; }
+    .rp-brand-tag { color: var(--accent-d2); }
+
+
+
+
+  </style>
+  <style>
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap table { min-width: 640px; }
+  tbody td:not(:first-child) { text-align: left; }
+  thead th:not(:first-child) { text-align: left; }
+  .price-note { font-size: 13px; color: var(--quiet); margin: -40px 0 56px; }
+  .section ul { margin: 0 0 12px 20px; }
+  .section li { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 8px; }
+  .section a, .faq-a a, .intro a { color: var(--accent-d2); }
+  .steps { counter-reset: s; list-style: none; margin: 0 0 12px 0 !important; }
+  .steps li { counter-increment: s; position: relative; padding-left: 40px; margin-bottom: 14px; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .nav-logo img { display: block; }
+  .section h3 { font-size: 18px; font-weight: 700; color: var(--ink); margin: 24px 0 8px; }
+  @media (max-width: 600px) { nav { padding: 0 16px; } .page { padding: 40px 16px 72px; } .verdict { padding: 28px 20px; } }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": "https://getcitro.ai/faq.html#article",
+      "headline": "Citro FAQ",
+      "description": "Answers about Citro: how the AI visibility audit works, which assistants it tests, how the Citro Score is calculated, pricing, the free trial, and how it compares with other tools.",
+      "url": "https://getcitro.ai/faq.html",
+      "datePublished": "2026-10-16",
+      "dateModified": "2026-10-16",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://getcitro.ai/faq.html"
+      },
+      "publisher": {
+        "@id": "https://getcitro.ai/#organization"
+      },
+      "author": {
+        "@id": "https://getcitro.ai/#organization"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://getcitro.ai/faq.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Citro?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Citro is an AI visibility audit. It asks ChatGPT, Perplexity, Google Gemini, Claude and Grok the questions your buyers ask, shows whether they recommend your business or your competitors, lists the sites each answer read, checks your own site, and gives you a 90-day plan to get recommended."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who is Citro for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Small and mid-sized businesses with small marketing teams, plus the founders and agencies who support them. You don't need an SEO analyst to use it or to act on the plan."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who makes Citro?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Citro is built by RootPartners, a go-to-market consulting firm."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does a Citro audit work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You enter your website. Citro profiles your business, builds buyer personas for your market and writes the questions they would ask AI. You can edit both. It then asks those questions on all five assistants, scores where you appear against your competitors, checks your site, and writes your plan. Results take under five minutes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are the AI answers real or simulated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Real. Every question is sent live to each assistant with web search turned on, so the answers reflect what each one finds today. If an assistant doesn't answer, that question is left out of the score rather than guessed."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which AI assistants does Citro test?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ChatGPT, Perplexity, Google Gemini, Claude and Grok, on every run. Citro does not currently cover Google AI Overviews or Microsoft Copilot."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is the Citro Score calculated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each unbranded buyer question is scored by how prominently you are recommended: high counts 100, medium 50, low 25 and not named 0. The Citro Score is the average across those questions. Questions that name your brand are reported separately and don't count toward the score."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the site check look at?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Your llms.txt, whether robots.txt lets AI crawlers in, your XML sitemap, the schema markup on a sample of pages, and whether you have comparison, FAQ and case study pages. The plan never recommends something the check found already in place."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Citro track my visibility every day?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Citro runs on demand, as often as you like on paid plans, and keeps your score history so you can see it change. If you need automatic daily tracking, a tracker like Otterly.AI or Peec AI does that."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long until my score improves?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "It depends on the fixes. AI assistants that search the web can pick up a new page or listing once it is indexed, often within weeks. Re-run Citro every few weeks to see what moved. We don't promise a score, and the 90-day projection in each report is an estimate."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Citro cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Professional is $119 a month for one company, with unlimited re-runs. Enterprise is $299 a month for up to 10 companies or brands. Both are billed monthly and you can cancel anytime. See plans and pricing."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the free trial work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Professional starts with a 7-day free trial. You add a card but aren't charged until day 8, and you can cancel before then from your dashboard."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a free option?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The free check asks ChatGPT and Google Gemini three buyer questions with live web search and shows whether they recommend you, who they name instead, and which sites they read. It takes about a minute and needs no card."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What if the report isn't useful?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Email us within 7 days of delivery and we'll refund you in full."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How is Citro different from Otterly.AI, Peec AI or Profound?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Those tools are trackers: they run a set of prompts on a schedule and chart how often you are mentioned. Citro is an audit: it shows why competitors are recommended instead of you and what to change. See Citro vs Otterly.AI, Citro vs Peec AI and Citro vs Profound."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What are the best AI visibility tools?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We compare seven of them on price, assistants covered and what you get in the best AI search visibility audit tools in 2026."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I contact Citro?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Email support@getcitro.ai."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/"><img src="/citro-logo-dark.png" alt="Citro" height="32"></a>
+  <a href="/start.html" class="nav-cta">Start free trial</a>
+</nav>
+
+<div class="page">
+  <div class="eyebrow">Help</div>
+  <h1>Citro FAQ</h1>
+  <p class="intro">Answers about how Citro works, what it costs, and how it compares with other AI visibility tools.</p>
+
+  <h2>About Citro</h2>
+  <div style="margin-bottom: 40px;">
+    <div class="faq-item">
+      <h3 class="faq-q">What is Citro?</h3>
+      <div class="faq-a">Citro is an AI visibility audit. It asks ChatGPT, Perplexity, Google Gemini, Claude and Grok the questions your buyers ask, shows whether they recommend your business or your competitors, lists the sites each answer read, checks your own site, and gives you a 90-day plan to get recommended.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">Who is Citro for?</h3>
+      <div class="faq-a">Small and mid-sized businesses with small marketing teams, plus the founders and agencies who support them. You don't need an SEO analyst to use it or to act on the plan.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">Who makes Citro?</h3>
+      <div class="faq-a">Citro is built by RootPartners, a go-to-market consulting firm.</div>
+    </div>
+  </div>
+
+  <h2>How the audit works</h2>
+  <div style="margin-bottom: 40px;">
+    <div class="faq-item">
+      <h3 class="faq-q">How does a Citro audit work?</h3>
+      <div class="faq-a">You enter your website. Citro profiles your business, builds buyer personas for your market and writes the questions they would ask AI. You can edit both. It then asks those questions on all five assistants, scores where you appear against your competitors, checks your site, and writes your plan. Results take under five minutes.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">Are the AI answers real or simulated?</h3>
+      <div class="faq-a">Real. Every question is sent live to each assistant with web search turned on, so the answers reflect what each one finds today. If an assistant doesn't answer, that question is left out of the score rather than guessed.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">Which AI assistants does Citro test?</h3>
+      <div class="faq-a">ChatGPT, Perplexity, Google Gemini, Claude and Grok, on every run. Citro does not currently cover Google AI Overviews or Microsoft Copilot.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">How is the Citro Score calculated?</h3>
+      <div class="faq-a">Each unbranded buyer question is scored by how prominently you are recommended: high counts 100, medium 50, low 25 and not named 0. The Citro Score is the average across those questions. Questions that name your brand are reported separately and don't count toward the score.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">What does the site check look at?</h3>
+      <div class="faq-a">Your llms.txt, whether robots.txt lets AI crawlers in, your XML sitemap, the schema markup on a sample of pages, and whether you have comparison, FAQ and case study pages. The plan never recommends something the check found already in place.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">Does Citro track my visibility every day?</h3>
+      <div class="faq-a">No. Citro runs on demand, as often as you like on paid plans, and keeps your score history so you can see it change. If you need automatic daily tracking, a tracker like Otterly.AI or Peec AI does that.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">How long until my score improves?</h3>
+      <div class="faq-a">It depends on the fixes. AI assistants that search the web can pick up a new page or listing once it is indexed, often within weeks. Re-run Citro every few weeks to see what moved. We don't promise a score, and the 90-day projection in each report is an estimate.</div>
+    </div>
+  </div>
+
+  <h2>Pricing and trial</h2>
+  <div style="margin-bottom: 40px;">
+    <div class="faq-item">
+      <h3 class="faq-q">How much does Citro cost?</h3>
+      <div class="faq-a">Professional is $119 a month for one company, with unlimited re-runs. Enterprise is $299 a month for up to 10 companies or brands. Both are billed monthly and you can cancel anytime. See <a href="/plans.html">plans and pricing</a>.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">How does the free trial work?</h3>
+      <div class="faq-a">Professional starts with a 7-day free trial. You add a card but aren't charged until day 8, and you can cancel before then from your dashboard.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">Is there a free option?</h3>
+      <div class="faq-a">Yes. The <a href="/free-check.html">free check</a> asks ChatGPT and Google Gemini three buyer questions with live web search and shows whether they recommend you, who they name instead, and which sites they read. It takes about a minute and needs no card.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">What if the report isn't useful?</h3>
+      <div class="faq-a">Email us within 7 days of delivery and we'll refund you in full.</div>
+    </div>
+  </div>
+
+  <h2>Compared with other tools</h2>
+  <div style="margin-bottom: 40px;">
+    <div class="faq-item">
+      <h3 class="faq-q">How is Citro different from Otterly.AI, Peec AI or Profound?</h3>
+      <div class="faq-a">Those tools are trackers: they run a set of prompts on a schedule and chart how often you are mentioned. Citro is an audit: it shows why competitors are recommended instead of you and what to change. See <a href="/citro-vs-otterly.html">Citro vs Otterly.AI</a>, <a href="/citro-vs-peec-ai.html">Citro vs Peec AI</a> and <a href="/citro-vs-profound.html">Citro vs Profound</a>.</div>
+    </div>
+    <div class="faq-item">
+      <h3 class="faq-q">What are the best AI visibility tools?</h3>
+      <div class="faq-a">We compare seven of them on price, assistants covered and what you get in <a href="/ai-search-visibility.html">the best AI search visibility audit tools in 2026</a>.</div>
+    </div>
+  </div>
+
+  <h2>Support</h2>
+  <div style="margin-bottom: 40px;">
+    <div class="faq-item">
+      <h3 class="faq-q">How do I contact Citro?</h3>
+      <div class="faq-a">Email <a href="mailto:support@getcitro.ai">support@getcitro.ai</a>.</div>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h2>See whether AI recommends you</h2>
+    <p>The free check takes about a minute and needs no card.</p>
+    <a href="/free-check.html" class="verdict-cta">Run the free check</a>
+    <div class="verdict-note">Or <a href="/start.html" style="color:#8FE3F6;">start the 7-day free trial</a> for the full audit.</div>
+  </div>
+
+
+</div>
+
+<footer>
+  <p>© 2026 RootPartners LLC &nbsp;·&nbsp; <a href="/">Home</a> &nbsp;·&nbsp; <a href="/plans.html">Pricing</a> &nbsp;·&nbsp; <a href="/ai-search-visibility.html">AI visibility tools compared</a> &nbsp;·&nbsp; <a href="/citro-vs-otterly.html">Citro vs Otterly.AI</a> &nbsp;·&nbsp; <a href="/citro-vs-peec-ai.html">Citro vs Peec AI</a> &nbsp;·&nbsp; <a href="/citro-vs-profound.html">Citro vs Profound</a> &nbsp;·&nbsp; <a href="/privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="/terms.html">Terms</a></p>
+</footer>
+
+</body>
+</html>

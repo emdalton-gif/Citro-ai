@@ -780,7 +780,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
         if (evaluated.competitors_mentioned) {
           const own = [String(c.company_name || '').toLowerCase(), dom].filter(Boolean);
           evaluated.competitors_mentioned = [...new Set(evaluated.competitors_mentioned.map(normalizeComp))]
-            .filter(n => !own.includes(String(n).toLowerCase()));
+            .filter(n => !own.includes(String(n).toLowerCase()) && !window.CitroGrounding.isPlatformName(n));
         }
         window.CitroGrounding.confirmMention(evaluated, simResponse, [c.company_name, ...(String(c.brand_aliases || '').split(',')), dom], c.company_name);
 
@@ -840,7 +840,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
     const end = cleaned.lastIndexOf('}');
     const report = JSON.parse(cleaned.slice(start, end + 1));
     const removed = [];
-    const clean = t => G.fixQueryCounts(G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps, siteFacts), siteFacts), results.filter(r => !r.failed).length, results.length);
+    const clean = t => G.fixQueryCounts(G.fixPaths(G.stripUnverified(G.replacePersonaNames(t, personas), comps, siteFacts), siteFacts), [results.filter(r => !r.failed).length, results.length, results.filter(r => !r.failed && !r.brand_specific).length, results.filter(r => !r.failed && !r.brand_specific && (r.visibility === 'none' || r.visibility === 'low')).length]);
   (report.recommendations || []).forEach(r => { if (r && r.action) r.action = clean(r.action); });
   (report.roadmap_phases || []).forEach(ph => { ph.actions = (ph.actions || []).map(clean); });
   const g = G.groundItems(report.recommendations || [], siteFacts, groundCtx);

@@ -250,6 +250,17 @@
       }
     }
 
+    // Expanding an existing page with a table or FAQ it already has.
+    if (f && f.pageFeatures) {
+      var ep = existingPathIn(t, f);
+      var feat = ep && (f.pageFeatures[ep] || f.pageFeatures[ep.replace(/\/+$/, '')] || f.pageFeatures[ep.replace(/\/?$/, '/')]);
+      if (feat) {
+        var wantsTable = /\b(comparison|structured)?\s*table\b/i.test(t) && /\b(add|adding|build|building|include|including|create|creating)\b/i.test(t);
+        var wantsFaq = /\bFAQ\b|frequently asked/i.test(t) && /\b(add|adding|include|including|create|creating|section)\b/i.test(t);
+        if ((wantsTable || wantsFaq) && (!wantsTable || feat.table) && (!wantsFaq || feat.faq)) return ep + ' already has ' + [wantsTable ? 'a comparison table' : null, wantsFaq ? 'an FAQ' : null].filter(Boolean).join(' and ');
+      }
+    }
+
     // FAQ / help pages
     if (/\b(FAQ|frequently asked questions) (page|hub|center|centre|library)\b|\bhelp center\b/i.test(t) && creates(t)) {
       if ((f && f.helpSites || []).length) return 'Site already has a help center (' + f.helpSites[0] + ')';
@@ -329,12 +340,19 @@
   var NUMW = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen','twenty'];
   function numOf(w) { w = String(w).toLowerCase(); return /^\d+$/.test(w) ? parseInt(w, 10) : NUMW.indexOf(w); }
   G.fixQueryCounts = function (text, answered, total) {
-    return String(text || '').replace(/\b(\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty) of the (\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty) ((?:tested |audited |AI[- ]platform |AI )?(?:queries|questions|answers))\b/gi, function (m, a, b, noun) {
+    var ok = Array.isArray(answered) ? answered.map(Number) : [answered, total];
+    var W = '(\\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)';
+    var re = new RegExp('\\b' + W + ' of the ' + W + ' ((?:(?:tested|audited|measured|organic|advisory|buyer|gap|ai|ai-platform|platform|search|unbranded|discovery)[ -])*(?:queries|questions|answers|prompts))\\b', 'gi');
+    return String(text || '').replace(re, function (m, a, b, noun) {
       var n = numOf(a), d = numOf(b);
-      if (n < 0 || d < 0 || ((d === answered || d === total) && n <= d)) return m;
+      if (n < 0 || d < 0 || (ok.indexOf(d) >= 0 && n <= d)) return m;
       return (n === 1 ? 'one' : 'several') + ' of the ' + (/answers/i.test(noun) ? 'answers' : 'tested questions');
     });
   };
+  // AI assistants named inside an answer ("ask ChatGPT or Perplexity") are the
+  // platforms being tested, not competitors.
+  var PLATFORM_NAMES = /^(chatgpt|chat gpt|openai|gpt-?\d.*|perplexity( ai)?|gemini|google gemini|google|claude|anthropic|grok|xai|copilot|microsoft copilot|bing( chat)?|google ai overviews|ai overviews|google ai mode|meta ai|deepseek|mistral|llama)$/i;
+  G.isPlatformName = function (name) { return PLATFORM_NAMES.test(String(name || '').trim()); };
 
   // The scorer sometimes counts a similarly named product (GetCito for Citro)
   // as the brand. A mention only counts if the answer actually contains one of
@@ -652,6 +670,13 @@
   // The shortlist and the plan are written separately, so the same new page
   // could get two URLs (/vs/dale-carnegie/ and /solutions/...-vs-dale-carnegie/).
   // Give plan items the shortlist's path for the same lever.
+  // The first path in an item that is on the site and not proposed as new.
+  function existingPathIn(t, f) {
+    var set = pathSet(f); if (!set) return null;
+    var m; PATH_RE.lastIndex = 0;
+    while ((m = PATH_RE.exec(t))) { if (!citedAsNew(t, m.index + m[1].length) && set[normPath(m[2])]) return normPath(m[2]); }
+    return null;
+  }
   function newPathOf(t) {
     var m; PATH_RE.lastIndex = 0;
     while ((m = PATH_RE.exec(t))) { if (citedAsNew(t, m.index + m[1].length)) return m[2]; }
@@ -760,6 +785,10 @@
         var cover = [];
         (ctx.gapQueries || []).forEach(function (q) { var p = bestPage(q, f); if (p) cover.push('"' + q + '" -> ' + p); });
         L.push('- Existing pages that already target gap questions (recommend improving these by path, not writing new pages): ' + (cover.length ? cover.slice(0, 8).join('; ') : 'none found'));
+      }
+      if (f.pageFeatures) {
+        var feats = Object.keys(f.pageFeatures).map(function (p) { var x = f.pageFeatures[p], has = []; if (x.table) has.push('a table'); if (x.faq) has.push('an FAQ'); return has.length ? p + ' has ' + has.join(' and ') : null; }).filter(Boolean);
+        if (feats.length) L.push('- Pages that already have these (do not recommend adding them again): ' + feats.slice(0, 12).join('; '));
       }
     } else L.push('- Existing pages: could not be listed');
     L.push('');

@@ -1,0 +1,97 @@
+# Citro
+
+> Citro is AI citation intelligence. It shows whether AI platforms recommend your brand when buyers ask what to buy or who to hire, and gives a 30 to 90 day plan to improve. The core metric is the Citro Score, your citation rate across 5 AI platforms: ChatGPT, Perplexity, Gemini, Claude, and Grok. Powered by RootPartners.
+
+Citro is built for small and mid-sized businesses with small marketing teams (and the agencies and founders who support them) who need to know whether they appear when buyers ask AI for vendor and product recommendations, and how to improve. It is not a generalized ranking or keyword tool and not a passive mention monitor. It does three things: it builds editable buyer personas specific to your company and asks the AI the questions those buyers actually ask; it audits where you rank and get recommended across the major AI platforms, compared to your named competitors; and it returns a specific action plan built from your own website, code, industry, and market, sequenced over 30 to 90 days.
+
+## Product
+- [How it works](https://getcitro.ai/#how-it-works): Profile your company, build buyer personas, run live, web-enabled queries across 5 AI platforms, get a Citro Score and a 90-day plan.
+- [Free AI visibility check](https://getcitro.ai/free-check.html): Free, no card. Asks ChatGPT and Google Gemini three buyer questions with live web search and shows whether they recommend your business, who they name instead, and which sites they read.
+- [Plans and pricing](https://getcitro.ai/plans.html): Professional is 119 USD per month with a 7-day free trial. Enterprise is 299 USD per month for up to 10 brands.
+- [Sample audit report](https://getcitro.ai/sample-audit.html): An example AI Visibility Report.
+- [Start a free trial](https://getcitro.ai/start.html): Run your own Citro audit.
+- [FAQ](https://getcitro.ai/faq.html): How the audit works, how the Citro Score is calculated, pricing, the trial, and comparisons.
+- [Full text for AI](https://getcitro.ai/llms-full.txt): This file plus the full FAQ and comparison summaries.
+
+## Category and comparisons
+- [Best AI search visibility audit tools 2026](https://getcitro.ai/ai-search-visibility.html): Seven tools compared on price, AI assistants covered and what you get, and how to choose.
+- [Citro vs Profound](https://getcitro.ai/citro-vs-profound.html): Pricing, AI assistants covered, billing and action plans compared.
+- [Citro vs Peec AI](https://getcitro.ai/citro-vs-peec-ai.html): Daily tracking on three chosen engines vs five assistants, a site check and a 90-day plan.
+- [Citro vs Otterly.AI](https://getcitro.ai/citro-vs-otterly.html): Daily tracking vs a diagnosis and 90-day plan, with prices and engines covered.
+- [Why AI recommends your competitors](https://getcitro.ai/why-ai-recommends-competitors.html): The six usual causes, how to find yours, and what tool fixes it.
+- [How to improve your brand's AI search presence](https://getcitro.ai/ai-search-playbook.html): The 2026 playbook for AI search visibility (GEO and AEO).
+
+## About
+- Category: AI search visibility, generative engine optimization (GEO), answer engine optimization (AEO), AI citation intelligence.
+- Platforms audited: ChatGPT, Perplexity, Google Gemini, Claude, Grok.
+- Company: Citro, powered by RootPartners. https://getcitro.ai
+
+## Frequently asked questions
+
+### About Citro
+
+**What is Citro?**
+Citro is an AI visibility audit. It asks ChatGPT, Perplexity, Google Gemini, Claude and Grok the questions your buyers ask, shows whether they recommend your business or your competitors, lists the sites each answer read, checks your own site, and gives you a 90-day plan to get recommended.
+
+**Who is Citro for?**
+Small and mid-sized businesses with small marketing teams, plus the founders and agencies who support them. You don't need an SEO analyst to use it or to act on the plan.
+
+**Who makes Citro?**
+Citro is built by RootPartners, a go-to-market consulting firm.
+
+### How the audit works
+
+**How does a Citro audit work?**
+You enter your website. Citro profiles your business, builds buyer personas for your market and writes the questions they would ask AI. You can edit both. It then asks those questions on all five assistants, scores where you appear against your competitors, checks your site, and writes your plan. Results take under five minutes.
+
+**Are the AI answers real or simulated?**
+Real. Every question is sent live to each assistant with web search turned on, so the answers reflect what each one finds today. If an assistant doesn't answer, that question is left out of the score rather than guessed.
+
+**Which AI assistants does Citro test?**
+ChatGPT, Perplexity, Google Gemini, Claude and Grok, on every run. Citro does not currently cover Google AI Overviews or Microsoft Copilot.
+
+**How is the Citro Score calculated?**
+Each unbranded buyer question is scored by how prominently you are recommended: high counts 100, medium 50, low 25 and not named 0. The Citro Score is the average across those questions. Questions that name your brand are reported separately and don't count toward the score.
+
+**What does the site check look at?**
+Your llms.txt, whether robots.txt lets AI crawlers in, your XML sitemap, the schema markup on a sample of pages, and whether you have comparison, FAQ and case study pages. The plan never recommends something the check found already in place.
+
+**Does Citro track my visibility every day?**
+No. Citro runs on demand, as often as you like on paid plans, and keeps your score history so you can see it change. If you need automatic daily tracking, a tracker like Otterly.AI or Peec AI does that.
+
+**How long until my score improves?**
+It depends on the fixes. AI assistants that search the web can pick up a new page or listing once it is indexed, often within weeks. Re-run Citro every few weeks to see what moved. We don't promise a score, and the 90-day projection in each report is an estimate.
+
+### Pricing and trial
+
+**How much does Citro cost?**
+Professional is $119 a month for one company, with unlimited re-runs. Enterprise is $299 a month for up to 10 companies or brands. Both are billed monthly and you can cancel anytime. See plans and pricing (https://getcitro.ai/plans.html).
+
+**How does the free trial work?**
+Professional starts with a 7-day free trial. You add a card but aren't charged until day 8, and you can cancel before then from your dashboard.
+
+**Is there a free option?**
+Yes. The free check (https://getcitro.ai/free-check.html) asks ChatGPT and Google Gemini three buyer questions with live web search and shows whether they recommend you, who they name instead, and which sites they read. It takes about a minute and needs no card.
+
+**What if the report isn't useful?**
+Email us within 7 days of delivery and we'll refund you in full.
+
+### Compared with other tools
+
+**How is Citro different from Otterly.AI, Peec AI or Profound?**
+Those tools are trackers: they run a set of prompts on a schedule and chart how often you are mentioned. Citro is an audit: it shows why competitors are recommended instead of you and what to change. See Citro vs Otterly.AI (https://getcitro.ai/citro-vs-otterly.html), Citro vs Peec AI (https://getcitro.ai/citro-vs-peec-ai.html) and Citro vs Profound (https://getcitro.ai/citro-vs-profound.html).
+
+**What are the best AI visibility tools?**
+We compare seven of them on price, assistants covered and what you get in the best AI search visibility audit tools in 2026 (https://getcitro.ai/ai-search-visibility.html).
+
+### Support
+
+**How do I contact Citro?**
+Email support@getcitro.ai.
+
+## How Citro compares
+
+- Citro vs Otterly.AI (https://getcitro.ai/citro-vs-otterly.html): Otterly.AI starts at $29/mo for 15 prompts tracked daily on ChatGPT, Perplexity, Google AI Overviews and Microsoft Copilot, with Gemini and Claude as paid add-ons. Citro is $119/mo, runs on demand, covers ChatGPT, Perplexity, Gemini, Claude and Grok on every run, checks your site and returns a 90-day plan.
+- Citro vs Peec AI (https://getcitro.ai/citro-vs-peec-ai.html): Peec AI starts at about $95/mo (EUR 89) for 50 prompts tracked daily on three engines you choose, with sentiment and 14+ languages; Claude is Enterprise-only. Citro includes all five assistants, a site check and a 90-day plan.
+- Citro vs Profound (https://getcitro.ai/citro-vs-profound.html): Profound Starter is $99/mo billed annually and covers ChatGPT only; Growth is $399/mo billed annually and adds Perplexity and Google AI Overviews. Citro is billed monthly and covers five assistants.
+- Competitor prices are as published in October 2026 and change often.
