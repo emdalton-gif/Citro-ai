@@ -175,8 +175,14 @@ function notifyLead(lead) {
   const payload = JSON.stringify({ from: 'Citro <audit@getcitro.ai>', to: [to], subject: `Free check: ${lead.company} (${lead.score}%)`, html });
   return new Promise(resolve => {
     const req = https.request({ hostname: 'api.resend.com', path: '/emails', method: 'POST', timeout: 8000,
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, () => resolve());
-    req.on('error', () => resolve()); req.on('timeout', () => { req.destroy(); resolve(); });
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, r => {
+      // Log a refused send (unverified domain, bad key, bad address) so it
+      // shows up in the Vercel logs instead of failing silently.
+      let body = ''; r.on('data', c => { body += c; });
+      r.on('end', () => { if (r.statusCode >= 300) console.error('resend', r.statusCode, body.slice(0, 300)); resolve(); });
+    });
+    req.on('error', e => { console.error('resend request failed:', e.message); resolve(); });
+    req.on('timeout', () => { console.error('resend timeout'); req.destroy(); resolve(); });
     req.write(payload); req.end();
   });
 }
@@ -219,8 +225,14 @@ ${lockedTitles.map((t, i) => `<p style="font-size:14px;color:#7E959F;line-height
   const payload = JSON.stringify({ from: 'Citro <audit@getcitro.ai>', to: [to], subject: `Does AI recommend ${r.company}? Your free check`, html });
   return new Promise(resolve => {
     const req = https.request({ hostname: 'api.resend.com', path: '/emails', method: 'POST', timeout: 8000,
-      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, () => resolve());
-    req.on('error', () => resolve()); req.on('timeout', () => { req.destroy(); resolve(); });
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, r => {
+      // Log a refused send (unverified domain, bad key, bad address) so it
+      // shows up in the Vercel logs instead of failing silently.
+      let body = ''; r.on('data', c => { body += c; });
+      r.on('end', () => { if (r.statusCode >= 300) console.error('resend', r.statusCode, body.slice(0, 300)); resolve(); });
+    });
+    req.on('error', e => { console.error('resend request failed:', e.message); resolve(); });
+    req.on('timeout', () => { console.error('resend timeout'); req.destroy(); resolve(); });
     req.write(payload); req.end();
   });
 }

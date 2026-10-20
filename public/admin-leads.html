@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Free-check leads | Citro admin</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --ink:#07202B; --mid:#48626E; --quiet:#54707C; --line:#D7E7ED; --bg:#F2F8FA; --accent:#00BDE7; --accent-d:#026F8B; --bad:#C63A22; }
+  body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; }
+  header { display:flex; align-items:center; justify-content:space-between; padding: 0 24px; height:56px; background:#07202B; color:#fff; }
+  header a { color:#B9D2DB; text-decoration:none; font-size:13px; margin-left:16px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin-bottom: 6px; }
+  .sub { color: var(--mid); margin-bottom: 20px; }
+  .bar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom: 16px; }
+  .bar input { padding: 8px 12px; border:1px solid var(--line); border-radius: 8px; min-width: 240px; font: inherit; }
+  button { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--ink); background: var(--ink); color:#fff; font: inherit; cursor:pointer; }
+  button.ghost { background: transparent; color: var(--ink); }
+  .note { padding: 12px 16px; border-radius: 8px; background:#fff; border:1px solid var(--line); margin-bottom: 16px; }
+  .note.warn { border-left: 3px solid var(--bad); }
+  .wrap { overflow-x:auto; background:#fff; border:1px solid var(--line); border-radius: 12px; }
+  table { width:100%; border-collapse: collapse; min-width: 900px; }
+  th { text-align:left; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--quiet); padding: 10px 12px; border-bottom:1px solid var(--line); background:#F7FBFC; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td a { color: var(--accent-d); }
+  .score { font-weight: 700; }
+  .zero { color: var(--bad); }
+  h2 { font-size: 16px; margin: 32px 0 10px; }
+</style>
+</head>
+<body>
+<header><strong>Citro admin</strong><nav><a href="/admin.html">Admin home</a><a href="#" id="out">Sign out</a></nav></header>
+<main>
+  <h1>Free-check leads</h1>
+  <p class="sub">Everyone who finished a free check, newest first. Kept for 90 days.</p>
+  <div id="notify"></div>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Filter by email, company or site" />
+    <button id="csv">Download CSV</button>
+    <button class="ghost" id="reload">Refresh</button>
+    <span id="count" class="sub" style="margin:0"></span>
+  </div>
+  <div class="wrap"><table>
+    <thead><tr><th>When</th><th>Email</th><th>Company</th><th>Site</th><th>Category</th><th>Location</th><th>Score</th><th>Named</th><th>Named instead</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="9">Loading…</td></tr></tbody>
+  </table></div>
+  <h2>Waiting (hit the daily limit)</h2>
+  <div class="wrap"><table>
+    <thead><tr><th>When</th><th>Email</th><th>Company</th><th>Site</th><th>What they sell</th><th>Location</th></tr></thead>
+    <tbody id="qrows"></tbody>
+  </table></div>
+</main>
+<script>
+(function () {
+  var TOKEN = null;
+  try { TOKEN = localStorage.getItem('admin_token'); } catch (e) {}
+  if (!TOKEN) { location.href = '/admin-login.html'; return; }
+  document.getElementById('out').onclick = function (e) { e.preventDefault(); try { localStorage.removeItem('admin_token'); } catch (x) {} location.href = '/admin-login.html'; };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var when = function (ts) { if (!ts) return ''; var d = new Date(ts); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); };
+  var data = { leads: [], queued: [] };
+  function row(l) {
+    var site = l.domain ? '<a href="https://' + esc(l.domain) + '" target="_blank" rel="noopener">' + esc(l.domain) + '</a>' : '';
+    return '<tr><td>' + esc(when(l.ts)) + '</td><td><a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a></td><td>' + esc(l.company) + '</td><td>' + site + '</td><td>' + esc(l.category) + '</td><td>' + esc(l.location || 'All of the US') + '</td><td class="score' + (l.score ? '' : ' zero') + '">' + esc(l.score) + '%</td><td>' + esc(l.named) + ' of ' + esc(l.answered) + '</td><td>' + esc((l.competitors || []).slice(0, 5).join(', ')) + '</td></tr>';
+  }
+  function render() {
+    var q = document.getElementById('q').value.trim().toLowerCase();
+    var list = data.leads.filter(function (l) { return !q || [l.email, l.company, l.domain].join(' ').toLowerCase().indexOf(q) >= 0; });
+    document.getElementById('rows').innerHTML = list.length ? list.map(row).join('') : '<tr><td colspan="9">No leads yet.</td></tr>';
+    document.getElementById('count').textContent = list.length + ' of ' + data.leads.length + ' leads';
+    document.getElementById('qrows').innerHTML = data.queued.length ? data.queued.map(function (l) { return '<tr><td>' + esc(when(l.ts)) + '</td><td><a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a></td><td>' + esc(l.company) + '</td><td>' + esc(l.domain) + '</td><td>' + esc(l.offer) + '</td><td>' + esc(l.location) + '</td></tr>'; }).join('') : '<tr><td colspan="6">None.</td></tr>';
+  }
+  function load() {
+    fetch('/api/admin-leads', { headers: { Authorization: 'Bearer ' + TOKEN } }).then(function (r) {
+      if (r.status === 401) { location.href = '/admin-login.html'; throw new Error('auth'); }
+      return r.json();
+    }).then(function (d) {
+      data = { leads: d.leads || [], queued: d.queued || [] };
+      var n = d.notify || {};
+      document.getElementById('notify').innerHTML = (n.resend && n.to) ? '' : '<div class="note warn">Lead alert emails are off: ' + (!n.resend ? 'RESEND_API_KEY ' : '') + (!n.to ? 'LEAD_NOTIFY_EMAIL ' : '') + 'is not set in Vercel.</div>';
+      render();
+    }).catch(function (e) { if (e.message !== 'auth') document.getElementById('rows').innerHTML = '<tr><td colspan="9">Could not load leads.</td></tr>'; });
+  }
+  document.getElementById('q').oninput = render;
+  document.getElementById('reload').onclick = load;
+  document.getElementById('csv').onclick = function () {
+    var cols = ['ts', 'email', 'company', 'domain', 'category', 'location', 'score', 'named', 'answered', 'competitors'];
+    var lines = [cols.join(',')].concat(data.leads.map(function (l) { return cols.map(function (c) { var v = c === 'ts' ? new Date(l.ts).toISOString() : c === 'competitors' ? (l.competitors || []).join('; ') : l[c]; return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }).join(','); }));
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' })); a.download = 'citro-free-check-leads.csv'; a.click();
+  };
+  load();
+})();
+</script>
+</body>
+</html>
