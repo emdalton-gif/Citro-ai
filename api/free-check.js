@@ -192,7 +192,7 @@ function sendResultsEmail(to, r) {
   if (!key) return Promise.resolve();
   const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const link = `https://getcitro.ai/free-check.html?id=${r.id}`;
-  const trial = `https://getcitro.ai/start.html?em=${encodeURIComponent(to)}&co=${encodeURIComponent(r.company)}&url=${encodeURIComponent(r.domain)}`;
+  const trial = `https://getcitro.ai/start.html?plan=starter&em=${encodeURIComponent(to)}&co=${encodeURIComponent(r.company)}&url=${encodeURIComponent(r.domain)}`;
   const color = r.score >= 65 ? '#026F8B' : r.score >= 35 ? '#C97A12' : '#E8452A';
   const comp = r.competitors.slice(0, 3).map(c => esc(c.name)).join(', ');
   // Same plan as the results page: step 1 in full, the rest named and locked.
@@ -206,7 +206,6 @@ function sendResultsEmail(to, r) {
     'Pages to add or rewrite on your site',
     'Your 90-day plan',
   ];
-  const planLink = `${link}#plan`;
   const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F2F8FA;font-family:Inter,system-ui,sans-serif;">
 <div style="max-width:540px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #D7E7ED;">
 <div style="background:#07202B;padding:24px 32px;"><span style="font-size:20px;font-weight:800;color:#00BDE7;">Citro</span></div>
@@ -218,8 +217,8 @@ ${comp ? `<p style="font-size:15px;color:#48626E;line-height:1.6;margin:0 0 20px
 <p style="font-size:16px;font-weight:700;color:#07202B;margin:0 0 10px;">Your action plan</p>
 <p style="font-size:14px;color:#07202B;line-height:1.6;margin:0 0 14px;"><strong>1. ${esc(first[0])}</strong> ${esc(first[1])}</p>
 ${lockedTitles.map((t, i) => `<p style="font-size:14px;color:#7E959F;line-height:1.5;margin:0 0 8px;">&#128274; ${i + 2}. ${esc(t)}</p>`).join('')}
-<p style="margin:14px 0 24px;"><a href="${planLink}" style="color:#026F8B;font-weight:700;">Unlock your full plan with a 7-day free trial</a></p>
-<p style="font-size:14px;color:#48626E;line-height:1.6;margin:0 0 24px;">This check asked 3 questions on 2 assistants. The full Citro audit runs the questions your customers actually ask, on all five major AI assistants, and shows your team exactly what to fix first. <a href="${trial}" style="color:#026F8B;font-weight:600;">Start your free trial</a>.</p>
+<p style="margin:14px 0 24px;"><a href="${trial}" style="color:#026F8B;font-weight:700;">Unlock your full plan for $29</a></p>
+<p style="font-size:14px;color:#48626E;line-height:1.6;margin:0 0 24px;">This check asked 3 questions on 2 assistants. The full Citro audit runs the questions your customers actually ask, on all five major AI assistants, and shows your team exactly what to fix first. <a href="${trial}" style="color:#026F8B;font-weight:600;">Get your full audit for $29 a month</a>. If your first audit isn't useful, we refund the month.</p>
 <p style="font-size:12px;color:#7E959F;line-height:1.6;margin:0;">You're receiving this because you ran a free check at getcitro.ai. Questions? Reply to this email.</p>
 </div></div></body></html>`;
   const payload = JSON.stringify({ from: 'Citro <audit@getcitro.ai>', to: [to], subject: `Does AI recommend ${r.company}? Your free check`, html });

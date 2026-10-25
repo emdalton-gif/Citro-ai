@@ -71,13 +71,21 @@ module.exports = async function handler(req, res) {
   const email = verifySubscriberToken(auth.startsWith('Bearer ') ? auth.slice(7) : null);
   if (!email) return res.status(401).json({ error: 'Unauthorized' });
 
-  const enterprisePrice = process.env.STRIPE_ENTERPRISE_PRICE_ID;
-  if (!enterprisePrice) return res.status(500).json({ error: 'Enterprise plan is not configured' });
+  // Starter can move to Professional or Enterprise; Professional to Enterprise.
+  const want = String((req.method === 'GET' ? req.query?.to : req.body?.to) || 'enterprise');
+  const target = want === 'professional' ? 'professional' : 'enterprise';
+  const TARGETS = {
+    professional: { price: process.env.STRIPE_PROFESSIONAL_PRICE_ID || process.env.STRIPE_ACTIVE_PRICE_ID, monthly: '$119.00', label: 'Professional' },
+    enterprise:   { price: process.env.STRIPE_ENTERPRISE_PRICE_ID, monthly: '$299.00', label: 'Enterprise' },
+  };
+  const enterprisePrice = TARGETS[target].price;
+  if (!enterprisePrice) return res.status(500).json({ error: `${TARGETS[target].label} plan is not configured` });
 
   try {
     const account = await upstashGet(`subscriber:${email}`);
     if (!account) return res.status(404).json({ error: 'Account not found' });
     if (account.plan === 'enterprise') return res.status(400).json({ error: 'You are already on Enterprise.' });
+    if (target === 'professional' && account.plan !== 'starter') return res.status(400).json({ error: 'You are already on Professional.' });
     if (!account.stripeSubscriptionId) {
       return res.status(400).json({ error: 'We could not find your subscription. Please email support@getcitro.ai and we will upgrade you.' });
     }
@@ -114,7 +122,7 @@ module.exports = async function handler(req, res) {
         }));
       }
       const dueToday = preview && !preview.error && typeof preview.amount_due === 'number' ? preview.amount_due : null;
-      return res.json({ inTrial, dueToday: dueToday == null ? null : money(dueToday), monthly: '$299.00' });
+      return res.json({ inTrial, target, dueToday: dueToday == null ? null : money(dueToday), monthly: TARGETS[target].monthly });
     }
 
     const updated = await stripe('POST', `/subscriptions/${encodeURIComponent(sub.id)}`, {
@@ -123,7 +131,7 @@ module.exports = async function handler(req, res) {
       proration_behavior: 'always_invoice',
       payment_behavior: 'error_if_incomplete',
       ...(inTrial ? { trial_end: 'now' } : {}),
-      'metadata[plan]': 'enterprise',
+      'metadata[plan]': target,
     });
     if (!updated || updated.error) {
       const msg = updated?.error?.message || 'Stripe declined the change.';
@@ -133,11 +141,12 @@ module.exports = async function handler(req, res) {
     const fresh = await upstashGet(`subscriber:${email}`) || account;
     await upstashSet(`subscriber:${email}`, {
       ...fresh,
-      plan: 'enterprise',
+      plan: target,
       subscriptionStatus: updated.status === 'trialing' ? 'active' : (updated.status || 'active'),
       upgradedAt: Date.now(),
       updatedAt: Date.now(),
     });
+    if (target === 'professional') return res.json({ success: true, plan: 'professional' });
     const { property } = await convertProfileToProperty(email, upstashGet, upstashSet);
 
     return res.json({ success: true, plan: 'enterprise', propertyId: property?.id || null });

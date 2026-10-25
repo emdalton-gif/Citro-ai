@@ -646,18 +646,28 @@ function gtag(){dataLayer.push(arguments);}
     const then = document.getElementById('upThen');
     if (!panel || !openBtn) return;
     const track = (n, p) => { try { gtag('event', n, p || {}); } catch (e) {} };
+    const COPY = {
+      enterprise: { h: 'Upgrade to Enterprise', p: 'Track up to 10 brands, products or websites, each with its own questions and score history.', li: ['Your current business becomes your first brand, with its history and questions', 'Add the other nine from this dashboard', 'One subscription: your current plan is replaced, not added to'], m: 299 },
+      professional: { h: 'Upgrade to Professional', p: 'Re-run your audit as often as you like and track every change.', li: ['Unlimited re-runs for your business', 'Your score history and questions carry over', 'One subscription: your Starter plan is replaced, not added to'], m: 119 },
+    };
     openBtn.addEventListener('click', async () => {
+      const to = window.__upgradeTo === 'professional' ? 'professional' : 'enterprise';
+      const c = COPY[to];
+      panel.querySelector('h2').textContent = c.h;
+      panel.querySelector('p').textContent = c.p;
+      panel.querySelector('ul').innerHTML = c.li.map(x => '<li>' + x + '</li>').join('');
+      then.textContent = 'Then $' + c.m + '/month. Cancel anytime.';
       panel.hidden = false; msg.textContent = ''; confirmBtn.disabled = true; due.textContent = '…';
       panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       track('upgrade_open');
       try {
-        const r = await fetch('/api/sub-upgrade', { headers: { 'Authorization': `Bearer ${token}` } });
+        const r = await fetch('/api/sub-upgrade?to=' + to, { headers: { 'Authorization': `Bearer ${token}` } });
         const d = await r.json().catch(() => ({}));
         if (!r.ok) { due.textContent = '—'; msg.textContent = d.error || 'Could not load the upgrade price.'; return; }
         due.textContent = d.dueToday || 'Prorated';
         then.textContent = d.inTrial
-          ? 'Your free trial ends now. Then $299/month. Cancel anytime.'
-          : (d.dueToday ? 'The difference for the rest of this month. Then $299/month.' : 'The difference for the rest of this month, then $299/month.');
+          ? 'Your free trial ends now. Then $' + c.m + '/month. Cancel anytime.'
+          : 'The difference for the rest of this month. Then $' + c.m + '/month.';
         confirmBtn.disabled = false;
       } catch (e) { due.textContent = '—'; msg.textContent = 'Could not load the upgrade price. Please try again.'; }
     });
@@ -665,11 +675,12 @@ function gtag(){dataLayer.push(arguments);}
     confirmBtn.addEventListener('click', async () => {
       confirmBtn.disabled = true; confirmBtn.textContent = 'Upgrading…'; msg.textContent = '';
       try {
-        const r = await fetch('/api/sub-upgrade', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        const to = window.__upgradeTo === 'professional' ? 'professional' : 'enterprise';
+        const r = await fetch('/api/sub-upgrade', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ to }) });
         const d = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(d.error || 'The upgrade did not go through.');
-        track('upgrade_complete', { value: 299, currency: 'USD' });
-        confirmBtn.textContent = 'Upgraded. Loading Enterprise…';
+        track('upgrade_complete', { value: to === 'professional' ? 119 : 299, currency: 'USD', plan: to });
+        confirmBtn.textContent = 'Upgraded. Loading…';
         setTimeout(() => window.location.reload(), 900);
       } catch (e) {
         msg.textContent = e.message; confirmBtn.disabled = false; confirmBtn.textContent = 'Upgrade now';
@@ -1429,9 +1440,20 @@ function gtag(){dataLayer.push(arguments);}
       const acctEmailText = document.getElementById('acctEmailText');
       if (acctEmailText) acctEmailText.textContent = data.email || email || '—';
       const acctPlanText = document.getElementById('acctPlanText');
-      if (acctPlanText) acctPlanText.textContent = isEnterprise ? 'Enterprise' : 'Professional';
+      const isStarter = data.plan === 'starter';
+      if (acctPlanText) acctPlanText.textContent = isEnterprise ? 'Enterprise' : isStarter ? 'Starter' : 'Professional';
       const upgradeOpen = document.getElementById('upgradeOpen');
-      if (upgradeOpen) upgradeOpen.hidden = isEnterprise || data.subscriptionStatus === 'canceled';
+      if (upgradeOpen) {
+        upgradeOpen.hidden = isEnterprise || data.subscriptionStatus === 'canceled';
+        if (isStarter) { window.__upgradeTo = 'professional'; upgradeOpen.textContent = 'Upgrade to Professional'; }
+      }
+      const nextRun = isStarter && data.starter && data.starter.nextRunAt;
+      if (nextRun && nextRun > Date.now() && Date.now() - (data.starter.lastRunAt || 0) > (data.starter.runWindowMs || 0)) {
+        const note = document.createElement('div');
+        note.className = 'acct-note';
+        note.textContent = 'Your next Starter audit is available on ' + new Date(nextRun).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) + '.';
+        acctPlanText.closest('.acct-field').appendChild(note);
+      }
 
       if (companyName && nameWasChosen) {
         // The subscriber set this deliberately, so it always wins

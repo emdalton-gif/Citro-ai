@@ -5,6 +5,7 @@
 // 3. Updates subscriptionStatus to 'active' and stores Stripe IDs.
 // 4. Issues and returns a 30-day JWT so the confirm page can auto-login.
 
+const { planFromMeta } = require('./_lib/plan-change');
 const crypto = require('crypto');
 const https  = require('https');
 
@@ -111,7 +112,7 @@ module.exports = async function handler(req, res) {
       // Create a minimal record so the user can still access the dashboard.
       await upstashSet(`subscriber:${email}`, {
         email,
-        plan:                session.metadata?.plan === 'enterprise' ? 'enterprise' : 'professional',
+        plan:                planFromMeta(session.metadata?.plan),
         stripeCustomerId:    session.customer || null,
         stripeSubscriptionId: session.subscription || null,
         subscriptionStatus:  'active',
@@ -120,7 +121,7 @@ module.exports = async function handler(req, res) {
     } else {
       await upstashSet(`subscriber:${email}`, {
         ...subscriber,
-        plan:                session.metadata?.plan === 'enterprise' ? 'enterprise' : (subscriber.plan || 'professional'),
+        plan:                planFromMeta(session.metadata?.plan, subscriber.plan),
         stripeCustomerId:    session.customer    || subscriber.stripeCustomerId,
         stripeSubscriptionId: session.subscription || subscriber.stripeSubscriptionId,
         subscriptionStatus:  'active',

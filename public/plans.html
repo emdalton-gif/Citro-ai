@@ -23,7 +23,7 @@ function gtag(){dataLayer.push(arguments);}
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Plans & Pricing | Citro — AI Citation Intelligence</title>
-<meta name="description" content="See Citro's plans. Start with a 7-day free trial of Citro Professional to track your AI visibility, or scale to Enterprise across up to 10 brands." />
+<meta name="description" content="Citro plans start at $29 a month: the full AI visibility audit across ChatGPT, Perplexity, Gemini, Claude and Grok with a 90-day plan. Professional adds unlimited re-runs; Enterprise covers up to 10 brands." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
@@ -109,7 +109,7 @@ function gtag(){dataLayer.push(arguments);}
   .plans-section { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; }
   .plans-grid {
     display: grid;
-    grid-template-columns: 1fr 1.08fr 1fr;
+    grid-template-columns: 1.08fr 1fr 1fr;
     gap: 16px;
     align-items: start;
   }
@@ -310,6 +310,23 @@ function gtag(){dataLayer.push(arguments);}
       "offers": [
         {
           "@type": "Offer",
+          "name": "Citro Starter",
+          "price": "29",
+          "priceCurrency": "USD",
+          "url": "https://getcitro.ai/plans.html",
+          "availability": "https://schema.org/InStock",
+          "description": "One company. One full audit a month across ChatGPT, Perplexity, Gemini, Claude and Grok, a site check and a 90-day plan. First month refundable.",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "29",
+            "priceCurrency": "USD",
+            "billingDuration": 1,
+            "billingIncrement": 1,
+            "unitCode": "MON"
+          }
+        },
+        {
+          "@type": "Offer",
           "name": "Citro Professional",
           "price": "119",
           "priceCurrency": "USD",
@@ -357,7 +374,7 @@ function gtag(){dataLayer.push(arguments);}
   </a>
   <div class="nav-right">
     <a href="/sample-audit.html" class="nav-link">See a sample report</a>
-    <a href="/start.html" class="nav-cta">Start Free Trial</a>
+    <a href="/start.html" class="nav-cta">Get started</a>
   </div>
 </nav>
 
@@ -392,48 +409,78 @@ function gtag(){dataLayer.push(arguments);}
 <div class="plans-section">
   <div class="plans-grid">
 
-    <!-- Professional (hero) -->
+    <!-- Starter (hero) -->
     <div class="plan-card hero-plan">
-      <div class="plan-badge popular">Most popular</div>
-      <div class="plan-name">Professional</div>
-      <div class="plan-tagline">Your buyer personas, the questions they ask AI, a full 5-platform audit, the plan to improve, and tracking as you climb.</div>
+      <div class="plan-badge popular">Best for small businesses</div>
+      <div class="plan-name">Starter</div>
+      <div class="plan-tagline">The full audit across all 5 AI assistants and your 90-day plan, refreshed every month.</div>
       <div class="plan-price-block">
-        <div class="plan-price"><span class="currency">$</span>119<span class="period"> / month</span></div>
-        <div class="plan-price-note" style="color:var(--green);font-weight:600;">7-day free trial — then $119/mo. Cancel anytime.</div>
+        <div class="plan-price"><span class="currency">$</span>29<span class="period"> / month</span></div>
+        <div class="plan-price-note" style="color:var(--green);font-weight:600;">First month refundable. Cancel anytime.</div>
       </div>
       <div class="plan-divider"></div>
       <ul class="plan-features">
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <strong>Unlimited re-runs</strong> for one company or product
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong>One full audit every month</strong> for one company</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Tested across 5 AI platforms every run
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Tested across 5 AI platforms: ChatGPT, Perplexity, Gemini, Claude and Grok</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <strong>Editable buyer personas</strong> and the questions they ask AI, by hand or uploaded
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Who AI recommends instead of you, and the sites it read</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          A prioritized, actionable plan to win the recommendation
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>A check of your own site and a <strong>90-day plan</strong> to get recommended</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <strong>Dashboard</strong> that tracks your Citro Score over time and models scenarios
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Editable buyer personas and questions</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Full report history with email delivery
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Score history and email delivery</span>
         </li>
         <li class="dim">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          Multiple companies or brands
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Unlimited re-runs</span>
         </li>
       </ul>
-      <a href="/start.html" class="plan-cta primary">Start Free Trial</a>
-      <p class="plan-cta-note">7 days free — card required. Full access from day one.</p>
+      <a href="/start.html?plan=starter" class="plan-cta primary">Start for $29</a>
+      <p class="plan-cta-note">Billed today. Not useful? Email us within 30 days for a full refund.</p>
+    </div>
+
+    <!-- Professional -->
+    <div class="plan-card">
+      <div class="plan-badge entry">Unlimited re-runs</div>
+      <div class="plan-name">Professional</div>
+      <div class="plan-tagline">Your buyer personas, the questions they ask AI, a full 5-platform audit, the plan to improve, and tracking as you climb.</div>
+      <div class="plan-price-block">
+        <div class="plan-price"><span class="currency">$</span>119<span class="period"> / month</span></div>
+        <div class="plan-price-note" style="color:var(--green);font-weight:600;">7-day free trial, then $119/mo. Cancel anytime.</div>
+      </div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Unlimited re-runs</strong> for one company or product</span>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Tested across 5 AI platforms every run</span>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Editable buyer personas</strong> and the questions they ask AI, by hand or uploaded</span>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>A prioritized, actionable plan to win the recommendation</span>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Dashboard</strong> that tracks your Citro Score over time and models scenarios</span>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Full report history with email delivery</span>
+        </li>
+        <li class="dim">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Multiple companies or brands</span>
+        </li>
+      </ul>
+      <a href="/start.html?plan=professional" class="plan-cta secondary">Start Free Trial</a>
+      <p class="plan-cta-note">7 days free, card required. Full access from day one.</p>
     </div>
 
     <!-- Enterprise -->
@@ -448,28 +495,22 @@ function gtag(){dataLayer.push(arguments);}
       <div class="plan-divider"></div>
       <ul class="plan-features">
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <strong>Up to 10 companies, brands, or websites</strong>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong>Up to 10 companies, brands, or websites</strong></span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Unlimited re-runs across all brands
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Unlimited re-runs across all brands</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          5 AI platforms tested per run
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>5 AI platforms tested per run</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Cross-brand comparison dashboard
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Cross-brand comparison dashboard</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Score trend history for every brand
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Score trend history for every brand</span>
         </li>
         <li>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          Priority support
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Priority support</span>
         </li>
       </ul>
       <a href="/enterprise.html" class="plan-cta secondary">Get Enterprise</a>
@@ -487,7 +528,7 @@ function gtag(){dataLayer.push(arguments);}
     </svg>
     <div class="guarantee-text">
       <h3>Full refund guaranteed</h3>
-      <p>If your report doesn't reveal something actionable about your AI citation visibility, email us within 7 days of delivery and we'll refund you in full. No questions asked. Powered by RootPartners — six exits, $1.4B+.</p>
+      <p>If your report doesn't reveal something actionable about your AI citation visibility, email us within 30 days on Starter, or within 7 days of delivery on the other plans, and we'll refund you in full. No questions asked. Powered by RootPartners: six exits, $1.4B+.</p>
     </div>
   </div>
 </div>
@@ -498,8 +539,9 @@ function gtag(){dataLayer.push(arguments);}
   <table class="compare-table">
     <thead>
       <tr>
-        <th style="width:40%;">Feature</th>
-        <th class="col-hero">Professional<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--green);">7-day free trial</span></th>
+        <th style="width:34%;">Feature</th>
+        <th class="col-hero">Starter<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--green);">$29 / mo</span></th>
+        <th>Professional<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);">$119 / mo · 7-day trial</span></th>
         <th>Enterprise<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);">$299 / mo</span></th>
       </tr>
     </thead>
@@ -508,55 +550,66 @@ function gtag(){dataLayer.push(arguments);}
         <td>5 AI platforms tested</td>
         <td class="col-hero"><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>Citro Score</td>
         <td class="col-hero"><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
       </tr>
       <tr>
           <td>Edit the questions your buyers ask AI</td>
-          <td class="col-hero"><span class="check">✓</span></td>
+        <td class="col-hero"><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
           <td><span class="check">✓</span></td>
         </tr>
         <tr>
         <td>Competitive matrix</td>
         <td class="col-hero"><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>90-day action roadmap</td>
         <td class="col-hero"><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>Unlimited re-runs</td>
-        <td class="col-hero"><span class="check">✓</span></td>
+        <td class="col-hero">1 audit / month</td>
+        <td><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>Score trend history</td>
         <td class="col-hero"><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>Full report history + email delivery</td>
         <td class="col-hero"><span class="check">✓</span></td>
         <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>Companies / brands monitored</td>
         <td class="col-hero">1</td>
+        <td>1</td>
         <td>Up to 10</td>
       </tr>
       <tr>
         <td>Cross-brand dashboard</td>
         <td class="col-hero"><span class="dash">—</span></td>
+        <td><span class="dash">—</span></td>
         <td><span class="check">✓</span></td>
       </tr>
       <tr>
         <td>Priority support</td>
         <td class="col-hero"><span class="dash">—</span></td>
+        <td><span class="dash">—</span></td>
         <td><span class="check">✓</span></td>
       </tr>
     </tbody>
@@ -577,10 +630,10 @@ function gtag(){dataLayer.push(arguments);}
 
   <div class="faq-item">
     <div class="faq-q" onclick="toggleFaq(this)">
-      How does the free trial work?
+      How do Starter and the free trial work?
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </div>
-    <div class="faq-a">Professional starts with a 7-day free trial. You add a card but are not charged until day 8, and you can cancel anytime before then from your dashboard. During the trial you get the full product: unlimited re-runs, score tracking over time, and report history, so you see exactly where you stand before your first bill.</div>
+    <div class="faq-a">Starter is $29 a month, billed when you sign up, and includes one full audit every 30 days. If your first audit isn't useful, email us within 30 days and we refund the month. Professional starts with a 7-day free trial. You add a card but are not charged until day 8, and you can cancel anytime before then from your dashboard. During the trial you get the full product: unlimited re-runs, score tracking over time, and report history, so you see exactly where you stand before your first bill.</div>
   </div>
 
   <div class="faq-item">
@@ -596,7 +649,7 @@ function gtag(){dataLayer.push(arguments);}
       What if the report isn't useful?
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </div>
-    <div class="faq-a">Email us within 7 days of delivery and we'll refund you in full, no questions asked. We're confident the report will show you something actionable — but if it doesn't, you shouldn't pay for it.</div>
+    <div class="faq-a">On Starter, email us within 30 days and we'll refund your first month. On the other plans, email us within 7 days of delivery and we'll refund you in full. We're confident the report will show you something actionable, but if it doesn't, you shouldn't pay for it.</div>
   </div>
 
   <div class="faq-item">
@@ -604,7 +657,7 @@ function gtag(){dataLayer.push(arguments);}
       Who is this built for?
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </div>
-    <div class="faq-a">Citro is built for B2B companies whose buyers use AI to research options before making a purchase — professional services, SaaS, consulting, healthcare, and similar industries. If your buyers are asking AI "who should I call for X" and you're not sure whether your name comes up, Citro answers that question directly.</div>
+    <div class="faq-a">Small and mid-sized businesses with small marketing teams, plus the agencies that support them: local services, professional services, healthcare, ecommerce, SaaS and more. If your customers ask AI "who should I call for X" or "what's the best X" and you're not sure whether your name comes up, Citro answers that question and tells you what to fix.</div>
   </div>
 </div>
 

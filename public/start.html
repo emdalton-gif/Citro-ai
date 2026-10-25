@@ -13,7 +13,7 @@ function gtag(){dataLayer.push(arguments);}
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9LYVMPB7R3');gtag('config','AW-18148918651');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Start Your Free Trial — Citro</title>
+<title>Get Started with Citro | Plans from $29</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -298,8 +298,8 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="step-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00BDE7" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
     </div>
-    <h1 class="step-title">Start your 7-day free trial.</h1>
-    <p class="step-sub">Citro builds the buyer personas for your business, asks the questions they put to AI, and shows where you stand across all 5 assistants, with a 90-day plan to climb. Enter your business email to begin. No charge today.</p>
+    <h1 class="step-title">Get your full AI visibility audit.</h1>
+    <p class="step-sub">Citro builds the buyer personas for your business, asks the questions they put to AI, and shows where you stand across all 5 assistants, with a 90-day plan to climb. Enter your business email to begin. Plans start at $29/month.</p>
     <div class="global-error" id="err-1"></div>
     <div class="field">
       <label for="f-email">Business email</label>
@@ -312,7 +312,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
     <div class="stripe-row" style="margin-top:20px;">
       <span class="stripe-item">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        No charge today. 7 days free, then $119/mo. Cancel anytime.
+        Starter $29/mo with a first-month refund. Cancel anytime.
       </span>
     </div>
   </div>
@@ -458,14 +458,20 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#026F8B" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
     <h1 class="step-title" id="s5-title">You're all set. Choose your plan.</h1>
-    <p class="step-sub" id="s5-sub">Review what we set up, then add your card. Professional starts with 7 days free: no charge today, nothing until day 8.</p>
+    <p class="step-sub" id="s5-sub">Review what we set up, then add your card. Starter is $29 a month, and if your first audit isn't useful, we refund the month.</p>
 
     <div class="plan-pick" role="radiogroup" aria-label="Plan">
       <label class="plan-opt">
-        <input type="radio" name="plan" value="professional" checked onchange="choosePlan(this.value)">
+        <input type="radio" name="plan" value="starter" checked onchange="choosePlan(this.value)">
+        <span class="po-name">Starter</span>
+        <span class="po-price">$29/mo · first month refundable</span>
+        <span class="po-desc">One business. The full audit across all 5 AI assistants and your 90-day plan, refreshed every month.</span>
+      </label>
+      <label class="plan-opt">
+        <input type="radio" name="plan" value="professional" onchange="choosePlan(this.value)">
         <span class="po-name">Professional</span>
         <span class="po-price">$119/mo · 7 days free</span>
-        <span class="po-desc">One business. All 5 AI assistants, your own buyer questions, monthly tracking.</span>
+        <span class="po-desc">One business. Everything in Starter, plus unlimited re-runs to track every change.</span>
       </label>
       <label class="plan-opt">
         <input type="radio" name="plan" value="enterprise" onchange="choosePlan(this.value)">
@@ -492,29 +498,29 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
       </div>
       <div class="trial-summary-row">
         <span class="trial-summary-label">Plan</span>
-        <span class="trial-summary-value" id="ts-plan">Citro Professional</span>
+        <span class="trial-summary-value" id="ts-plan">Citro Starter</span>
       </div>
       <div class="trial-summary-row">
         <span class="trial-summary-label">Due today</span>
-        <span class="trial-summary-value" style="color:#4FD8F5;" id="ts-due">$0.00</span>
+        <span class="trial-summary-value" style="color:#4FD8F5;" id="ts-due">$29.00</span>
       </div>
       <div class="trial-summary-row">
-        <span class="trial-summary-label" id="ts-after-label">After trial (day 8)</span>
-        <span class="trial-summary-value" id="ts-after">$119.00 / month</span>
+        <span class="trial-summary-label" id="ts-after-label">Then</span>
+        <span class="trial-summary-value" id="ts-after">$29.00 / month</span>
       </div>
     </div>
 
     <div class="trial-callout">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
       <div class="trial-callout-text" id="ts-callout">
-        <strong>7 days free, then $119/month.</strong> A temporary $1 authorization confirms your card and is refunded right away. Nothing is charged until day 8, and you can cancel any time before then from your dashboard, no charge, no questions.
+        <strong>$29/month, billed today.</strong> Your full audit runs as soon as you finish. If it doesn't show you something useful, email support@getcitro.ai within 30 days and we refund your first month. Cancel anytime from your dashboard.
       </div>
     </div>
 
     <div class="global-error" id="err-5"></div>
     <button class="btn-primary green" id="start-trial-btn" onclick="startTrial()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      <span id="start-trial-label">Start My 7-Day Free Trial</span>
+      <span id="start-trial-label">Start Starter for $29</span>
     </button>
     <button class="btn-ghost" onclick="goStep(4)">← Back</button>
 
@@ -528,7 +534,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
         Card encrypted — never stored on our servers
       </span>
       <span class="stripe-item" id="ts-cancel-note">
-        Cancel anytime before day 8
+        Cancel anytime · first month refundable
       </span>
     </div>
     <p style="font-size:12px;color:var(--quiet);text-align:center;margin-top:12px;line-height:1.5;">By continuing you agree to our <a href="/terms.html" target="_blank" style="color:var(--mid);">Terms of Service</a> and <a href="/privacy.html" target="_blank" style="color:var(--mid);">Privacy Policy</a>.</p>
@@ -540,7 +546,7 @@ p.step-sub { font-size: 15px; color: var(--mid); line-height: 1.65; margin-botto
 <script>
 // ── STATE ──
 let state = {
-  plan: 'professional',
+  plan: 'starter',
   email: '',
   password: '',
   bizName: '',
@@ -861,6 +867,12 @@ function goStep5() {
 // ── START TRIAL ──
 // ── PLAN CHOICE (step 5) ──
 const PLAN_COPY = {
+  starter: {
+    sub: 'Review what we set up, then add your card. Starter is $29 a month, and if your first audit isn\'t useful, we refund the month.',
+    plan: 'Citro Starter', due: '$29.00', afterLabel: 'Then', after: '$29.00 / month',
+    callout: '<strong>$29/month, billed today.</strong> Your full audit runs as soon as you finish. If it doesn\'t show you something useful, email support@getcitro.ai within 30 days and we refund your first month. Cancel anytime from your dashboard.',
+    button: 'Start Starter for $29', cancel: 'Cancel anytime · first month refundable',
+  },
   professional: {
     sub: 'Review what we set up, then add your card. Professional starts with 7 days free: no charge today, nothing until day 8.',
     plan: 'Citro Professional', due: '$0.00', afterLabel: 'After trial (day 8)', after: '$119.00 / month',
@@ -875,7 +887,7 @@ const PLAN_COPY = {
   },
 };
 function choosePlan(plan) {
-  state.plan = plan === 'enterprise' ? 'enterprise' : 'professional';
+  state.plan = plan === 'enterprise' ? 'enterprise' : plan === 'professional' ? 'professional' : 'starter';
   const c = PLAN_COPY[state.plan];
   document.getElementById('s5-sub').textContent = c.sub;
   document.getElementById('ts-plan').textContent = c.plan;
@@ -945,6 +957,7 @@ async function startTrial() {
         password: state.password,
         profile:  { ...state.profile, name: state.bizName, company_name: state.bizName, website: state.bizUrl, specific_product: state.bizProduct, competitors: state.competitors.join(', ') },
         personas: state.personas,
+        plan:     state.plan,
       }),
     });
     const data = await resp.json();
@@ -960,7 +973,7 @@ async function startTrial() {
 
   } catch(e) {
     btn.disabled = false;
-    label.textContent = 'Start My 7-Day Free Trial';
+    label.textContent = (PLAN_COPY[state.plan] || PLAN_COPY.starter).button;
     err.textContent = e.message;
     err.classList.add('show');
   }
@@ -980,6 +993,12 @@ document.addEventListener('keydown', function(e) {
 function prefillFromCheck(){
   try {
     var q = new URLSearchParams(window.location.search);
+    var pl = q.get('plan');
+    if (pl === 'professional' || pl === 'enterprise' || pl === 'starter') {
+      var radio = document.querySelector('input[name="plan"][value="' + pl + '"]');
+      if (radio) radio.checked = true;
+      choosePlan(pl);
+    }
     var em = q.get('em'), co = q.get('co'), url = q.get('url');
     if (em) { var e = document.getElementById('f-email');    if (e) e.value = em; }
     if (co) { var b = document.getElementById('f-biz-name');  if (b) b.value = co; }

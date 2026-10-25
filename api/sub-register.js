@@ -8,6 +8,7 @@
 //     merged, so saved questions, personas and the locked company stay put.
 // Issues a 30-day subscriber session token when the caller proves who they are.
 
+const { planFromMeta } = require('./_lib/plan-change');
 const crypto = require('crypto');
 const https  = require('https');
 
@@ -38,7 +39,7 @@ async function verifiedCheckout(sessionId, email) {
   const owner = String(session.client_reference_id || session.customer_details?.email || session.customer_email || '').toLowerCase().trim();
   if (owner !== email) return null;
   return {
-    plan: session.metadata?.plan === 'enterprise' ? 'enterprise' : 'professional',
+    plan: planFromMeta(session.metadata?.plan),
     stripeCustomerId: session.customer || null,
     stripeSubscriptionId: session.subscription || null,
   };

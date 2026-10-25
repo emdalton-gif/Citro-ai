@@ -3,7 +3,8 @@
 // 1. Hashes the password and creates a subscriber record in Redis with
 //    subscriptionStatus: 'pending_payment'.
 // 2. Stores the business profile and personas so they survive the Stripe redirect.
-// 3. Creates a Stripe Checkout Session (subscription mode, 7-day free trial).
+// 3. Creates a Stripe Checkout Session: Professional with a 7-day free trial,
+//    or Starter ($29/month, billed today, first-month refund on request).
 // 4. Returns { url } — the Stripe-hosted checkout page.
 //
 // After payment, Stripe redirects to /trial-confirm.html?session_id=...
@@ -105,6 +106,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST')    { res.status(405).json({ error: 'Method not allowed' }); return; }
 
   const { email, password, profile, personas } = req.body || {};
+  const plan = (req.body || {}).plan === 'starter' ? 'starter' : 'professional';
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -129,7 +131,7 @@ module.exports = async function handler(req, res) {
     if (existing) {
       // Abandoned checkout: start over with the password entered now.
       const salt = crypto.randomBytes(16).toString('hex');
-      await upstashSet(`subscriber:${normalized}`, { ...existing, salt, passwordHash: await hashPassword(password, salt), updatedAt: Date.now() });
+      await upstashSet(`subscriber:${normalized}`, { ...existing, plan, salt, passwordHash: await hashPassword(password, salt), updatedAt: Date.now() });
     }
     if (!existing) {
       const salt = crypto.randomBytes(16).toString('hex');
@@ -139,7 +141,7 @@ module.exports = async function handler(req, res) {
         email:               normalized,
         passwordHash,
         salt,
-        plan:                'professional',
+        plan,
         stripeCustomerId:    null,
         stripeSubscriptionId: null,
         subscriptionStatus:  'pending_payment',
@@ -164,7 +166,10 @@ module.exports = async function handler(req, res) {
 
     // ── 4. Create Stripe Checkout Session ─────────────────────────────────────
     const origin  = req.headers.origin || 'https://getcitro.ai';
-    const priceId = process.env.STRIPE_PROFESSIONAL_PRICE_ID || process.env.STRIPE_ACTIVE_PRICE_ID;
+    const priceId = plan === 'starter'
+      ? process.env.STRIPE_STARTER_PRICE_ID
+      : (process.env.STRIPE_PROFESSIONAL_PRICE_ID || process.env.STRIPE_ACTIVE_PRICE_ID);
+    if (!priceId) return res.status(500).json({ error: 'This plan is not available right now. Please email support@getcitro.ai.' });
 
     const session = await stripePost('/checkout/sessions', {
       mode:                 'subscription',
@@ -172,11 +177,11 @@ module.exports = async function handler(req, res) {
       customer_email:       normalized,
       client_reference_id:  normalized,   // used by trial-activate to look up the pre-created account
       line_items:           [{ price: priceId, quantity: 1 }],
-      subscription_data:    { trial_period_days: 7 },
+      ...(plan === 'starter' ? {} : { subscription_data: { trial_period_days: 7 } }),
       success_url:          `${origin}/trial-confirm.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:           `${origin}/start.html`,
       metadata: {
-        plan:        'professional',
+        plan,
         email:       normalized,
         company_name: (profile.name    || '').slice(0, 400),
         website:      (profile.website || '').slice(0, 400),

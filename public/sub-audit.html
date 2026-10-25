@@ -1228,6 +1228,7 @@ Return ONLY JSON: [{"i":<number>,"pass":true|false,"reason":"<under 12 words>","
             } else {
               const errBody = await liveResp.json().catch(()=>({}));
               liveError = errBody.error || `live-query returned ${liveResp.status}`;
+              if (liveResp.status === 402 && errBody.plan === 'starter') window.__starterBlocked = errBody;
             }
           } catch(liveErr) { liveError = liveErr.message || 'live-query request failed'; }
         } else {
@@ -1901,6 +1902,14 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
   }
 
   // ── Run audit ─────────────────────────────────────────────────────────────
+  function showStarterLimit(nextRunAt) {
+    const when = nextRunAt ? new Date(nextRunAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : 'next month';
+    ['screen-setup', 'screen-personas', 'screen-queries', 'screen-loading', 'screen-results'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    document.getElementById('error-title').textContent = 'Your next Starter audit is on ' + when + '.';
+    document.getElementById('error-body').innerHTML = 'Starter includes one full audit every 30 days. Your last report and plan are on your dashboard. Want to re-run sooner? Upgrade to Professional for unlimited re-runs from your dashboard.';
+    flex('screen-error');
+  }
+
   async function runAudit(profile, prebuiltPersonas = null, prebuiltQueries = null) {
     hide('screen-setup');
     hide('screen-personas');
@@ -1938,7 +1947,9 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
       _currentQueries = queries;
       setPhase(2, 'active');
 
+      window.__starterBlocked = null;
       simResults = await runSimulations(profile, personas, queries);
+      if (window.__starterBlocked) { showStarterLimit(window.__starterBlocked.nextRunAt); return; }
       // "Dale Carnegie" and "Dale Carnegie Training" are one competitor.
       if (window.CitroGrounding) window.CitroGrounding.mergeCompetitorNames(simResults);
       setPhase(2, 'done'); setPhase(3, 'active');
@@ -2619,6 +2630,12 @@ Return ONLY a JSON array of exactly 7 strings and nothing else — no prose befo
 
       subscriberEmail = data.email || '';
       isEnterprise = data.plan === 'enterprise'; // assign to hoisted outer let
+      // Starter: one audit per 30 days. Show when the next one opens instead
+      // of letting a run start that would come back empty.
+      if (data.plan === 'starter' && data.starter && data.starter.nextRunAt > Date.now()
+          && Date.now() - (data.starter.lastRunAt || 0) > (data.starter.runWindowMs || 0)) {
+        showStarterLimit(data.starter.nextRunAt); return;
+      }
 
       if (data.subscriptionStatus === 'canceled') {
         document.getElementById('error-title').textContent = 'Subscription required.';

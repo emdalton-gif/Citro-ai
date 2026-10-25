@@ -26,6 +26,7 @@
 
 const https = require('https');
 const crypto = require('crypto');
+const { STARTER_PERIOD_MS, STARTER_RUN_WINDOW_MS } = require('./_lib/plan-change');
 
 // Models checked against provider docs on 2026-09-23.
 const MODELS = {
@@ -380,6 +381,50 @@ async function callWithRetry(platform, query, loc) {
   }
 }
 
+// ── Starter run limit ─────────────────────────────────────────────────────────
+
+async function redis(cmd) {
+  const r = await fetch(process.env.UPSTASH_REDIS_REST_URL, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(cmd),
+  });
+  return r.json();
+}
+
+// Returns null when the call may go ahead, or { error, nextRunAt } when a
+// Starter account has used this period's audit. The first answer of a run opens
+// a window the rest of that run (and a retry of it) can use; after the window
+// the next audit opens 30 days from when it was opened. A lookup failure never
+// blocks a paying customer.
+async function starterGate(email) {
+  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  try {
+    const acct = await redis(['GET', `subscriber:${email}`]);
+    const account = acct && acct.result ? JSON.parse(acct.result) : null;
+    if (!account || account.plan !== 'starter') return null;
+    const now = Date.now();
+    const key = `starter-window:${email}`;
+    const w = await redis(['GET', key]);
+    const win = w && w.result ? JSON.parse(w.result) : null;
+    const blocked = next => ({ nextRunAt: next, error: `Your Starter plan includes one full audit every 30 days. Your next one is available on ${new Date(next).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}. Upgrade to Professional for unlimited re-runs.` });
+    if (win) {
+      if (now - win.openedAt < STARTER_RUN_WINDOW_MS) return null;
+      return blocked(win.openedAt + STARTER_PERIOD_MS);
+    }
+    // No open window: fall back to the last saved run, then open a new window.
+    const runs = await redis(['GET', `subscriber-runs:${email}`]);
+    const list = runs && runs.result ? JSON.parse(runs.result) : [];
+    const last = Array.isArray(list) && list[0] ? list[0].createdAt : null;
+    if (last && now - last < STARTER_PERIOD_MS && now - last > STARTER_RUN_WINDOW_MS) return blocked(last + STARTER_PERIOD_MS);
+    await redis(['SET', key, JSON.stringify({ openedAt: now }), 'PX', STARTER_PERIOD_MS, 'NX']);
+    return null;
+  } catch (e) {
+    console.error('starter gate check failed:', e.message);
+    return null;
+  }
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
@@ -391,8 +436,16 @@ module.exports = async function handler(req, res) {
 
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  const isAuthed = verifySubscriberToken(token) || verifyPortalToken(token) || verifyPurchaseToken(token);
+  const subscriberEmail = verifySubscriberToken(token);
+  const isAuthed = subscriberEmail || verifyPortalToken(token) || verifyPurchaseToken(token);
   if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Starter includes one audit per 30 days, enforced here because a run is
+  // only ever as many answers as this endpoint gives out.
+  if (subscriberEmail) {
+    const gate = await starterGate(subscriberEmail);
+    if (gate) return res.status(402).json({ error: gate.error, nextRunAt: gate.nextRunAt, plan: 'starter' });
+  }
 
   const { query, platform, geo } = req.body || {};
   if (!query) return res.status(400).json({ error: 'Missing query' });

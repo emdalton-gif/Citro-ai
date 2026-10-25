@@ -2,6 +2,7 @@
 // Returns authenticated subscriber's account info, subscription status,
 // saved company profile, and audit run history.
 
+const { starterNextRunAt, STARTER_RUN_WINDOW_MS } = require('./_lib/plan-change');
 const crypto = require('crypto');
 
 function verifySubscriberToken(token) {
@@ -64,6 +65,12 @@ module.exports = async function handler(req, res) {
       createdAt: account.createdAt,
       profile: profile || null,
       runs: (runs || []).slice(0, 50),
+      // Starter includes one audit per 30 days; the audit page uses this to
+      // show when the next one is available.
+      starter: (account.plan === 'starter') ? (() => {
+        const last = (runs || [])[0]?.createdAt || null;
+        return { lastRunAt: last, nextRunAt: starterNextRunAt(last), runWindowMs: STARTER_RUN_WINDOW_MS };
+      })() : undefined,
       properties: properties || [],
     });
   } catch (err) {

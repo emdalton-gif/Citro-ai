@@ -7,9 +7,9 @@ Citro is built for small and mid-sized businesses with small marketing teams (an
 ## Product
 - [How it works](https://getcitro.ai/#how-it-works): Profile your company, build buyer personas, run live, web-enabled queries across 5 AI platforms, get a Citro Score and a 90-day plan.
 - [Free AI visibility check](https://getcitro.ai/free-check.html): Free, no card. Asks ChatGPT and Google Gemini three buyer questions with live web search and shows whether they recommend your business, who they name instead, and which sites they read.
-- [Plans and pricing](https://getcitro.ai/plans.html): Professional is 119 USD per month with a 7-day free trial. Enterprise is 299 USD per month for up to 10 brands.
+- [Plans and pricing](https://getcitro.ai/plans.html): Starter is 29 USD per month for one full audit a month with a 90-day plan, first month refundable. Professional is 119 USD per month with unlimited re-runs and a 7-day free trial. Enterprise is 299 USD per month for up to 10 brands.
 - [Sample audit report](https://getcitro.ai/sample-audit.html): An example AI Visibility Report.
-- [Start a free trial](https://getcitro.ai/start.html): Run your own Citro audit.
+- [Get started](https://getcitro.ai/start.html): Run your own Citro audit, from 29 USD per month.
 - [FAQ](https://getcitro.ai/faq.html): How the audit works, how the Citro Score is calculated, pricing, the trial, and comparisons.
 - [Full text for AI](https://getcitro.ai/llms-full.txt): This file plus the full FAQ and comparison summaries.
 

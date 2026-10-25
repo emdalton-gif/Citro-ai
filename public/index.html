@@ -81,12 +81,11 @@ function gtag(){dataLayer.push(arguments);}
   "operatingSystem": "Web",
   "url": "https://getcitro.ai",
   "description": "Citro builds editable buyer personas specific to your company, asks the questions those buyers ask across 5 AI platforms (ChatGPT, Perplexity, Gemini, Claude, Grok), reports where you rank and get recommended against named competitors, and returns a 30 to 90 day plan to improve your Citro Score.",
-  "offers": {
-    "@type": "Offer",
-    "price": "119",
-    "priceCurrency": "USD",
-    "description": "Citro Professional, 119 USD per month, with a 7-day free trial."
-  },
+  "offers": [
+    { "@type": "Offer", "name": "Citro Starter", "price": "29", "priceCurrency": "USD", "description": "One full audit a month across 5 AI assistants with a 90-day plan, 29 USD per month, first month refundable." },
+    { "@type": "Offer", "name": "Citro Professional", "price": "119", "priceCurrency": "USD", "description": "Unlimited re-runs for one company, 119 USD per month, with a 7-day free trial." },
+    { "@type": "Offer", "name": "Citro Enterprise", "price": "299", "priceCurrency": "USD", "description": "Up to 10 companies or brands, 299 USD per month." }
+  ],
   "featureList": [
     "Editable buyer persona simulation",
     "AI citation audit across 5 platforms",
@@ -976,7 +975,7 @@ function gtag(){dataLayer.push(arguments);}
   </div>
   <div class="nav-right">
     <a href="/signin.html" class="nav-signin">Sign in</a>
-    <a href="/start.html" class="nav-cta">Start free trial</a>
+    <a href="/plans.html" class="nav-cta">Plans from $29</a>
     <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
@@ -990,7 +989,7 @@ function gtag(){dataLayer.push(arguments);}
   <a href="/corporate.html" class="mobile-nav-link">Corporate Clients</a>
   <div class="mobile-nav-divider"></div>
   <a href="/signin.html" class="mobile-nav-link">Sign in</a>
-  <a href="/start.html" class="mobile-nav-cta">Start free trial →</a>
+  <a href="/plans.html" class="mobile-nav-cta">Plans from $29 →</a>
 </div>
 
 <!-- HERO -->
@@ -1170,7 +1169,7 @@ function gtag(){dataLayer.push(arguments);}
     <div style="font-size:12px;font-family:monospace;letter-spacing:0.1em;text-transform:uppercase;color:#4FD8F5;margin-bottom:16px;">We practice what we preach</div>
     <h2 style="font-size:32px;line-height:1.2;font-weight:800;color:#fff;margin:0 0 16px;letter-spacing:-0.5px;">We run Citro on Citro.</h2>
     <p style="font-size:17px;line-height:1.7;color:rgba(242,248,250,0.78);max-width:680px;margin:0 auto 28px;">We hold ourselves to the same standard we sell. We audit our own AI visibility across all five platforms, follow the same 90-day plan we hand you, and re-score to prove it moves. The method has to work on the company that builds it before we ask it to work for you.</p>
-    <a href="/start.html" style="display:inline-block;background:#00BDE7;color:#04222E;padding:14px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.1px;">Start your 7-day free trial</a>
+    <a href="/start.html" style="display:inline-block;background:#00BDE7;color:#04222E;padding:14px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.1px;">Get your full audit for $29</a>
   </div>
 </div>
 
@@ -1329,7 +1328,7 @@ function gtag(){dataLayer.push(arguments);}
 
       <details class="faq-item">
         <summary class="faq-q">Is this a one-time thing or should I run it regularly?</summary>
-        <div class="faq-a">AI recommendations shift as platforms update their models and as competitors publish new content, so it pays to track it over time. A Professional subscription ($119/mo, with a 7-day free trial) lets you run Citro as often as you want and watch your score move. Enterprise ($299/mo) extends that to up to 10 companies or websites.</div>
+        <div class="faq-a">AI recommendations shift as platforms update their models and as competitors publish new content, so it pays to track it over time. Starter ($29/mo) gives you a fresh full audit every month. Professional ($119/mo, with a 7-day free trial) lets you run Citro as often as you want and watch your score move. Enterprise ($299/mo) extends that to up to 10 companies or websites.</div>
       </details>
 
       <details class="faq-item">
@@ -1360,12 +1359,28 @@ function gtag(){dataLayer.push(arguments);}
     <div class="section-title">Know where you stand.<br>Track every shift that matters.</div>
     <div class="pricing-grid">
 
-      <!-- PROFESSIONAL -->
+      <!-- STARTER -->
       <div class="pricing-card featured">
-        <div class="pricing-badge">Most popular</div>
+        <div class="pricing-badge">Best for small businesses</div>
+        <div class="pricing-plan">Starter</div>
+        <div class="pricing-price">$29 <span>/month</span></div>
+        <div class="pricing-desc">For small businesses that want the full picture and a plan to fix it, refreshed every month.</div>
+        <ul class="pricing-features">
+          <li>Full Citro audit across 5 AI platforms</li>
+          <li>One full audit every month, one company</li>
+          <li>Who AI recommends instead of you</li>
+          <li>A check of your website and a 90-day plan</li>
+          <li>First month refundable</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="/start.html?plan=starter" class="pricing-cta blue">Get started for $29 →</a>
+      </div>
+
+      <!-- PROFESSIONAL -->
+      <div class="pricing-card">
         <div class="pricing-plan">Professional</div>
         <div class="pricing-price">$119 <span>/month</span></div>
-        <div class="pricing-desc">For small businesses and entrepreneurs tracking Citro visibility for one company or product over time.</div>
+        <div class="pricing-desc">For teams that re-run often and track every change for one company or product.</div>
         <ul class="pricing-features">
           <li>Full Citro audit across 5 AI platforms</li>
           <li>Unlimited audit runs — one company</li>
@@ -1374,7 +1389,7 @@ function gtag(){dataLayer.push(arguments);}
           <li>Email delivery every run</li>
           <li>Cancel anytime</li>
         </ul>
-        <a href="/start.html" class="pricing-cta blue">Start Free Trial →</a>
+        <a href="/start.html?plan=professional" class="pricing-cta dark">Start 7-day free trial →</a>
       </div>
 
       <!-- ENTERPRISE -->
@@ -1443,7 +1458,7 @@ function gtag(){dataLayer.push(arguments);}
   <div style="max-width:640px;margin:0 auto;">
     <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.03em;line-height:1.2;margin-bottom:14px;">Find out where AI is sending your buyers. Fix it in 90 days.</div>
     <div style="font-size:15px;color:rgba(255,255,255,0.75);margin-bottom:28px;">Results in under 5 minutes. Free 7-day trial, cancel anytime.</div>
-    <a href="/start.html" style="display:inline-block;background:#fff;color:var(--accent-d);padding:14px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.1px;">Start Free Trial</a>
+    <a href="/start.html" style="display:inline-block;background:#fff;color:var(--accent-d);padding:14px 32px;border-radius:999px;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.1px;">Get started for $29</a>
   </div>
 </div>
 

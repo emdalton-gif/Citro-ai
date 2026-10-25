@@ -8,6 +8,7 @@ const crypto = require('crypto');
 function planForPrice(priceId) {
   if (!priceId) return null;
   if (priceId === process.env.STRIPE_ENTERPRISE_PRICE_ID) return 'enterprise';
+  if (priceId === process.env.STRIPE_STARTER_PRICE_ID) return 'starter';
   if (priceId === process.env.STRIPE_PROFESSIONAL_PRICE_ID || priceId === process.env.STRIPE_ACTIVE_PRICE_ID) return 'professional';
   return null;
 }
@@ -59,4 +60,17 @@ async function convertProfileToProperty(email, get, set) {
   return { created: true, property };
 }
 
-module.exports = { planForPrice, convertProfileToProperty };
+// Starter includes one full audit per 30 days. A run is many live queries, so
+// the first query of a run opens a short window that the rest of the run uses;
+// another run can start once 30 days have passed since that window opened.
+const STARTER_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
+const STARTER_RUN_WINDOW_MS = 3 * 60 * 60 * 1000;
+function starterNextRunAt(lastRunAt) {
+  return lastRunAt ? lastRunAt + STARTER_PERIOD_MS : null;
+}
+// The plan named in checkout metadata, limited to the plans we sell.
+function planFromMeta(v, fallback) {
+  return v === 'enterprise' || v === 'starter' || v === 'professional' ? v : (fallback || 'professional');
+}
+
+module.exports = { planForPrice, convertProfileToProperty, planFromMeta, starterNextRunAt, STARTER_PERIOD_MS, STARTER_RUN_WINDOW_MS };

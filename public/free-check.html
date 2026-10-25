@@ -210,7 +210,7 @@ function gtag(){dataLayer.push(arguments);}
     <a href="/plans.html" class="nav-link">Pricing</a>
     <a href="/sample-audit.html" class="nav-link">Sample report</a>
     <a href="/signin.html" class="nav-link">Sign in</a>
-    <a href="/start.html" class="nav-cta" data-track="nav">Start free trial</a>
+    <a href="/plans.html" class="nav-cta" data-track="nav">Plans from $29</a>
   </div>
 </nav>
 
@@ -372,7 +372,7 @@ function gtag(){dataLayer.push(arguments);}
     var summary = comp.length
       ? 'When your customers asked, ' + comp.slice(0, 2).map(function (c) { return c.name; }).join(' and ') + (d.named === 0 ? ' came up instead.' : ' came up most often alongside or instead of you.')
       : 'The answers stayed general and named few providers. That is an opening: the first business these assistants can describe clearly tends to get named.';
-    var trialUrl = '/start.html?em=' + encodeURIComponent(input.email) + '&co=' + encodeURIComponent(d.company || '') + '&url=' + encodeURIComponent(d.domain || input.website);
+    var trialUrl = '/start.html?plan=starter&em=' + encodeURIComponent(input.email) + '&co=' + encodeURIComponent(d.company || '') + '&url=' + encodeURIComponent(d.domain || input.website);
 
     var compHtml = comp.length ? comp.map(function (c) {
       return '<div class="bar-row"><span class="n" title="' + esc(c.name) + '">' + esc(c.name) + '</span><span class="t"><span class="f coral" style="width:' + Math.round(c.n / comp[0].n * 100) + '%"></span></span><span class="c">' + c.n + '</span></div>';
@@ -413,7 +413,7 @@ function gtag(){dataLayer.push(arguments);}
       '<div class="lockwrap">' + locked.map(function (l) {
         return '<div class="step locked"><span class="ic" aria-hidden="true">🔒</span><div><h4>' + esc(l.h) + '</h4><p aria-hidden="true">' + esc(l.p) + '</p></div></div>';
       }).join('') +
-      '<div class="unlock"><a class="btn" href="' + trialUrl + '" data-track="unlock">Unlock your full plan: start free trial</a><p class="fine">7 days free, then $119/month. Cancel anytime.</p></div></div></div>';
+      '<div class="unlock"><a class="btn" href="' + trialUrl + '" data-track="unlock">Unlock your full plan for $29</a><p class="fine">$29/month. Not useful? Full refund of your first month. Cancel anytime.</p></div></div></div>';
 
     $('results').innerHTML =
       '<div class="res-head"><div><div class="score ' + scoreClass(d.score) + '">' + d.score + '%</div><div class="score-lbl">Quick Citro Score</div></div>' +
@@ -423,10 +423,10 @@ function gtag(){dataLayer.push(arguments);}
       qHtml +
       planHtml +
       '<div class="upsell"><div><h2>This was 3 questions on 2 assistants. Your customers ask many more.</h2>' +
-      '<p>Start your free trial and Citro builds your audit from the questions your customers actually ask, on all five AI assistants, then shows your team exactly what to fix first.</p>' +
+      '<p>For $29 a month, Citro builds your audit from the questions your customers actually ask, on all five AI assistants, checks your website, and gives you a 90-day plan to get recommended.</p>' +
       '<p class="incl">ChatGPT, Gemini, Claude, Perplexity and Grok · your own questions · up to 5 local markets · monthly tracking</p></div>' +
-      '<div><a class="btn" href="' + trialUrl + '" data-track="results">Start my 7-day free trial →</a>' +
-      '<p class="fine">7 days free, then $119/month. Cancel anytime.</p><a class="ghost" href="/sample-audit.html">See a full sample report</a></div></div>';
+      '<div><a class="btn" href="' + trialUrl + '" data-track="results">Get my full audit for $29 →</a>' +
+      '<p class="fine">$29/month. If your first audit isn\'t useful, we refund the month. Cancel anytime.</p><a class="ghost" href="/sample-audit.html">See a full sample report</a></div></div>';
 
     $('results').hidden = false;
     $('card').innerHTML = '<h2>Your check is ready</h2><p class="card-sub" style="margin-bottom:16px;">Scroll down for what ChatGPT and Gemini said about ' + esc(who) + '.</p><a class="btn" href="#results">See my results ↓</a>';
