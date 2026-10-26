@@ -14,6 +14,8 @@ Citro is built for small and mid-sized businesses with small marketing teams (an
 - [Full text for AI](https://getcitro.ai/llms-full.txt): This file plus the full FAQ and comparison summaries.
 
 ## Category and comparisons
+- [AI visibility audit](https://getcitro.ai/ai-visibility-audit.html): What an AI visibility audit checks, how to run one yourself, and how to see in a minute whether AI assistants recommend your business.
+- [Peec AI alternatives (2026)](https://getcitro.ai/peec-ai-alternatives.html): Six Peec AI alternatives compared on price, AI assistants covered and what you get.
 - [Best AI search visibility audit tools 2026](https://getcitro.ai/ai-search-visibility.html): Seven tools compared on price, AI assistants covered and what you get, and how to choose.
 - [Citro vs Profound](https://getcitro.ai/citro-vs-profound.html): Pricing, AI assistants covered, billing and action plans compared.
 - [Citro vs Peec AI](https://getcitro.ai/citro-vs-peec-ai.html): Daily tracking on three chosen engines vs five assistants, a site check and a 90-day plan.
