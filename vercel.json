@@ -38,6 +38,17 @@
   ],
   "redirects": [
     {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.getcitro.ai"
+        }
+      ],
+      "destination": "https://getcitro.ai/:path*",
+      "permanent": true
+    },
+    {
       "source": "/rootace-vs-profound.html",
       "destination": "/citro-vs-profound.html",
       "permanent": true
@@ -61,6 +72,11 @@
       "source": "/check-v2.html",
       "destination": "/free-check.html",
       "permanent": false
+    },
+    {
+      "source": "/order.html",
+      "destination": "/start.html",
+      "permanent": true
     }
   ],
   "routes": [
