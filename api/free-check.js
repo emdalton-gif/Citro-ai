@@ -20,6 +20,7 @@
 const https = require('https');
 const crypto = require('crypto');
 const { CALLERS, parseLocation, NEAR_ME_RE, NO_LOCATION_PLATFORMS } = require('./live-query.js');
+const nurture = require('./_lib/nurture');
 
 const PLATFORMS = ['ChatGPT', 'Google Gemini'];
 const QUESTIONS = 3;
@@ -219,9 +220,12 @@ ${comp ? `<p style="font-size:15px;color:#48626E;line-height:1.6;margin:0 0 20px
 ${lockedTitles.map((t, i) => `<p style="font-size:14px;color:#7E959F;line-height:1.5;margin:0 0 8px;">&#128274; ${i + 2}. ${esc(t)}</p>`).join('')}
 <p style="margin:14px 0 24px;"><a href="${trial}" style="color:#026F8B;font-weight:700;">Unlock your full plan for $29</a></p>
 <p style="font-size:14px;color:#48626E;line-height:1.6;margin:0 0 24px;">This check asked 3 questions on 2 assistants. The full Citro audit runs the questions your customers actually ask, on all five major AI assistants, and shows your team exactly what to fix first. <a href="${trial}" style="color:#026F8B;font-weight:600;">Get your full audit for $29 a month</a>. If your first audit isn't useful, we refund the month.</p>
-<p style="font-size:12px;color:#7E959F;line-height:1.6;margin:0;">You're receiving this because you ran a free check at getcitro.ai. Questions? Reply to this email.</p>
+<p style="font-size:12px;color:#7E959F;line-height:1.6;margin:0;">You're receiving this because you ran a free check at getcitro.ai. Questions? Reply to this email. Over the next two weeks we'll send a few short tips on getting recommended by AI. <a href="${nurture.unsubUrl(to)}" style="color:#7E959F;">Unsubscribe</a>.<br>RootPartners LLC${process.env.NURTURE_POSTAL_ADDRESS ? ', ' + esc(process.env.NURTURE_POSTAL_ADDRESS) : ''}</p>
 </div></div></body></html>`;
-  const payload = JSON.stringify({ from: 'Citro <audit@getcitro.ai>', to: [to], subject: `Does AI recommend ${r.company}? Your free check`, html });
+  const reply = process.env.NURTURE_REPLY_TO || process.env.LEAD_NOTIFY_EMAIL;
+  const unsub = nurture.unsubUrl(to);
+  const payload = JSON.stringify({ from: process.env.NURTURE_FROM || 'Citro <audit@getcitro.ai>', to: [to], subject: `Does AI recommend ${r.company}? Your free check`, html,
+    ...(reply ? { reply_to: reply } : {}), headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } });
   return new Promise(resolve => {
     const req = https.request({ hostname: 'api.resend.com', path: '/emails', method: 'POST', timeout: 8000,
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } }, r => {
@@ -352,6 +356,8 @@ module.exports = async function handler(req, res) {
       await Promise.all([
         notifyLead({ ...lead, answered: answered.length }).catch(() => {}),
         sendResultsEmail(email, result).catch(() => {}),
+        // Start the follow-up series (api/nurture-cron.js sends it).
+        nurture.enroll(lead).catch(e => console.error('nurture enroll failed', e.message)),
       ]);
     }
 

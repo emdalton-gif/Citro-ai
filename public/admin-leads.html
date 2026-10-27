@@ -37,6 +37,15 @@
   <h1>Free-check leads</h1>
   <p class="sub">Everyone who finished a free check, newest first. Kept for 90 days.</p>
   <div id="notify"></div>
+  <div class="note" id="fu">
+    <strong>Follow-up emails.</strong> Everyone who finishes a free check gets the results email, then four follow-ups on days 2, 5, 9 and 14. The series stops if they unsubscribe or become a customer.
+    <div class="bar" style="margin:12px 0 0">
+      <input id="testTo" type="email" placeholder="Send all four to this address as a test" />
+      <button class="ghost" id="testBtn">Send test</button>
+      <button class="ghost" id="backBtn">Add earlier leads to the series</button>
+    </div>
+    <div id="fuMsg" class="sub" style="margin:10px 0 0"></div>
+  </div>
   <div class="bar">
     <input id="q" type="search" placeholder="Filter by email, company or site" />
     <button id="csv">Download CSV</button>
@@ -44,8 +53,8 @@
     <span id="count" class="sub" style="margin:0"></span>
   </div>
   <div class="wrap"><table>
-    <thead><tr><th>When</th><th>Email</th><th>Company</th><th>Site</th><th>Category</th><th>Location</th><th>Score</th><th>Named</th><th>Named instead</th></tr></thead>
-    <tbody id="rows"><tr><td colspan="9">Loading…</td></tr></tbody>
+    <thead><tr><th>When</th><th>Email</th><th>Company</th><th>Site</th><th>Category</th><th>Location</th><th>Score</th><th>Named</th><th>Named instead</th><th>Follow-ups</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="10">Loading…</td></tr></tbody>
   </table></div>
   <h2>Waiting (hit the daily limit)</h2>
   <div class="wrap"><table>
@@ -61,15 +70,25 @@
   document.getElementById('out').onclick = function (e) { e.preventDefault(); try { localStorage.removeItem('admin_token'); } catch (x) {} location.href = '/admin-login.html'; };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var when = function (ts) { if (!ts) return ''; var d = new Date(ts); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); };
-  var data = { leads: [], queued: [] };
+  var data = { leads: [], queued: [], nurture: {} };
+  function fu(l) {
+    var st = data.nurture[String(l.email || '').toLowerCase()];
+    if (!st) return '';
+    if (st.stopped === 'unsubscribed') return 'Unsubscribed';
+    if (st.stopped === 'customer') return 'Customer';
+    if (st.stopped === 'send-failed') return '<span class="zero">Failed to send</span>';
+    if (!st.enrolled) return 'Not enrolled';
+    var s = st.sent + ' of ' + st.of + ' sent';
+    return st.nextAt ? s + '<br><span class="sub">next ' + esc(when(st.nextAt)) + '</span>' : s;
+  }
   function row(l) {
     var site = l.domain ? '<a href="https://' + esc(l.domain) + '" target="_blank" rel="noopener">' + esc(l.domain) + '</a>' : '';
-    return '<tr><td>' + esc(when(l.ts)) + '</td><td><a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a></td><td>' + esc(l.company) + '</td><td>' + site + '</td><td>' + esc(l.category) + '</td><td>' + esc(l.location || 'All of the US') + '</td><td class="score' + (l.score ? '' : ' zero') + '">' + esc(l.score) + '%</td><td>' + esc(l.named) + ' of ' + esc(l.answered) + '</td><td>' + esc((l.competitors || []).slice(0, 5).join(', ')) + '</td></tr>';
+    return '<tr><td>' + esc(when(l.ts)) + '</td><td><a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a></td><td>' + esc(l.company) + '</td><td>' + site + '</td><td>' + esc(l.category) + '</td><td>' + esc(l.location || 'All of the US') + '</td><td class="score' + (l.score ? '' : ' zero') + '">' + esc(l.score) + '%</td><td>' + esc(l.named) + ' of ' + esc(l.answered) + '</td><td>' + esc((l.competitors || []).slice(0, 5).join(', ')) + '</td><td>' + fu(l) + '</td></tr>';
   }
   function render() {
     var q = document.getElementById('q').value.trim().toLowerCase();
     var list = data.leads.filter(function (l) { return !q || [l.email, l.company, l.domain].join(' ').toLowerCase().indexOf(q) >= 0; });
-    document.getElementById('rows').innerHTML = list.length ? list.map(row).join('') : '<tr><td colspan="9">No leads yet.</td></tr>';
+    document.getElementById('rows').innerHTML = list.length ? list.map(row).join('') : '<tr><td colspan="10">No leads yet.</td></tr>';
     document.getElementById('count').textContent = list.length + ' of ' + data.leads.length + ' leads';
     document.getElementById('qrows').innerHTML = data.queued.length ? data.queued.map(function (l) { return '<tr><td>' + esc(when(l.ts)) + '</td><td><a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a></td><td>' + esc(l.company) + '</td><td>' + esc(l.domain) + '</td><td>' + esc(l.offer) + '</td><td>' + esc(l.location) + '</td></tr>'; }).join('') : '<tr><td colspan="6">None.</td></tr>';
   }
@@ -78,12 +97,38 @@
       if (r.status === 401) { location.href = '/admin-login.html'; throw new Error('auth'); }
       return r.json();
     }).then(function (d) {
-      data = { leads: d.leads || [], queued: d.queued || [] };
-      var n = d.notify || {};
-      document.getElementById('notify').innerHTML = (n.resend && n.to) ? '' : '<div class="note warn">Lead alert emails are off: ' + (!n.resend ? 'RESEND_API_KEY ' : '') + (!n.to ? 'LEAD_NOTIFY_EMAIL ' : '') + 'is not set in Vercel.</div>';
+      data = { leads: d.leads || [], queued: d.queued || [], nurture: d.nurture || {} };
+      var n = d.notify || {}, f = d.followups || {};
+      document.getElementById('notify').innerHTML = ((n.resend && n.to) ? '' : '<div class="note warn">Lead alert emails are off: ' + (!n.resend ? 'RESEND_API_KEY ' : '') + (!n.to ? 'LEAD_NOTIFY_EMAIL ' : '') + 'is not set in Vercel.</div>')
+        + (f.postalAddress ? '' : '<div class="note warn">Follow-up emails are paused: add NURTURE_POSTAL_ADDRESS (your business mailing address) in Vercel. The law requires it in marketing emails.</div>');
       render();
-    }).catch(function (e) { if (e.message !== 'auth') document.getElementById('rows').innerHTML = '<tr><td colspan="9">Could not load leads.</td></tr>'; });
+    }).catch(function (e) { if (e.message !== 'auth') document.getElementById('rows').innerHTML = '<tr><td colspan="10">Could not load leads.</td></tr>'; });
   }
+  function post(body) {
+    return fetch('/api/admin-leads', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+  }
+  var msg = function (t) { document.getElementById('fuMsg').innerHTML = t; };
+  document.getElementById('testBtn').onclick = function () {
+    var to = document.getElementById('testTo').value.trim();
+    msg('Sending…');
+    post({ action: 'test', to: to }).then(function (d) {
+      if (d.error) return msg(esc(d.error));
+      msg((d.ok ? 'Sent all four to ' + esc(to) : 'Some failed') + ', filled in with ' + esc(d.basedOn) + '\'s results. ' + d.sent.map(function (x) { return x.step + ': ' + (x.ok ? 'sent' : esc(x.error)); }).join(' · '));
+    }).catch(function () { msg('The test could not be sent.'); });
+  };
+  document.getElementById('backBtn').onclick = function () {
+    msg('Checking…');
+    post({ action: 'enroll-existing', dryRun: true }).then(function (d) {
+      if (d.error) return msg(esc(d.error));
+      var list = d.wouldEnroll || [];
+      if (!list.length) return msg('Everyone eligible is already in the series.');
+      msg('This adds ' + list.length + ' earlier leads: ' + list.map(function (l) { return esc(l.company || l.email); }).join(', ') + '. Their first follow-up goes out on the next daily run. <button id="backGo">Add them</button>');
+      document.getElementById('backGo').onclick = function () {
+        msg('Adding…');
+        post({ action: 'enroll-existing' }).then(function (r) { msg(r.error ? esc(r.error) : 'Added ' + r.enrolled + '.'); load(); });
+      };
+    });
+  };
   document.getElementById('q').oninput = render;
   document.getElementById('reload').onclick = load;
   document.getElementById('csv').onclick = function () {

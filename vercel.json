@@ -88,5 +88,11 @@
       "dest": "/404.html",
       "status": 404
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/nurture-cron",
+      "schedule": "0 14 * * *"
+    }
   ]
 }
