@@ -170,7 +170,7 @@ function buildStep(step, l, extra = {}) {
 
   if (step === 4) {
     return {
-      subject: 'Should I keep sending these?',
+      subject: `Last note about ${company}'s AI visibility`,
       plain: true,
       paragraphs: [
         `Hi,`,
